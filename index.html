@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Dryckeslekar</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Times New Roman', cursive, sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    .hero {
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      background-image: url('party2.jpg'); /* <-- Byt ut detta mot din bild */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed; /* För parallax-effekt */
+    }
+
+    .hero h1 {
+      font-size: 6em;
+      color: white;
+      text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+    }
+
+    .content {
+      background-color: white;
+      padding: 60px 20px;
+      position: relative;
+      z-index: 2;
+      margin-top: -100px;
+      border-top-left-radius: 40px;
+      border-top-right-radius: 40px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-top: 20px;
+    }
+
+    .game-button {
+      background-color: #fff;
+      border: 3px solid #ff4081;
+      color: #ff4081;
+      padding: 40px 0;
+      border-radius: 15px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+
+    .game-button:hover {
+      background-color: #ff4081;
+      color: white;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1>Dryckeslekar</h1>
+  </section>
+
+  <section class="content">
+    <div class="button-grid">
+      <button class="game-button">Lek 1</button>
+      <button class="game-button">Lek 2</button>
+      <button class="game-button">Lek 3</button>
+      <button class="game-button">Lek 4</button>
+      <button class="game-button">Lek 5</button>
+      <button class="game-button">Lek 6</button>
+      <button class="game-button">Lek 7</button>
+      <button class="game-button">Lek 8</button>
+      <button class="game-button">Lek 9</button>
+      <button class="game-button">Lek 10</button>
+    </div>
+  </section>
+
+</body>
+</html>
