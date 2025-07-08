@@ -16,32 +16,42 @@
       scroll-behavior: smooth;
     }
 
-    .hero {
+    .hero-container {
+      position: relative;
       height: 100vh;
+      overflow: hidden;
+    }
+
+    .hero-image {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .hero-text {
+      position: relative;
+      z-index: 2;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
-      z-index: 1;
-      background-image: url('party3.jpg'); /* <-- Byt ut detta mot din bild */
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
     }
 
-    .hero h1 {
+    .hero-text h1 {
       font-size: 6em;
       color: white;
-      text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+      text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
     }
 
     .content {
       background-color: white;
       padding: 60px 20px;
       position: relative;
-      z-index: 2;
+      z-index: 3;
       margin-top: -100px;
       border-top-left-radius: 40px;
       border-top-right-radius: 40px;
@@ -62,7 +72,7 @@
       border: 3px solid #ff4081;
       color: #ff4081;
       padding: 60px 0;
-      border-radius: 2px;
+      border-radius: 6px;
       font-size: 1.4em;
       font-weight: bold;
       cursor: pointer;
@@ -79,8 +89,11 @@
 </head>
 <body>
 
-  <section class="hero">
-    <h1>Dryckeslekar</h1>
+  <section class="hero-container">
+    <img src="party3.jpg" alt="Bakgrundsbild" class="hero-image">
+    <div class="hero-text">
+      <h1>Dryckeslekar</h1>
+    </div>
   </section>
 
   <section class="content">
