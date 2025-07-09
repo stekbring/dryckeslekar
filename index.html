@@ -41,10 +41,26 @@
       z-index: 1;
     }
 
-    .hero h1 {
-      font-size: 6em;
+    .hero-title {
+      font-size: 6em;  /* desktop-storlek */
       color: white;
       text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+      text-align: center;
+      position: relative; /* om du vill flytta med top måste position vara absolut eller relative */
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .hero-subtitle {
+      font-size: 1.8em;  /* desktop-storlek */
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      text-align: center;
+      position: relative;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
     .content {
@@ -100,16 +116,32 @@
         aspect-ratio: 4/5;
       }
 
-      .hero h1 {
-        font-size: 2.5em;
-        text-align: center;
-        padding: 10px;
+      .hero-title {
         position: absolute;
-        top: 15%;
+        top: 15%;  /* justera efter behov */
         left: 50%;
         transform: translate(-50%, -50%);
+        font-size: 2em;
+        color: white;
+        text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+        text-align: center;
       }
-    }
+
+      .hero-subtitle {
+        position: absolute;
+        top: 70%;  /* justera efter behov */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 1.5em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+      }
+
+
+
+  }
+    
   </style>
 </head>
 <body>
@@ -118,9 +150,11 @@
   <div class="background"></div>
 
   <!-- Framsidan -->
-  <section class="hero">
-    <h1>Dryckeslekar</h1>
-  </section>
+<section class="hero">
+  <h1 class="hero-title">Dryckeslekar</h1>
+  <p class="hero-subtitle">Av Olle & Mira</p>
+</section>
+
 
   <section class="content">
     <div class="button-grid">
