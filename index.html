@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Dryckeslekar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viktigt! -->
   <style>
     * {
       margin: 0;
@@ -24,7 +25,7 @@
       align-items: center;
       position: relative;
       z-index: 1;
-      background-image: url("party3.JPG"); /* <-- Byt ut detta mot din bild */
+      background-image: url("party3.JPG");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -39,19 +40,20 @@
 
     .content {
       background-color: white;
-      padding: 60px 20px;
+      padding: 80px 20px 200px 20px;
       position: relative;
       z-index: 2;
       margin-top: -100px;
       border-top-left-radius: 40px;
       border-top-right-radius: 40px;
       box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+      min-height: 100vh;
     }
 
     .button-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 50px;
       max-width: 900px;
       margin: 0 auto;
       padding-top: 40px;
@@ -62,7 +64,7 @@
       border: 3px solid #ff4081;
       color: #ff4081;
       padding: 60px 0;
-      border-radius: 2px;
+      border-radius: 6px;
       font-size: 1.4em;
       font-weight: bold;
       cursor: pointer;
@@ -74,6 +76,32 @@
       background-color: #ff4081;
       color: white;
       transform: scale(1.05);
+    }
+
+    /* RESPONSIVITET FÖR MOBILER */
+    @media (max-width: 600px) {
+      .hero {
+        background-attachment: scroll; /* Bättre för mobil */
+      }
+
+      .hero h1 {
+        font-size: 3em; /* Mindre rubrikstorlek */
+        text-align: center;
+        padding: 0 10px;
+      }
+
+      .game-button {
+        padding: 40px 0;
+        font-size: 1.2em;
+      }
+
+      .content {
+        padding: 60px 10px 150px 10px;
+      }
+
+      .button-grid {
+        gap: 30px;
+      }
     }
   </style>
 </head>
