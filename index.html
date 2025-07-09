@@ -143,7 +143,48 @@
         text-align: center;
       }
 
+      .game-button {
+        min-height: 200px;             /* Höjd på knappen */
+        border-width: 2px;
+        border-radius: 4px;
+        border-color: #000000;
+        background-color: #ffffff;
+        box-shadow: none;
 
+        /* TEXTSTIL */
+        font-size: 1em;
+        font-weight: bold;
+        font-family: 'Times New Roman', Times, serif;
+        color: #000000;
+        text-transform: uppercase;
+
+        /* CENTRERING I ÖVRE VÄNSTRA HÖRNET */
+        display: flex;
+        align-items: flex-start;     /* Toppen vertikalt */
+        justify-content: flex-start; /* Vänster horisontellt */
+        text-align: left;
+
+        padding: 10px;               /* Avstånd från kanten */
+      }
+
+
+
+      /* Ändra hover-effekt om du vill */
+      .game-button:hover {
+        background-color: #000000;   /* Mörkare blå på hover */
+        color: white;
+        transform: scale(1.02); 
+         /* Lite mindre förstoring */
+      }
+
+      /* Om du vill ändra placering på knapparna */
+      .button-grid {
+        gap: 20px;                   /* Mindre mellanrum */
+        max-width: 90%;  
+        max-height: 100%;           /* Ta hela bredden på mobilen */
+        padding: 20px;               /* Lite padding runt */
+        grid-template-columns: 1fr; /* En kolumn, knapparna staplas vertikalt */
+      }
 
   }
     
