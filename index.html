@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Dryckeslekar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viktigt! -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
       margin: 0;
@@ -17,6 +17,20 @@
       scroll-behavior: smooth;
     }
 
+    /* Bakgrundsbilden bakom allt */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 0;
+      background-image: url("party3.JPG");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
     .hero {
       height: 100vh;
       width: 100%;
@@ -25,11 +39,6 @@
       align-items: center;
       position: relative;
       z-index: 1;
-      background-image: url("party3.JPG");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
     }
 
     .hero h1 {
@@ -79,39 +88,43 @@
     }
 
     /* RESPONSIVITET FÖR MOBILER */
-   @media (max-width: 600px) {
-    .hero {
-      background-image: url("party3.2.JPG"); /* Bild för mobilen */
-      background-size: contain;
-      background-position: top;
-      background-repeat: repeat;
-      background-attachment: fixed;
-      height: 70vh;
-      aspect-ratio: 4/5;
-    }
+    @media (max-width: 600px) {
+      .background {
+        background-image: url("party3.2.JPG");
+        background-size: cover;
+        background-position: center;
+      }
 
-    .hero h1 {
-      font-size: 2.5em;
-      text-align: center;
-      padding: 10px;
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-}
+      .hero {
+        height: 70vh;
+        aspect-ratio: 4/5;
+      }
 
+      .hero h1 {
+        font-size: 2.5em;
+        text-align: center;
+        padding: 10px;
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
   </style>
 </head>
 <body>
 
+  <!-- Bakgrundsbilden -->
+  <div class="background"></div>
+
+  <!-- Framsidan -->
   <section class="hero">
     <h1>Dryckeslekar</h1>
   </section>
 
   <section class="content">
     <div class="button-grid">
-      <button class="game-button">Lek 111</button>
+      <button class="game-button">Lek 1</button>
       <button class="game-button">Lek 2</button>
       <button class="game-button">Lek 3</button>
       <button class="game-button">Lek 4</button>
