@@ -81,12 +81,13 @@
     /* RESPONSIVITET FÖR MOBILER */
    @media (max-width: 600px) {
     .hero {
-      background-attachment: scroll;
+      background-image: url("party3.2.JPG"); /* Bild för mobilen */
       background-size: contain;
+      background-position: top;
       background-repeat: no-repeat;
-      background-position: center;
-      height: auto;
-      aspect-ratio: 16 / 9; /* justera detta efter din bilds proportioner */
+      background-attachment: fixed;
+      height: 70vh;
+      aspect-ratio: 4/5;
     }
 
     .hero h1 {
@@ -94,7 +95,7 @@
       text-align: center;
       padding: 10px;
       position: absolute;
-      top: 50%;
+      top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
     }
