@@ -32,11 +32,12 @@
     }
 
     .hero {
-      height: 100vh;
+      height: 115vh;
       width: 100%;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;  /* stapla titeln och undertiteln vertikalt */
+      justify-content: center; /* centrera vertikalt */
+      align-items: center;     /* centrera horisontellt */
       position: relative;
       z-index: 1;
     }
@@ -46,10 +47,11 @@
       color: white;
       text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
       text-align: center;
-      position: relative; /* om du vill flytta med top måste position vara absolut eller relative */
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      margin-bottom: 0.2em; /* liten mellanrum till undertitel */
+      position: relative;  /* låt position vara normal */
+      left: auto;
+      top: -5%;
+      transform: none;
     }
 
     .hero-subtitle {
@@ -58,10 +60,11 @@
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
       text-align: center;
       position: relative;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      left: auto;
+      top: 20%;
+      transform: none;
     }
+
 
     .content {
       background-color: white;
