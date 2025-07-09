@@ -79,30 +79,27 @@
     }
 
     /* RESPONSIVITET FÖR MOBILER */
-    @media (max-width: 600px) {
-      .hero {
-        background-attachment: scroll; /* Bättre för mobil */
-      }
-
-      .hero h1 {
-        font-size: 3em; /* Mindre rubrikstorlek */
-        text-align: center;
-        padding: 0 10px;
-      }
-
-      .game-button {
-        padding: 40px 0;
-        font-size: 1.2em;
-      }
-
-      .content {
-        padding: 60px 10px 150px 10px;
-      }
-
-      .button-grid {
-        gap: 30px;
-      }
+   @media (max-width: 600px) {
+    .hero {
+      background-attachment: scroll;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: auto;
+      aspect-ratio: 16 / 9; /* justera detta efter din bilds proportioner */
     }
+
+    .hero h1 {
+      font-size: 2.5em;
+      text-align: center;
+      padding: 10px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+}
+
   </style>
 </head>
 <body>
