@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Dryckeslekar</title>
+  <title>Ring of Fire – Regler</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -11,230 +11,68 @@
       box-sizing: border-box;
     }
 
-    body, html {
-      height: 100%;
-      font-family: 'Times New Roman', cursive, sans-serif;
-      scroll-behavior: smooth;
-    }
-
-    /* Bakgrundsbilden bakom allt */
-    .background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      z-index: 0;
-      background-image: url("bilder\\party3.JPG");
+    body {
+      font-family: 'Times New Roman', serif;
+      background-image: url("wood.JPG");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      padding: 40px 20px;
+      color: #fff;
     }
 
-    .hero {
-      height: 115vh;
-      width: 100%;
-      display: flex;
-      flex-direction: column;  /* stapla titeln och undertiteln vertikalt */
-      justify-content: center; /* centrera vertikalt */
-      align-items: center;     /* centrera horisontellt */
-      position: relative;
-      z-index: 1;
+    .header-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
 
-    .hero-title {
-      font-size: 6em;  /* desktop-storlek */
-      color: white;
-      text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+    h1 {
       text-align: center;
-      margin-bottom: 0.2em; /* liten mellanrum till undertitel */
-      position: relative;  /* låt position vara normal */
-      left: auto;
-      top: -5%;
-      transform: none;
-      text-shadow: 1px 1px 20px rgba(255, 0, 0, 1);
-
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px #000;
     }
 
-    .hero-subtitle {
-      font-size: 1.8em;  /* desktop-storlek */
-      color: white;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      text-align: center;
-      position: relative;
-      left: auto;
-      top: 20%;
-      transform: none;
-    }
-
-
-    .content {
-      background-image: url("bilder/wood.JPG"); /* <-- byt till din fil */
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      padding: 80px 20px 200px 20px;
-      position: relative;
-      z-index: 2;
-      margin-top: -100px;
-      border-top-left-radius: 40px;
-      border-top-right-radius: 40px;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-      min-height: 100vh;
-    }
-
-
-    .button-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 50px;
-      max-width: 900px;
+    .rules-list {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 800px;
       margin: 0 auto;
-      padding-top: 40px;
     }
 
-    .game-button {
-      background-color: #fff;
-      border: 3px solid #ff4081;
-      color: #ff4081;
-      padding: 60px 0;
-      border-radius: 6px;
-      font-size: 1.4em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    .rules-list li {
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      line-height: 1.6;
     }
-
-    .game-button:hover {
-      background-color: #ff4081;
-      color: white;
-      transform: scale(1.05);
-    }
-
-    /* RESPONSIVITET FÖR MOBILER */
-    @media (max-width: 600px) {
-      .background {
-        background-image: url("bilder\\party3.2.JPG");
-        background-size: cover;
-        background-position: center;
-      }
-
-      .hero {
-        height: 115vh;
-        aspect-ratio: 4/5;
-      }
-
-      .hero-title {
-        position: absolute;
-        top: 15%;  /* justera efter behov */
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 2.5em;
-        color: white;
-        text-shadow: 1px 1px 20px rgba(255, 0, 0, 0.8);
-        text-align: center;
-      }
-
-      .hero-subtitle {
-        position: absolute;
-        top: 70%;  /* justera efter behov */
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 1em;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        text-align: center;
-      }
-
-      .game-button {
-        min-height: 200px;             /* Höjd på knappen */
-        border-width: 2px;
-        border-radius: 4px;
-        border-color: #000000;
-        background-color: #ffffff;
-        box-shadow: none;
-
-        /* TEXTSTIL */
-        font-size: 1em;
-        font-weight: bold;
-        font-family: 'Times New Roman', Times, serif;
-        color: #000000;
-        text-transform: uppercase;
-
-        /* CENTRERING I ÖVRE VÄNSTRA HÖRNET */
-        display: flex;
-        align-items: flex-start;     /* Toppen vertikalt */
-        justify-content: flex-start; /* Vänster horisontellt */
-        text-align: left;
-
-        padding: 10px;               /* Avstånd från kanten */
-      }
-
-
-
-      /* Ändra hover-effekt om du vill */
-      .game-button:hover {
-        background-color: #000000;   /* Mörkare blå på hover */
-        color: white;
-        transform: scale(1.02); 
-         /* Lite mindre förstoring */
-      }
-
-      /* Om du vill ändra placering på knapparna */
-      .button-grid {
-        gap: 20px;                   /* Mindre mellanrum */
-        max-width: 90%;  
-        max-height: 100%;           /* Ta hela bredden på mobilen */
-        padding: 20px;               /* Lite padding runt */
-        grid-template-columns: 1fr; /* En kolumn, knapparna staplas vertikalt */
-      }
-
-      .image-button {
-        padding: 0;
-        overflow: hidden;
-      }
-
-      .image-button img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 6px;
-        display: block;
-      }
-
-  }
-    
   </style>
 </head>
 <body>
 
-  <!-- Bakgrundsbilden -->
-  <div class="background"></div>
+  <!-- Rubrikbild -->
+  <img src="bilder/ring-banner.jpg" alt="Ring of Fire" class="header-image">
 
-  <!-- Framsidan -->
-<section class="hero">
-  <h1 class="hero-title">Dryckeslekar</h1>
-  <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
-</section>
+  <h1>Regler – Ring of Fire</h1>
 
-
-  <section class="content">
-    <div class="button-grid">
-      <button class="game-button image-button">
-      <img src="bilder\\ringoffire.JPG" alt="Lek 1">
-      </button>
-      <button class="game-button">Lek 2</button>
-      <button class="game-button">Lek 3</button>
-      <button class="game-button">Lek 4</button>
-      <button class="game-button">Lek 5</button>
-      <button class="game-button">Lek 6</button>
-      <button class="game-button">Lek 7</button>
-      <button class="game-button">Lek 8</button>
-      <button class="game-button">Lek 9</button>
-      <button class="game-button">Lek 10</button>
-    </div>
-  </section>
+  <ul class="rules-list">
+    <li><strong>Ess:</strong> "Waterval" – alla börjar dricka, ingen får sluta förrän personen före dem gör det.</li>
+    <li><strong>2:</strong> "Du" – välj någon som måste dricka.</li>
+    <li><strong>3:</strong> "Jag" – du själv dricker.</li>
+    <li><strong>4:</strong> "Golv" – alla måste röra golvet, sist dricker.</li>
+    <li><strong>5:</strong> "Tjejer" – alla tjejer dricker.</li>
+    <li><strong>6:</strong> "Killar" – alla killar dricker.</li>
+    <li><strong>7:</strong> "Pekleken" – alla pekar på någon, mest pekningar dricker.</li>
+    <li><strong>8:</strong> "Tumme på bordet" – sätt tummen på bordet, sist dricker.</li>
+    <li><strong>9:</strong> "Rimlek" – börja rimma, den som inte kan dricker.</li>
+    <li><strong>10:</strong> "Kategori" – välj kategori, t.ex. bilmärken, turas om, förloraren dricker.</li>
+    <li><strong>Knekt:</strong> "Regelskapare" – hitta på en ny regel som gäller resten av spelet.</li>
+    <li><strong>Drottning:</strong> "Frågemästare" – om någon svarar på din fråga måste de dricka.</li>
+    <li><strong>Kung:</strong> Häll upp i "King's Cup", den som drar sista kungen dricker allt.</li>
+  </ul>
 
 </body>
 </html>
