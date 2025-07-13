@@ -11,17 +11,29 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
+      height: 100%;
       font-family: 'Times New Roman', serif;
+    }
+
+    /* Bakgrundsbild som alltid ligger stilla */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      z-index: -1;
       background-image: url("wood.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-attachment: fixed; /* ← detta gör att bakgrunden stannar */
-      padding: 10px 10px;
-      color: #fff;
     }
 
+    body {
+      padding: 10px;
+      color: #fff;
+    }
 
     .header-image {
       max-width: 100%;
@@ -55,7 +67,10 @@
 </head>
 <body>
 
-  <!-- Rubrikbild -->
+  <!-- Bakgrund -->
+  <div class="background"></div>
+
+  <!-- Innehåll -->
   <img src="rubrik.png" alt="Ring of Fire" class="header-image">
 
   <h1>Regler</h1>
@@ -66,7 +81,7 @@
     <li><strong>4:</strong> Is whore – alla tjejer dricker.</li>
     <li><strong>5:</strong> Is thumbmaster – sätt tummen på bordet, sist dricker.</li>
     <li><strong>6:</strong> Is dicks – alla killar dricker.</li>
-    <li><strong>7:</strong> Is heaven – peka mot himmeln, sist dricker.</li>
+    <li><strong>7:</strong> Is heaven – peka mot himlen, sist dricker.</li>
     <li><strong>8:</strong> Is mate – välj en kompis som dricker varje gång du dricker.</li>
     <li><strong>9:</strong> Is rhyme – börja ett rim, förloraren dricker.</li>
     <li><strong>10:</strong> Is category – välj kategori, förloraren dricker.</li>
@@ -74,7 +89,6 @@
     <li><strong>Drottning:</strong> Is question master – om någon svarar på din fråga måste de dricka.</li>
     <li><strong>Kung:</strong> Häll i muggen, den som drar sista kungen eller bryter cirkeln dricker allt.</li>
     <li><strong>Ess:</strong> "Waterfall" – alla börjar dricka, ingen får sluta förrän personen före dem gör det.</li>
-
   </ul>
 
 </body>
