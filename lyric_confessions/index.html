@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Lyric_Confessions – Regler</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Times New Roman', serif;
+      color: #fff;
+      padding: 10px;
+    }
+
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      z-index: -1;
+      background-image: url("wood.webp");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .header-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px #000;
+    }
+
+    .rules-list {
+      background: rgba(0, 0, 0, 0.6);
+      list-style-type: none;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .rules-list li {
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+    .big-text {
+      font-size: 1.2em;     /* Ändra värdet för ännu större text */
+      font-weight: bold;
+      text-align: center;
+      display: block;
+      margin: 20px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="background"></div>
+  <img src="rubrik.png" alt="Ring of Fire" class="header-image">
+  <h1>Regler</h1>
+
+  <ul class="rules-list" id="rules"></ul>
+<script>
+  fetch('lyrics.txt')
+    .then(response => response.text())
+    .then(data => {
+      const rulesList = document.getElementById('rules');
+      const lines = data.split('\n');
+
+      lines.forEach(line => {
+        if (line.trim() !== "") {
+          // Formatera texten
+          let formatted = line
+            .replace(/^# (.*)/, '<h2>$1</h2>')                 // # = Rubrik (stor)
+            .replace(/^## (.*)/, '<h3>$1</h3>')                // ## = Underrubrik
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // **fet stil**
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *kursiv stil*
+            .replace(/__(.*?)__/g, '<span class="big-text">$1</span>') // __stor text__
+            .replace(/--/g, '<br><br>');                       // -- = radbrytning
+
+          const container = document.createElement('div');
+          container.innerHTML = formatted;
+          rulesList.appendChild(container);
+        }
+      });
+    })
+    .catch(error => {
+      console.error("Kunde inte läsa filen:", error);
+    });
+</script>
+
+
+</body>
+</html>
