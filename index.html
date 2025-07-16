@@ -33,15 +33,17 @@
     }
 
     .hero {
-      height: 115vh;
+      height: 100vh;
       width: 100%;
       display: flex;
-      flex-direction: column;  /* stapla titeln och undertiteln vertikalt */
-      justify-content: center; /* centrera vertikalt */
-      align-items: center;     /* centrera horisontellt */
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
       position: relative;
       z-index: 1;
+      padding-top: 100px; /* justera värdet för hur högt upp den ska vara */
     }
+
 
     .hero-title {
       font-size: 6em;  /* desktop-storlek */
@@ -122,7 +124,7 @@
       }
 
       .hero {
-        height: 115vh;
+        height: 110vh;
         aspect-ratio: 4/5;
       }
 
@@ -172,8 +174,6 @@
         padding: 10px;               /* Avstånd från kanten */
       }
 
-
-
       /* Ändra hover-effekt om du vill */
       .game-button:hover {
         background-color: #000000;   /* Mörkare blå på hover */
@@ -205,6 +205,14 @@
         display: block;
       }
 
+
+      .hero-title-img {
+        width: 70%;
+        max-width: 300px;
+        height: auto;
+      }
+
+
   }
     
   </style>
@@ -216,7 +224,7 @@
 
   <!-- Framsidan -->
 <section class="hero">
-  <h1 class="hero-title">Dryckeslekar</h1>
+<img src="bilder/dryckeslekar.png" alt="Dryckeslekar" class="hero-title-img">
   <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
 </section>
 
