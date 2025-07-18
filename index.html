@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <link rel="preload" as="image" href="wood.jpg">
   <meta charset="UTF-8">
   <title>Dryckeslekar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,14 +89,16 @@
     .button-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 50px;
+      gap: 100px;
       max-width: 900px;
       margin: 0 auto;
       padding-top: 40px;
+      grid-template-columns: 1fr; /* En kolumn, knapparna staplas vertikalt */
+
     }
 
     .game-button {
-      background-color: #fff;
+      background-color: transparent;
       border: 3px solid #ff4081;
       color: #ff4081;
       padding: 60px 0;
@@ -151,10 +152,10 @@
       }
 
       .game-button {
+        border: 3px solid #fa7325;
         min-height: 200px;             /* Höjd på knappen */
         border-width: 2px;
         border-radius: 4px;
-        border-color: #000000;
         background-color: transparent;
         box-shadow: none;
 
@@ -184,7 +185,7 @@
 
       /* Om du vill ändra placering på knapparna */
       .button-grid {
-        gap: 20px;                   /* Mindre mellanrum */
+        gap: 50px;                   /* Mindre mellanrum */
         max-width: 90%;  
         max-height: 100%;           /* Ta hela bredden på mobilen */
         padding: 20px;               /* Lite padding runt */
@@ -193,9 +194,9 @@
 
       .image-button {
         background: transparent;
-        border: none;
         padding: 0;
         overflow: hidden;
+        border: none;
       }
 
       .image-button img {
