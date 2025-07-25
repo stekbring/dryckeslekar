@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Who's the Imposter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      z-index: -1;
+      background-image: url("wood.webp");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    body {
+      padding: 10px;
+      color: #fff;
+    }
+
+    h1, h2 {
+      text-align: center;
+      text-shadow: 2px 2px 6px #000;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 15px;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto;
+      border-radius: 10px;
+    }
+
+    input, select, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+    }
+
+    button {
+      background-color: #444;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #666;
+    }
+
+    .player-btn {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 1em;
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .used {
+      background-color: #777 !important;
+      cursor: not-allowed;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 999;
+    }
+
+    #revealBox {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      color: #fff;
+      z-index: 1000;
+    }
+
+    #revealBox button {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+
+  <img src="rubrik.png" alt="Who's the Imposter" class="header-image">
+
+  <div class="container">
+    <h1>Who's the Imposter</h1>
+
+    <div id="setup">
+      <label>Skriv spelarnamn (komma-separerat):
+        <input type="text" id="playersInput" placeholder="Anna, Björn, Clara">
+      </label>
+      <label>Antal imposters:
+        <select id="numImposters">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      </label>
+      <label>Lägg till egna platser:
+        <input type="text" id="customLocation" placeholder="T.ex. Rymdskepp">
+        <button onclick="addLocation()">Lägg till plats</button>
+      </label>
+      <button onclick="startGame()">Starta spelet</button>
+    </div>
+
+    <div id="game">
+      <h2>Klicka på ditt namn för att se din roll</h2>
+      <div id="playerButtons"></div>
+    </div>
+
+    <div id="roundControl">
+      <button onclick="newRound()">Ny runda</button>
+      <button onclick="location.reload()">Avbryt</button>
+    </div>
+  </div>
+
+  <div id="overlay"></div>
+
+  <div id="revealBox">
+    <div id="revealText"></div>
+    <button onclick="closeReveal()">Stäng</button>
+  </div>
+
+  <script>
+    const defaultLocations = [
+      "Biblioteket", "Skola", "Ubåt", "Flygplan", "Fängelse", "Restaurang",
+      "Biograf", "Strand", "Camping", "Rymdskepp", "Nattklubb", "Kyrka",
+      "Badhus", "Supermarket", "Tunnelbana", "Bergstopp", "Isbrytare",
+      "Klassrum", "Garage", "Slakteri"
+    ];
+
+    let locations = [...defaultLocations];
+    let players = [];
+    let roles = {};
+    let currentLocation = "";
+
+    function addLocation() {
+      const loc = document.getElementById('customLocation').value.trim();
+      if (loc) {
+        locations.push(loc);
+        alert(`Lade till plats: ${loc}`);
+        document.getElementById('customLocation').value = "";
+      }
+    }
+
+    function startGame() {
+      const names = document.getElementById('playersInput').value.split(',').map(n => n.trim()).filter(n => n);
+      if (names.length < 3) return alert("Minst 3 spelare krävs.");
+      const numImposters = parseInt(document.getElementById('numImposters').value);
+      if (numImposters >= names.length) return alert("Fler imposters än spelare!");
+
+      players = names;
+      document.getElementById('setup').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      document.getElementById('roundControl').style.display = 'block';
+      assignRoles(numImposters);
+    }
+
+    function assignRoles(numImposters) {
+      roles = {};
+      const shuffled = [...players].sort(() => Math.random() - 0.5);
+      const imposters = shuffled.slice(0, numImposters);
+      currentLocation = locations[Math.floor(Math.random() * locations.length)];
+
+      players.forEach(p => {
+        roles[p] = imposters.includes(p) ? "Imposter" : currentLocation;
+      });
+
+      const container = document.getElementById('playerButtons');
+      container.innerHTML = "";
+      players.forEach(p => {
+        const btn = document.createElement('button');
+        btn.innerText = p;
+        btn.className = 'player-btn';
+        btn.onclick = function() {
+          if (btn.classList.contains('used')) return;
+          btn.classList.add('used');
+          btn.disabled = true;
+          document.getElementById('revealText').innerText = `${p}, din roll är: ${roles[p]}`;
+          document.getElementById('overlay').style.display = 'block';
+          document.getElementById('revealBox').style.display = 'block';
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function newRound() {
+      closeReveal();
+      assignRoles(parseInt(document.getElementById('numImposters').value));
+      Array.from(document.querySelectorAll('.player-btn')).forEach(btn => {
+        btn.classList.remove('used');
+        btn.disabled = false;
+      });
+    }
+
+    function closeReveal() {
+      document.getElementById('revealBox').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
