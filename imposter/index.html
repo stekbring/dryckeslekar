@@ -66,6 +66,32 @@
       border: none;
     }
 
+    .name-input-wrapper {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .name-input {
+      width: 100%;
+    }
+
+    .remove-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #c00;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 20px;
+      padding: 0;
+    }
+
     button {
       background-color: #444;
       color: #fff;
@@ -77,7 +103,7 @@
     }
 
     .player-btn {
-      margin: 10px 0;
+      margin: 15px 0;
       padding: 10px;
       font-size: 1em;
       width: 100%;
@@ -118,6 +144,12 @@
       margin-top: 20px;
     }
 
+    .imposter-text {
+      color: red;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
     #game, #roundControl {
       display: none;
     }
@@ -136,9 +168,9 @@
     <h1>Who's the Imposter</h1>
 
     <div id="setup">
-      <label>Skriv spelarnamn (komma-separerat):
-        <input type="text" id="playersInput" placeholder="Anna, Björn, Clara">
-      </label>
+      <div id="nameInputsContainer"></div>
+      <button onclick="addNameInput()">Lägg till spelare</button>
+
       <label>Antal imposters:
         <select id="numImposters">
           <option value="1">1</option>
@@ -183,6 +215,44 @@
     let roles = {};
     let currentLocation = "";
 
+    function createNameInput(name = '', index = null) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'name-input-wrapper';
+
+      const input = document.createElement('input');
+      input.className = 'name-input';
+      input.type = 'text';
+      input.placeholder = `Spelare ${index !== null ? index + 1 : document.querySelectorAll('.name-input-wrapper').length + 1}`;
+      input.value = name;
+      input.onkeydown = handleEnter;
+
+      const remove = document.createElement('button');
+      remove.innerText = '×';
+      remove.className = 'remove-btn';
+      remove.onclick = () => wrapper.remove();
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(remove);
+      document.getElementById('nameInputsContainer').appendChild(wrapper);
+      input.focus();
+    }
+
+    function addNameInput() {
+      createNameInput();
+    }
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        const inputs = Array.from(document.querySelectorAll('.name-input'));
+        const index = inputs.indexOf(e.target);
+        if (index !== -1 && index + 1 < inputs.length) {
+          inputs[index + 1].focus();
+        } else {
+          addNameInput();
+        }
+      }
+    }
+
     function addLocation() {
       const loc = document.getElementById('customLocation').value.trim();
       if (loc) {
@@ -193,7 +263,7 @@
     }
 
     function startGame() {
-      const names = document.getElementById('playersInput').value.split(',').map(n => n.trim()).filter(n => n);
+      const names = Array.from(document.querySelectorAll('.name-input')).map(input => input.value.trim()).filter(n => n);
       if (names.length < 3) return alert("Minst 3 spelare krävs.");
       const numImposters = parseInt(document.getElementById('numImposters').value);
       if (numImposters >= names.length) return alert("Fler imposters än spelare!");
@@ -226,7 +296,12 @@
           if (btn.classList.contains('used')) return;
           btn.classList.add('used');
           btn.disabled = true;
-          document.getElementById('revealText').innerText = `${p}, din roll är: ${roles[p]}`;
+          const revealText = document.getElementById('revealText');
+          if (roles[p] === "Imposter") {
+            revealText.innerHTML = `<span class='imposter-text'>IMPOSTER!</span>`;
+          } else {
+            revealText.innerText = `Plats: ${roles[p]}`;
+          }
           document.getElementById('overlay').style.display = 'block';
           document.getElementById('revealBox').style.display = 'block';
         };
@@ -251,18 +326,23 @@
     function goBack() {
       const saved = localStorage.getItem('savedPlayers');
       if (saved) {
-        document.getElementById('playersInput').value = JSON.parse(saved).join(', ');
+        const container = document.getElementById('nameInputsContainer');
+        container.innerHTML = "";
+        JSON.parse(saved).forEach((name, i) => createNameInput(name, i));
       }
       document.getElementById('setup').style.display = 'block';
       document.getElementById('game').style.display = 'none';
       document.getElementById('roundControl').style.display = 'none';
     }
 
-    // Ladda sparade namn vid start
     window.onload = () => {
       const saved = localStorage.getItem('savedPlayers');
+      const container = document.getElementById('nameInputsContainer');
+      container.innerHTML = "";
       if (saved) {
-        document.getElementById('playersInput').value = JSON.parse(saved).join(', ');
+        JSON.parse(saved).forEach((name, i) => createNameInput(name, i));
+      } else {
+        ["", "", ""].forEach((_, i) => createNameInput("", i));
       }
     }
   </script>
