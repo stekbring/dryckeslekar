@@ -21,7 +21,7 @@
       height: 100vh;
       width: 100vw;
       z-index: -1;
-      background-image: url("bengt-bg.jpg");
+      background-image: url("bakgrund.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -72,13 +72,37 @@
       margin-bottom: 10px;
     }
 
+    .playlist-button {
+      display: block;
+      margin: 30px auto 40px auto;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    .playlist-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
   </style>
 </head>
 <body>
 
 <div class="background"></div>
 
-<img src="bengt.png" alt="Långa bollar på Bengt" class="header-image">
+<img src="rubrik.png" alt="Långa bollar på Bengt" class="header-image">
+
+<!-- Spellistaknapp -->
+<div class="playlist-wrapper">
+  <a href="https://open.spotify.com/track/6gAPl8snSQiUoAOpLUDIqA?si=e2161bce35be491b" target="_blank" class="playlist-button">
+     Öppna låten på Spotify   </a>
+</div>
 
 <ul class="rules-list" id="rules"></ul>
 
