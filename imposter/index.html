@@ -157,6 +157,16 @@
     #roundControl {
       margin-top: 60px;
     }
+    .small-button {
+      padding: 8px 16px;
+      font-size: 0.9em;
+      display: inline-block;
+      margin-top: 0px;
+    }
+
+    .start-button {
+      margin-top: 25px;
+    }
   </style>
 </head>
 <body>
@@ -180,10 +190,11 @@
         </select>
       </label>
       <label>Lägg till egna platser:
-        <input type="text" id="customLocation" placeholder="T.ex. Rymdskepp">
-        <button onclick="addLocation()">Lägg till plats</button>
+        <input type="text" id="customLocation" placeholder="T.ex. Olle Ahlgrens sexkammare">
+        <button class="small-button" onclick="addLocation()">Lägg till plats</button>
       </label>
-      <button onclick="startGame()">Starta spelet</button>
+      <button class="start-button" onclick="startGame()">Starta spelet</button>
+
     </div>
 
     <div id="game">
