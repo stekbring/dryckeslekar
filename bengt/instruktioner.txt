@@ -1,8 +1,8 @@
 __Instruktioner__
 
-Spelet börjar när låten Långa bollar på Bengt av Svenne Rubins startar.--
+Spelet börjar när låten *Långa bollar på Bengt* av Svenne Rubins startar.--
 
-Under låten hörs namnet "Bengt" med ojämna mellanrum. Varje gång namnet sägs ska du omedelbart luftpiska en annan deltagare.--
+Under låten hörs namnet **Bengt** med ojämna mellanrum. Varje gång namnet sägs ska du omedelbart luftpiska en annan deltagare.--
 
 Piskar du för tidigt, för sent, eller utan att namnet Bengt har sagts, måste du dricka ett straffmått. Tajming är allt.--
 
