@@ -2,21 +2,18 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Snusdosan – Regler</title>
+  <title>Snusdosan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       height: 100%;
       font-family: 'Times New Roman', serif;
+      color: #fff;
+      padding: 10px;
     }
 
-    /* Bakgrundsbild som alltid ligger stilla */
     .background {
       position: fixed;
       top: 0;
@@ -24,24 +21,21 @@
       height: 100vh;
       width: 100vw;
       z-index: -1;
-      background-image: url("wood.webp");
+      background-image: url("bakgrund.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
     }
 
-    body {
-      padding: 10px;
-      color: #fff;
-    }
-
     .header-image {
+      display: block;
       max-width: 100%;
       height: auto;
-      display: block;
-      margin: 0 auto 40px auto;
+      margin-top: 40px;
+      margin-bottom: 50px;
+      margin-left: auto;
+      margin-right: auto;
       border-radius: 10px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
 
     h1 {
@@ -52,7 +46,6 @@
 
     .rules-list {
       background: rgba(0, 0, 0, 0.6);
-      text-align: center;
       list-style-type: none;
       padding: 20px;
       border-radius: 15px;
@@ -65,21 +58,75 @@
       font-size: 1.1em;
       line-height: 1.6;
     }
+
+    .big-text {
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      display: block;
+      margin: 20px 0;
+    }
+
+    h2, h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .playlist-button {
+      display: block;
+      margin: 30px auto 40px auto;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    .playlist-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- Bakgrund -->
-  <div class="background"></div>
+<div class="background"></div>
 
-  <!-- Innehåll -->
-  <img src="rubrik.png" alt="Snusdosan" class="header-image">
+<img src="rubrik.png" alt="Långa bollar på Bengt" class="header-image">
 
-  <h1>Regler</h1>
+<ul class="rules-list" id="rules"></ul>
 
-  <ul class="rules-list">
-    <li>Kasta på någon som är för nykter....</li>
-  </ul>
+<script>
+  fetch('instruktioner.txt')
+    .then(response => response.text())
+    .then(data => {
+      const rulesList = document.getElementById('rules');
+      const lines = data.split('\n');
+
+      lines.forEach(line => {
+        if (line.trim() !== "") {
+          let formatted = line
+            .replace(/^# (.*)/, '<h2>$1</h2>')
+            .replace(/^## (.*)/, '<h3>$1</h3>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/__(.*?)__/g, '<span class="big-text">$1</span>')
+            .replace(/--/g, '<br><br>');
+
+          const container = document.createElement('div');
+          container.innerHTML = formatted;
+          rulesList.appendChild(container);
+        }
+      });
+    })
+    .catch(error => {
+      console.error("Kunde inte läsa filen:", error);
+    });
+</script>
 
 </body>
 </html>
