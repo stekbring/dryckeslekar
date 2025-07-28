@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>ÖlBingo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      margin: 10px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      background: #1e90ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .drawn-numbers {
+      margin-top: 20px;
+      max-width: 300px;
+      word-wrap: break-word;
+      text-align: center;
+    }
+
+    .bingo-board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      margin-top: 20px;
+    }
+
+    .bingo-cell {
+      width: 35px;
+      height: 35px;
+      background: #333;
+      border: 1px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      position: relative;
+    }
+
+    .bingo-cell.marked::after {
+      content: "";
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: rgba(0, 255, 0, 0.5);
+    }
+
+    .toggle-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <h1>ÖlBingo</h1>
+  <button class="btn" onclick="showSection('host')">Speaker</button>
+  <button class="btn" onclick="showSection('player')">Player</button>
+</div>
+
+<!-- HOST VIEW -->
+<div id="host" class="section">
+  <h2>Uppläsare</h2>
+  <button class="btn" onclick="drawNumber()">Nytt nummer</button>
+  <button class="btn" onclick="resetNumbers()">Ny bricka</button>
+  <div class="toggle-container">
+    <label for="autoSpeak">Automatisk uppläsning</label>
+    <input type="checkbox" id="autoSpeak">
+  </div>
+  <div>
+    <label>Spelform:</label>
+    <select id="mode">
+      <option>En rad</option>
+      <option>Två rader</option>
+      <option>Hel bricka</option>
+    </select>
+  </div>
+  <div class="drawn-numbers" id="drawn"></div>
+</div>
+
+<!-- PLAYER VIEW -->
+<div id="player" class="section">
+  <h2>Spelarvy</h2>
+  <div id="bingo-container"></div>
+  <button class="btn" onclick="undoMark()">Ångra</button>
+  <button class="btn" onclick="bingoSound()">BINGO!</button>
+</div>
+
+<script>
+  const spokenNumbers = [];
+  let lastMarked = null;
+
+  function showSection(id) {
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById(id).style.display = "flex";
+    if (id === 'player') generateBingoCard();
+  }
+
+  function drawNumber() {
+    let num;
+    do {
+      num = Math.floor(Math.random() * 100);
+    } while (spokenNumbers.includes(num));
+    spokenNumbers.push(num);
+    document.getElementById("drawn").innerText = spokenNumbers.join(", ");
+    if (document.getElementById("autoSpeak").checked) speakNumber(num);
+  }
+
+  function speakNumber(n) {
+    const utterance = new SpeechSynthesisUtterance(n.toString());
+    speechSynthesis.speak(utterance);
+  }
+
+  function resetNumbers() {
+    spokenNumbers.length = 0;
+    document.getElementById("drawn").innerText = "";
+  }
+
+  function generateBingoCard() {
+    const container = document.getElementById("bingo-container");
+    container.innerHTML = "";
+
+    for (let section = 0; section < 6; section++) {
+      const board = document.createElement("div");
+      board.className = "bingo-board";
+
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 9; col++) {
+          const cell = document.createElement("div");
+          cell.className = "bingo-cell";
+
+          const base = col * 10;
+          const candidates = Array.from({ length: 10 }, (_, i) => base + i + 1);
+          const number = Math.random() > 0.5 ? candidates[Math.floor(Math.random() * candidates.length)] : "";
+
+          if (number) cell.textContent = number;
+
+          cell.addEventListener("click", () => {
+            if (cell.textContent) {
+              cell.classList.toggle("marked");
+              lastMarked = cell;
+            }
+          });
+
+          board.appendChild(cell);
+        }
+      }
+      container.appendChild(board);
+    }
+  }
+
+  function undoMark() {
+    if (lastMarked) {
+      lastMarked.classList.remove("marked");
+      lastMarked = null;
+    }
+  }
+
+  function bingoSound() {
+    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    audio.play();
+  }
+</script>
+
+</body>
+</html>
