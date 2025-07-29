@@ -114,6 +114,34 @@
       transform: scale(1.05);
     }
 
+
+    #toggleViewButton {
+      background-color: #fa7325;
+      border: none;
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+      min-width: 32px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #toggleViewButton img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+
+    #toggleViewButton:hover {
+      transform: scale(1.1);
+    }
+
     @media (max-width: 600px) {
       .background {
         background-image: url("bilder\\party3.2.JPG");
@@ -215,20 +243,6 @@
         z-index: 10;
       }
 
-      #toggleViewButton {
-        background-color: rgba(78, 78, 78, 0.8);
-        border: none;
-        padding: 10px;
-        border-radius: 50%;
-        font-size: 0.8em;
-        cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        transition: transform 0.2s ease;
-      }
-
-      #toggleViewButton:hover {
-        transform: scale(1.1);
-      }
     }
   </style>
 </head>
@@ -243,7 +257,10 @@
 
   <section class="content">
     <div class="view-toggle">
-      <button id="toggleViewButton">🔲</button>
+      <button id="toggleViewButton">
+        <img src="bilder/list.png" alt="Byt vy">
+      </button>
+
     </div>
 
     <div class="button-grid">
@@ -277,13 +294,22 @@
   </section>
 
   <script>
+
     const toggleButton = document.getElementById("toggleViewButton");
+    const toggleIcon = toggleButton.querySelector("img");
     const buttonGrid = document.querySelector(".button-grid");
 
     toggleButton.addEventListener("click", () => {
       buttonGrid.classList.toggle("grid-view");
-      toggleButton.textContent = buttonGrid.classList.contains("grid-view") ? "⊞" : "🔲";
+
+      // Byt bild beroende på vy
+      if (buttonGrid.classList.contains("grid-view")) {
+        toggleIcon.src = "bilder/grid.png"; // ikon för listvy
+      } else {
+        toggleIcon.src = "bilder/list.png"; // ikon för gridvy
+      }
     });
+
   </script>
 </body>
 </html>
