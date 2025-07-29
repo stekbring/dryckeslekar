@@ -251,18 +251,18 @@
     );
     numberIndex += cardNumbers.length;
 
-    // Skapa rutnät
     const cardGrid = Array.from({ length: 3 }, () => Array(9).fill(null));
 
-    // Dela upp siffror i kolumner enligt klassisk bingo-regel
     const colData = Array.from({ length: 9 }, () => []);
     cardNumbers.forEach(num => {
       let col = Math.floor((num - 1) / 10);
-      if (num === 90) col = 8; // specialfall om man har 90 med (inte relevant här)
+      if (num % 10 === 0) col += 1;
+      if (col > 8) col = 8;
+ // 👈 korrekt kolumnlogik
       colData[col].push(num);
     });
 
-    // Fyll rutnätet: fördela siffrorna på 3 rader per kolumn
+    // Fyll rutnätet
     for (let col = 0; col < 9; col++) {
       shuffleArray(colData[col]);
       for (let i = 0; i < Math.min(3, colData[col].length); i++) {
@@ -274,11 +274,11 @@
             break;
           }
         }
-        if (!placed) break; // hoppa över om kolumnen är full
+        if (!placed) break;
       }
     }
 
-    // Skapa HTML för brickan
+    // Skapa HTML
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 9; col++) {
         const cell = document.createElement("div");
@@ -300,8 +300,6 @@
     container.appendChild(board);
   }
 }
-
-
 
 
   function shuffleArray(array) {
