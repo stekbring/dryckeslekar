@@ -57,7 +57,7 @@
       font-size: 1.2em;
       border: none;
       border-radius: 8px;
-      background: #1e90ff;
+      background: #03587a;
       color: white;
       cursor: pointer;
       display: block;
@@ -206,13 +206,12 @@
   function drawNumber() {
     let num;
     do {
-      num = Math.floor(Math.random() * 100);
+      num = Math.floor(Math.random() * 89) + 1;
     } while (spokenNumbers.includes(num));
     spokenNumbers.push(num);
     document.getElementById("drawn").innerText = spokenNumbers.join(", ");
     if (document.getElementById("autoSpeak").checked) speakNumber(num);
 
-    // Show latest number big and on top
     const latestDiv = document.getElementById("latest-number");
     latestDiv.textContent = num;
     latestDiv.style.display = "block";
@@ -232,36 +231,64 @@
   function generateBingoCard() {
     const container = document.getElementById("bingo-container");
     container.innerHTML = "";
+    const usedNumbers = new Set();
+
+    const numberPool = Array.from({ length: 89 }, (_, i) => i + 1);
+    const columns = Array.from({ length: 9 }, (_, col) => {
+      const start = col * 10 + (col === 0 ? 1 : 0);
+      const end = col === 8 ? 89 : col * 10 + 9;
+      return numberPool.filter(n => n >= start && n <= end);
+    });
 
     for (let section = 0; section < 6; section++) {
       const board = document.createElement("div");
       board.className = "bingo-board";
 
+      const colNumbers = columns.map(col => [...col]);
+      const card = Array.from({ length: 3 }, () => Array(9).fill(null));
+      let numbersInRow = [0, 0, 0];
+
+      for (let col = 0; col < 9; col++) {
+        let available = colNumbers[col].filter(n => !usedNumbers.has(n));
+        shuffleArray(available);
+        const numToTake = Math.min(3, available.length);
+        const chosen = available.slice(0, numToTake);
+
+        chosen.forEach(n => {
+          const minRow = numbersInRow.indexOf(Math.min(...numbersInRow));
+          card[minRow][col] = n;
+          usedNumbers.add(n);
+          numbersInRow[minRow]++;
+          colNumbers[col] = colNumbers[col].filter(val => val !== n);
+        });
+      }
+
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 9; col++) {
           const cell = document.createElement("div");
           cell.className = "bingo-cell";
-
-          const base = col * 10;
-          const candidates = Array.from({ length: 10 }, (_, i) => base + i + 1);
-          const number = Math.random() > 0.5 ? candidates[Math.floor(Math.random() * candidates.length)] : "";
-
-          if (number) {
+          if (card[row][col]) {
             const span = document.createElement("span");
-            span.textContent = number;
+            span.textContent = card[row][col];
             cell.appendChild(span);
           }
-
           cell.addEventListener("click", () => {
             if (cell.textContent) {
               cell.classList.toggle("marked");
             }
           });
-
           board.appendChild(cell);
         }
       }
+
       container.appendChild(board);
+    }
+  }
+
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
   }
 
