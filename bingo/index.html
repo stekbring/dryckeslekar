@@ -5,6 +5,23 @@
   <title>ÖlBingo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    .latest-number {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 5em;
+      color: #ffd700;
+      text-shadow: 2px 2px 8px #000, 0 0 20px #ffd700;
+      z-index: 10;
+      font-weight: bold;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: 0.1em;
+      min-width: 1.5em;
+      text-align: center;
+      display: none;
+    }
     html::before {
       content: "";
       position: fixed;
@@ -57,6 +74,8 @@
       max-width: 300px;
       word-wrap: break-word;
       text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+
     }
 
     .bingo-board {
@@ -138,8 +157,8 @@
 </div>
 
 <!-- HOST VIEW -->
+<div id="latest-number" class="latest-number"></div>
 <div id="host" class="section">
-  <h2>Uppläsare</h2>
   <button class="btn" onclick="drawNumber()">Nytt nummer</button>
   <button class="btn" onclick="resetNumbers()">Ny bricka</button>
   <div class="toggle-container">
@@ -178,9 +197,10 @@
   }
 
   function goBack() {
+    resetNumbers();
     document.getElementById("host").style.display = "none";
     document.getElementById("player").style.display = "none";
-    document.getElementById("start-screen").style.display = "flex";
+    document.getElementById("start-screen").style.display = "block";
   }
 
   function drawNumber() {
@@ -191,6 +211,11 @@
     spokenNumbers.push(num);
     document.getElementById("drawn").innerText = spokenNumbers.join(", ");
     if (document.getElementById("autoSpeak").checked) speakNumber(num);
+
+    // Show latest number big and on top
+    const latestDiv = document.getElementById("latest-number");
+    latestDiv.textContent = num;
+    latestDiv.style.display = "block";
   }
 
   function speakNumber(n) {
@@ -201,6 +226,7 @@
   function resetNumbers() {
     spokenNumbers.length = 0;
     document.getElementById("drawn").innerText = "";
+    document.getElementById("latest-number").style.display = "none";
   }
 
   function generateBingoCard() {
