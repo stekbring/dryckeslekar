@@ -17,7 +17,6 @@
       scroll-behavior: smooth;
     }
 
-    /* Bakgrundsbilden bakom allt */
     .background {
       position: fixed;
       top: 0;
@@ -40,26 +39,24 @@
       align-items: center;
       position: relative;
       z-index: 1;
-      padding-top: 100px; /* justera värdet för hur högt upp den ska vara */
+      padding-top: 100px;
     }
 
-
     .hero-title {
-      font-size: 6em;  /* desktop-storlek */
+      font-size: 6em;
       color: white;
       text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
       text-align: center;
-      margin-bottom: 0.2em; /* liten mellanrum till undertitel */
-      position: relative;  /* låt position vara normal */
+      margin-bottom: 0.2em;
+      position: relative;
       left: auto;
       top: -5%;
       transform: none;
       text-shadow: 1px 1px 20px rgba(255, 0, 0, 1);
-
     }
 
     .hero-subtitle {
-      font-size: 1.8em;  /* desktop-storlek */
+      font-size: 1.8em;
       color: white;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
       text-align: center;
@@ -69,9 +66,8 @@
       transform: none;
     }
 
-
     .content {
-      background-image: url("bilder/firepit2.png"); /* <-- byt till din fil */
+      background-image: url("bilder/firepit2.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -85,7 +81,6 @@
       min-height: 100vh;
     }
 
-
     .button-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -93,8 +88,11 @@
       max-width: 900px;
       margin: 0 auto;
       padding-top: 40px;
-      grid-template-columns: 1fr; /* En kolumn, knapparna staplas vertikalt */
+      grid-template-columns: 1fr;
+    }
 
+    .button-grid.grid-view {
+      grid-template-columns: repeat(2, 1fr) !important;
     }
 
     .game-button {
@@ -116,7 +114,6 @@
       transform: scale(1.05);
     }
 
-    /* RESPONSIVITET FÖR MOBILER */
     @media (max-width: 600px) {
       .background {
         background-image: url("bilder\\party3.2.JPG");
@@ -131,7 +128,7 @@
 
       .hero-title {
         position: absolute;
-        top: 15%;  /* justera efter behov */
+        top: 15%;
         left: 50%;
         transform: translate(-50%, -50%);
         font-size: 2.5em;
@@ -142,7 +139,7 @@
 
       .hero-subtitle {
         position: absolute;
-        top: 70%;  /* justera efter behov */
+        top: 70%;
         left: 50%;
         transform: translate(-50%, -50%);
         color: white;
@@ -153,43 +150,35 @@
 
       .game-button {
         border: 3px solid #fa7325;
-        min-height: 200px;             /* Höjd på knappen */
+        min-height: 150px;
         border-width: 2px;
         border-radius: 4px;
         background-color: transparent;
         box-shadow: none;
-
-        /* TEXTSTIL */
         font-size: 1em;
         font-weight: bold;
         font-family: 'Times New Roman', Times, serif;
         color: #ffffff;
         text-transform: uppercase;
-
-        /* CENTRERING I ÖVRE VÄNSTRA HÖRNET */
         display: flex;
-        align-items: center;     /* Toppen vertikalt */
-        justify-content: center; /* Vänster horisontellt */
+        align-items: center;
+        justify-content: center;
         text-align: center;
-
-        padding: 10px;               /* Avstånd från kanten */
+        padding: 10px;
       }
 
-      /* Ändra hover-effekt om du vill */
       .game-button:hover {
-        background-color: #000000;   /* Mörkare blå på hover */
+        background-color: #000000;
         color: white;
-        transform: scale(1.02); 
-         /* Lite mindre förstoring */
+        transform: scale(1.02);
       }
 
-      /* Om du vill ändra placering på knapparna */
       .button-grid {
-        gap: 50px;                   /* Mindre mellanrum */
-        max-width: 90%;  
-        max-height: 100%;           /* Ta hela bredden på mobilen */
-        padding: 20px;               /* Lite padding runt */
-        grid-template-columns: 1fr; /* En kolumn, knapparna staplas vertikalt */
+        gap: 50px;
+        max-width: 90%;
+        max-height: 100%;
+        padding: 20px;
+        grid-template-columns: 1fr;
       }
 
       .image-button {
@@ -201,58 +190,100 @@
 
       .image-button img {
         width: 100%;
-        height: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
         border-radius: 6px;
         display: block;
       }
 
-
+      .button-grid.grid-view {
+        grid-template-columns: repeat(2, 1fr) !important;
+        row-gap: 0px; /* lägre vertikalt avstånd */
+        column-gap: 20px; /* valfritt: smalare mellan kolumnerna */
+      }
       .hero-title-img {
         width: 70%;
         max-width: 300px;
         height: auto;
       }
 
+      .view-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+      }
 
-  }
-    
+      #toggleViewButton {
+        background-color: rgba(78, 78, 78, 0.8);
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        font-size: 0.8em;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: transform 0.2s ease;
+      }
+
+      #toggleViewButton:hover {
+        transform: scale(1.1);
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Bakgrundsbilden -->
   <div class="background"></div>
 
-  <!-- Framsidan -->
-<section class="hero">
-<img src="bilder/dryckeslekar.png" alt="Dryckeslekar" class="hero-title-img">
-  <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
-</section>
-
+  <section class="hero">
+    <img src="bilder/dryckeslekar.png" alt="Dryckeslekar" class="hero-title-img">
+    <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
+  </section>
 
   <section class="content">
+    <div class="view-toggle">
+      <button id="toggleViewButton">🔲</button>
+    </div>
+
     <div class="button-grid">
-      
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bengt'">
-      <img src="bilder/bengt4.png" alt="Långa bollar på Bengt">
+        <img src="bilder/bengt4.png" alt="Långa bollar på Bengt">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/ringoffire'">
-      <img src="bilder/ringoffire.png" alt="Ring of Fire">
+        <img src="bilder/ringoffire.png" alt="Ring of Fire">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthedealer'">
-      <img src="bilder/dealer.png" alt="Fuck the Dealer">
+        <img src="bilder/dealer.png" alt="Fuck the Dealer">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/lyric_confessions'">
-      <img src="bilder/lyric.png" alt="Lyric Confessions">
+        <img src="bilder/lyric.png" alt="Lyric Confessions">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/imposter'">
-      <img src="bilder/imposter.png" alt="Whos's the Imposter">
+        <img src="bilder/imposter.png" alt="Whos's the Imposter">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/snusdosan'">
-      <img src="bilder/snusdosan2.png" alt="Snusdosan">
+        <img src="bilder/snusdosan2.png" alt="Snusdosan">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bingo'">
-      <img src="bilder/bingo2.png" alt="Ölbingo">
+        <img src="bilder/bingo2.png" alt="Ölbingo">
+      </button>
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/america'">
-      <img src="bilder/american.png" alt="True American">
+        <img src="bilder/american.png" alt="True American">
+      </button>
       <button class="game-button">Kom på en lek själv</button>
       <button class="game-button">Kommer snart!</button>
     </div>
   </section>
 
+  <script>
+    const toggleButton = document.getElementById("toggleViewButton");
+    const buttonGrid = document.querySelector(".button-grid");
+
+    toggleButton.addEventListener("click", () => {
+      buttonGrid.classList.toggle("grid-view");
+      toggleButton.textContent = buttonGrid.classList.contains("grid-view") ? "⊞" : "🔲";
+    });
+  </script>
 </body>
 </html>
