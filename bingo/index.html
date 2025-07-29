@@ -5,17 +5,28 @@
   <title>ÖlBingo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    html::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: #111 url('bingobakgrund.png') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+    }
+
     body {
       margin: 0;
       padding: 100px 10px 10px 10px;
       font-family: Arial, sans-serif;
-      background: #111 url('bingobakgrund.png') no-repeat center center fixed;
-      background-size: cover;
+      background: transparent;
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       height: 100vh;
     }
 
@@ -25,13 +36,14 @@
 
     .btn {
       padding: 15px 30px;
-      margin: 10px;
+      margin: 10px 0;
       font-size: 1.2em;
       border: none;
       border-radius: 8px;
       background: #1e90ff;
       color: white;
       cursor: pointer;
+      display: block;
     }
 
     .section {
@@ -100,15 +112,29 @@
       padding: 8px 16px;
       background: #444;
     }
+
+    .logo {
+      max-width: 300px;
+      margin-bottom: 40px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #start-screen button {
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
 
 <!-- START SCREEN -->
 <div id="start-screen">
-  <h1>ÖlBingo</h1>
-  <button class="btn" onclick="showSection('host')">Speaker</button>
-  <button class="btn" onclick="showSection('player')">Player</button>
+  <img src="rubrik.png" alt="ÖlBingo" class="logo">
+  <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-top: 30px;">
+    <button class="btn" onclick="showSection('host')">Speaker</button>
+    <button class="btn" onclick="showSection('player')">Player</button>
+  </div>
 </div>
 
 <!-- HOST VIEW -->
