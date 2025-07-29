@@ -7,8 +7,10 @@
   <style>
     body {
       margin: 0;
+      padding: 100px 10px 10px 10px;
       font-family: Arial, sans-serif;
-      background: #111;
+      background: #111 url('bingobakgrund.png') no-repeat center center fixed;
+      background-size: cover;
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -62,15 +64,27 @@
       justify-content: center;
       color: white;
       position: relative;
+      font-size: 0.9em;
+      user-select: none;
     }
 
     .bingo-cell.marked::after {
       content: "";
       position: absolute;
-      width: 25px;
-      height: 25px;
-      border-radius: 50%;
-      background: rgba(0, 255, 0, 0.5);
+      width: 30px;
+      height: 30px;
+      background-image: url('markering.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bingo-cell span {
+      position: relative;
+      z-index: 1;
     }
 
     .toggle-container {
@@ -78,6 +92,13 @@
       display: flex;
       gap: 15px;
       align-items: center;
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      font-size: 0.9em;
+      padding: 8px 16px;
+      background: #444;
     }
   </style>
 </head>
@@ -108,24 +129,32 @@
     </select>
   </div>
   <div class="drawn-numbers" id="drawn"></div>
+  <button class="btn back-btn" onclick="goBack()">Tillbaka</button>
 </div>
 
 <!-- PLAYER VIEW -->
 <div id="player" class="section">
   <h2>Spelarvy</h2>
   <div id="bingo-container"></div>
-  <button class="btn" onclick="undoMark()">Ångra</button>
   <button class="btn" onclick="bingoSound()">BINGO!</button>
+  <button class="btn back-btn" onclick="goBack()">Tillbaka</button>
 </div>
 
 <script>
   const spokenNumbers = [];
-  let lastMarked = null;
 
   function showSection(id) {
     document.getElementById("start-screen").style.display = "none";
+    document.getElementById("host").style.display = "none";
+    document.getElementById("player").style.display = "none";
     document.getElementById(id).style.display = "flex";
     if (id === 'player') generateBingoCard();
+  }
+
+  function goBack() {
+    document.getElementById("host").style.display = "none";
+    document.getElementById("player").style.display = "none";
+    document.getElementById("start-screen").style.display = "flex";
   }
 
   function drawNumber() {
@@ -165,12 +194,15 @@
           const candidates = Array.from({ length: 10 }, (_, i) => base + i + 1);
           const number = Math.random() > 0.5 ? candidates[Math.floor(Math.random() * candidates.length)] : "";
 
-          if (number) cell.textContent = number;
+          if (number) {
+            const span = document.createElement("span");
+            span.textContent = number;
+            cell.appendChild(span);
+          }
 
           cell.addEventListener("click", () => {
             if (cell.textContent) {
               cell.classList.toggle("marked");
-              lastMarked = cell;
             }
           });
 
@@ -178,13 +210,6 @@
         }
       }
       container.appendChild(board);
-    }
-  }
-
-  function undoMark() {
-    if (lastMarked) {
-      lastMarked.classList.remove("marked");
-      lastMarked = null;
     }
   }
 
