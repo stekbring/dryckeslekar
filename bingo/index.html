@@ -229,61 +229,80 @@
   }
 
   function generateBingoCard() {
-    const container = document.getElementById("bingo-container");
-    container.innerHTML = "";
-    const usedNumbers = new Set();
+  const container = document.getElementById("bingo-container");
+  container.innerHTML = "";
 
-    const numberPool = Array.from({ length: 89 }, (_, i) => i + 1);
-    const columns = Array.from({ length: 9 }, (_, col) => {
-      const start = col * 10 + (col === 0 ? 1 : 0);
-      const end = col === 8 ? 89 : col * 10 + 9;
-      return numberPool.filter(n => n >= start && n <= end);
+  const totalNumbers = Array.from({ length: 89 }, (_, i) => i + 1);
+  shuffleArray(totalNumbers);
+
+  const totalCards = 6;
+  const numbersPerCard = Math.floor(89 / totalCards);
+  const remaining = 89 % totalCards;
+
+  let numberIndex = 0;
+
+  for (let cardNum = 0; cardNum < totalCards; cardNum++) {
+    const board = document.createElement("div");
+    board.className = "bingo-board";
+
+    const cardNumbers = totalNumbers.slice(
+      numberIndex,
+      numberIndex + numbersPerCard + (cardNum < remaining ? 1 : 0)
+    );
+    numberIndex += cardNumbers.length;
+
+    // Skapa rutnät
+    const cardGrid = Array.from({ length: 3 }, () => Array(9).fill(null));
+
+    // Dela upp siffror i kolumner enligt klassisk bingo-regel
+    const colData = Array.from({ length: 9 }, () => []);
+    cardNumbers.forEach(num => {
+      let col = Math.floor((num - 1) / 10);
+      if (num === 90) col = 8; // specialfall om man har 90 med (inte relevant här)
+      colData[col].push(num);
     });
 
-    for (let section = 0; section < 6; section++) {
-      const board = document.createElement("div");
-      board.className = "bingo-board";
-
-      const colNumbers = columns.map(col => [...col]);
-      const card = Array.from({ length: 3 }, () => Array(9).fill(null));
-      let numbersInRow = [0, 0, 0];
-
-      for (let col = 0; col < 9; col++) {
-        let available = colNumbers[col].filter(n => !usedNumbers.has(n));
-        shuffleArray(available);
-        const numToTake = Math.min(3, available.length);
-        const chosen = available.slice(0, numToTake);
-
-        chosen.forEach(n => {
-          const minRow = numbersInRow.indexOf(Math.min(...numbersInRow));
-          card[minRow][col] = n;
-          usedNumbers.add(n);
-          numbersInRow[minRow]++;
-          colNumbers[col] = colNumbers[col].filter(val => val !== n);
-        });
-      }
-
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 9; col++) {
-          const cell = document.createElement("div");
-          cell.className = "bingo-cell";
-          if (card[row][col]) {
-            const span = document.createElement("span");
-            span.textContent = card[row][col];
-            cell.appendChild(span);
+    // Fyll rutnätet: fördela siffrorna på 3 rader per kolumn
+    for (let col = 0; col < 9; col++) {
+      shuffleArray(colData[col]);
+      for (let i = 0; i < Math.min(3, colData[col].length); i++) {
+        let placed = false;
+        for (let row = 0; row < 3; row++) {
+          if (!cardGrid[row][col]) {
+            cardGrid[row][col] = colData[col][i];
+            placed = true;
+            break;
           }
-          cell.addEventListener("click", () => {
-            if (cell.textContent) {
-              cell.classList.toggle("marked");
-            }
-          });
-          board.appendChild(cell);
         }
+        if (!placed) break; // hoppa över om kolumnen är full
       }
-
-      container.appendChild(board);
     }
+
+    // Skapa HTML för brickan
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 9; col++) {
+        const cell = document.createElement("div");
+        cell.className = "bingo-cell";
+        if (cardGrid[row][col]) {
+          const span = document.createElement("span");
+          span.textContent = cardGrid[row][col];
+          cell.appendChild(span);
+        }
+        cell.addEventListener("click", () => {
+          if (cell.textContent) {
+            cell.classList.toggle("marked");
+          }
+        });
+        board.appendChild(cell);
+      }
+    }
+
+    container.appendChild(board);
   }
+}
+
+
+
 
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
