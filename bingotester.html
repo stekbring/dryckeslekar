@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bingo Card Generator + Validator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .bingo-board {
+      display: grid;
+      grid-template-columns: repeat(9, 40px);
+      margin-bottom: 5px;
+      gap: 2px;
+    }
+    .bingo-cell {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .marked {
+      background-color: yellow;
+    }
+    .card-block {
+      margin-bottom: 30px;
+    }
+    .validation {
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .pass {
+      color: green;
+    }
+    .fail {
+      color: red;
+    }
+    .button-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    input[type="number"] {
+      width: 80px;
+      padding: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bingo Card Generator + Validator</h1>
+  <button onclick="generateAndTestBingoCards()">Generate & Validate 6 Cards</button>
+
+  <div class="button-group">
+    <button onclick="runLiveTest(10)">Run 10 Visual Tests</button>
+    <button onclick="runLiveTest(100)">Run 100 Visual Tests</button>
+    <input id="customTestCount" type="number" min="1" placeholder="Number">
+    <button onclick="runCustomTest()">Run Custom Visual Test</button>
+  </div>
+
+  <div id="bingo-container"></div>
+
+  <script>
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    const colRanges = [
+      [1, 10], [11, 20], [21, 30], [31, 40],
+      [41, 50], [51, 60], [61, 70], [71, 80], [81, 90]
+    ];
+
+    function generateBingoCards() {
+      const allCards = [];
+
+      for (let cardNum = 0; cardNum < 6; cardNum++) {
+        const layout = Array.from({ length: 3 }, () => Array(9).fill(null));
+        const positions = [];
+
+        for (let row = 0; row < 3; row++) {
+          const cols = [...Array(9).keys()];
+          shuffleArray(cols);
+          const selected = cols.slice(0, 5).sort((a, b) => a - b);
+          for (let col of selected) {
+            positions.push({ row, col });
+          }
+        }
+
+        const colCounts = Array(9).fill(0);
+        for (const pos of positions) {
+          colCounts[pos.col]++;
+        }
+
+        const colPools = colRanges.map(([start, end]) => {
+          const nums = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+          shuffleArray(nums);
+          return nums;
+        });
+
+        const colNumbers = colCounts.map((count, col) => {
+          return colPools[col].splice(0, count).sort((a, b) => a - b);
+        });
+
+        for (const { row, col } of positions) {
+          layout[row][col] = colNumbers[col].shift();
+        }
+
+        allCards.push(layout);
+      }
+
+      return allCards;
+    }
+
+    function validateCard(card, index) {
+      const flat = card.flat();
+      const filled = flat.filter(n => n !== null);
+      if (filled.length !== 15) return `Card ${index + 1} ❌ Error: Has ${filled.length} numbers`;
+
+      for (let r = 0; r < 3; r++) {
+        const rowCount = card[r].filter(n => n !== null).length;
+        if (rowCount !== 5) return `Card ${index + 1} ❌ Row ${r + 1} has ${rowCount} numbers`;
+      }
+
+      for (let c = 0; c < 9; c++) {
+        const col = [card[0][c], card[1][c], card[2][c]];
+        const colCount = col.filter(n => n !== null).length;
+        if (colCount > 3) return `Card ${index + 1} ❌ Column ${c + 1} has ${colCount} numbers`;
+        for (const n of col) {
+          if (n !== null) {
+            const [min, max] = colRanges[c];
+            if (n < min || n > max) return `Card ${index + 1} ❌ Number ${n} invalid for column ${c + 1}`;
+          }
+        }
+      }
+
+      const numSet = new Set(filled);
+      if (numSet.size !== 15) return `Card ${index + 1} ❌ Duplicate numbers found`;
+
+      return `Card ${index + 1} ✅ Valid`;
+    }
+
+    function showCards(cards) {
+      const container = document.getElementById("bingo-container");
+      container.innerHTML = "";
+
+      cards.forEach((card, i) => {
+        const cardBlock = document.createElement("div");
+        cardBlock.className = "card-block";
+
+        const board = document.createElement("div");
+        board.className = "bingo-board";
+
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 9; c++) {
+            const cell = document.createElement("div");
+            cell.className = "bingo-cell";
+            if (card[r][c] !== null) {
+              cell.textContent = card[r][c];
+            }
+            board.appendChild(cell);
+          }
+        }
+
+        const result = validateCard(card, i);
+        const resultEl = document.createElement("div");
+        resultEl.className = "validation " + (result.includes("✅") ? "pass" : "fail");
+        resultEl.textContent = result;
+
+        cardBlock.appendChild(board);
+        cardBlock.appendChild(resultEl);
+        container.appendChild(cardBlock);
+      });
+    }
+
+    function generateAndTestBingoCards() {
+      const cards = generateBingoCards();
+      showCards(cards);
+      console.log("All 6 cards generated and tested.");
+    }
+
+    async function runLiveTest(times) {
+      let failures = 0;
+      for (let i = 0; i < times; i++) {
+        const cards = generateBingoCards();
+        showCards(cards);
+        await sleep(50);
+        for (let j = 0; j < cards.length; j++) {
+          const result = validateCard(cards[j], j);
+          if (!result.includes("✅")) {
+            console.error(`❌ Test #${i + 1}, ${result}`);
+            failures++;
+          }
+        }
+      }
+
+      if (failures === 0) {
+        alert(`✅ All ${times * 6} cards passed`);
+      } else {
+        alert(`❌ ${failures} cards failed`);
+      }
+    }
+
+    function runCustomTest() {
+      const input = document.getElementById("customTestCount");
+      const value = parseInt(input.value);
+      if (isNaN(value) || value <= 0) {
+        alert("Please enter a valid positive number");
+        return;
+      }
+      runLiveTest(value);
+    }
+  </script>
+</body>
+</html>
