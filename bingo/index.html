@@ -228,64 +228,75 @@
     document.getElementById("latest-number").style.display = "none";
   }
 
-  function generateBingoCard() {
+function generateBingoCard() {
   const container = document.getElementById("bingo-container");
   container.innerHTML = "";
 
-  const totalNumbers = Array.from({ length: 89 }, (_, i) => i + 1);
-  shuffleArray(totalNumbers);
+  const colRanges = [
+    [1, 10], [11, 20], [21, 30], [31, 40],
+    [41, 50], [51, 60], [61, 70], [71, 80], [81, 90]
+  ];
 
-  const totalCards = 6;
-  const numbersPerCard = Math.floor(89 / totalCards);
-  const remaining = 89 % totalCards;
+  // Utility to shuffle arrays
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
 
-  let numberIndex = 0;
+  const allCards = [];
 
-  for (let cardNum = 0; cardNum < totalCards; cardNum++) {
-    const board = document.createElement("div");
-    board.className = "bingo-board";
+  for (let cardNum = 0; cardNum < 6; cardNum++) {
+    const layout = Array.from({ length: 3 }, () => Array(9).fill(null));
 
-    const cardNumbers = totalNumbers.slice(
-      numberIndex,
-      numberIndex + numbersPerCard + (cardNum < remaining ? 1 : 0)
-    );
-    numberIndex += cardNumbers.length;
-
-    const cardGrid = Array.from({ length: 3 }, () => Array(9).fill(null));
-
-    const colData = Array.from({ length: 9 }, () => []);
-    cardNumbers.forEach(num => {
-      let col = Math.floor((num - 1) / 10);
-      if (num % 10 === 0) col += 1;
-      if (col > 8) col = 8;
- // 👈 korrekt kolumnlogik
-      colData[col].push(num);
-    });
-
-    // Fyll rutnätet
-    for (let col = 0; col < 9; col++) {
-      shuffleArray(colData[col]);
-      for (let i = 0; i < Math.min(3, colData[col].length); i++) {
-        let placed = false;
-        for (let row = 0; row < 3; row++) {
-          if (!cardGrid[row][col]) {
-            cardGrid[row][col] = colData[col][i];
-            placed = true;
-            break;
-          }
-        }
-        if (!placed) break;
+    // Step 1: Generate 15 positions with 5 per row
+    const positions = [];
+    for (let row = 0; row < 3; row++) {
+      const cols = [...Array(9).keys()];
+      shuffleArray(cols);
+      const selected = cols.slice(0, 5).sort((a, b) => a - b);
+      for (let col of selected) {
+        positions.push({ row, col });
       }
     }
 
-    // Skapa HTML
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 9; col++) {
+    // Step 2: Count how many per column
+    const colCounts = Array(9).fill(0);
+    for (const pos of positions) {
+      colCounts[pos.col]++;
+    }
+
+    // Step 3: Generate numbers per column
+    const colPools = colRanges.map(([start, end]) => {
+      const nums = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+      shuffleArray(nums);
+      return nums;
+    });
+
+    const colNumbers = colCounts.map((count, col) => {
+      return colPools[col].splice(0, count).sort((a, b) => a - b);
+    });
+
+    // Step 4: Fill the layout
+    for (const { row, col } of positions) {
+      layout[row][col] = colNumbers[col].shift();
+    }
+
+    allCards.push(layout);
+  }
+
+  // Step 5: Render all cards
+  for (const card of allCards) {
+    const board = document.createElement("div");
+    board.className = "bingo-board";
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 9; c++) {
         const cell = document.createElement("div");
         cell.className = "bingo-cell";
-        if (cardGrid[row][col]) {
+        if (card[r][c] !== null) {
           const span = document.createElement("span");
-          span.textContent = cardGrid[row][col];
+          span.textContent = card[r][c];
           cell.appendChild(span);
         }
         cell.addEventListener("click", () => {
@@ -296,18 +307,18 @@
         board.appendChild(cell);
       }
     }
-
     container.appendChild(board);
   }
 }
 
 
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
+// Utility function to shuffle arrays
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+}
 
   function bingoSound() {
     const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
