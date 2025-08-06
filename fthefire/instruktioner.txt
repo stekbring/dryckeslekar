@@ -14,16 +14,16 @@ Om tre spelare i rad gissar fel två gånger, tvingas dealern lämna ifrån sig 
 Spelet fortsätter tills alla kort är slut, tills någon ger upp, eller tills någon gissar "tolv" och ser förnärmad ut när de har fel. --
 För den ambitiöse kan spelet spelas i flera varv, men det rekommenderas endast för de som har viljestyrka, vätskebalans och en stadig lever. --
 
-2: Is you – välj någon som måste dricka. --
-3: Is me – du själv dricker. --
-4: Is whore – alla tjejer dricker. --
-5: Is thumbmaster – sätt tummen på bordet, sist dricker. --
-6: Is dicks – alla killar dricker. --
-7: Is heaven – peka mot himlen, sist dricker. --
-8: Is mate – välj en kompis som dricker varje gång du dricker. --
-9: Is rhyme – börja ett rim, förloraren dricker. --
-10: Is category – välj kategori, förloraren dricker. --
-Knekt: Is rule – hitta på en ny regel som gäller resten av spelet. --
-Drottning: Is question master – om någon svarar på din fråga måste de dricka. --
-Kung: Häll i muggen, den som drar sista kungen eller bryter cirkeln dricker allt. --
-Ess: "Waterfall" – alla börjar dricka, ingen får sluta förrän personen före dem gör det. --
+**2**: Is you – välj någon som måste dricka. --
+**3**: Is me – du själv dricker. --
+**4**: Is whore – alla tjejer dricker. --
+**5**: Is thumbmaster – sätt tummen på bordet, sist dricker. --
+**6**: Is dicks – alla killar dricker. --
+**7**: Is heaven – peka mot himlen, sist dricker. --
+**8**: Is mate – välj en kompis som dricker varje gång du dricker. --
+**9**: Is rhyme – börja ett rim, förloraren dricker. --
+**10**: Is category – välj kategori, förloraren dricker. --
+**Jack**: Is rule – hitta på en ny regel som gäller resten av spelet. --
+**Queen**: Is question master – om någon svarar på din fråga måste de dricka. --
+**King**: Häll i muggen, den som drar sista kungen eller bryter cirkeln dricker allt. --
+**Ace**: "Waterfall" – alla börjar dricka, ingen får sluta förrän personen före dem gör det. --
