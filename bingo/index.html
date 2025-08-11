@@ -7,7 +7,7 @@
   <style>
     .latest-number {
       position: fixed;
-      top: 80px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 5em;
@@ -22,6 +22,7 @@
       text-align: center;
       display: none;
     }
+
     html::before {
       content: "";
       position: fixed;
@@ -53,7 +54,7 @@
 
     .btn {
       padding: 15px 30px;
-      margin: 30px 0;
+      margin: 15px 0;
       font-size: 1.2em;
       border: none;
       border-radius: 8px;
@@ -61,6 +62,9 @@
       color: white;
       cursor: pointer;
       display: block;
+      width: 250px;
+      max-width: 80%;
+      text-align: center;
     }
 
     .section {
@@ -75,7 +79,8 @@
       word-wrap: break-word;
       text-align: center;
       background: rgba(0, 0, 0, 0.6);
-
+      padding: 10px;
+      border-radius: 8px;
     }
 
     .bingo-board {
@@ -123,13 +128,17 @@
       display: flex;
       gap: 15px;
       align-items: center;
+      justify-content: center;
+      width: 250px;
+      max-width: 80%;
     }
 
     .back-btn {
-      margin-top: 40px;
       font-size: 0.9em;
       padding: 8px 16px;
       background: #444;
+      width: 250px;
+      max-width: 80%;
     }
 
     .logo {
@@ -143,6 +152,27 @@
     #start-screen button {
       margin: 10px 0;
     }
+
+    /* === NY FLEX-LAYOUT FÖR HOST-VYN === */
+    #host {
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 150px; /* plats för latest-number */
+      gap: 20px;
+      height: 100vh;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* Justera position längst ner för back-knappen */
+    #back-btn {
+      margin-top: auto;
+      margin-bottom: 50px;
+    }
+
+
   </style>
 </head>
 <body>
@@ -158,14 +188,16 @@
 
 <!-- HOST VIEW -->
 <div id="latest-number" class="latest-number"></div>
-<div id="host" class="section">
-  <button class="btn" onclick="drawNumber()">Nytt nummer</button>
-  <button class="btn" onclick="resetNumbers()">Ny bricka</button>
-  <div class="toggle-container">
+<div id="host" class="section" style="position: relative;">
+  <button id="draw-btn" class="btn" onclick="drawNumber()">Nytt nummer</button>
+  <button id="reset-btn" class="btn" onclick="resetNumbers()">Ny bricka</button>
+
+  <div id="toggle-container" class="toggle-container">
     <label for="autoSpeak">Automatisk uppläsning</label>
     <input type="checkbox" id="autoSpeak">
   </div>
-  <div>
+
+  <div id="game-mode-selector">
     <label>Spelform:</label>
     <select id="mode">
       <option>En rad</option>
@@ -173,8 +205,9 @@
       <option>Hel bricka</option>
     </select>
   </div>
+
   <div class="drawn-numbers" id="drawn"></div>
-  <button class="btn back-btn" onclick="goBack()">Tillbaka</button>
+  <button id="back-btn" class="btn back-btn" onclick="goBack()">Tillbaka</button>
 </div>
 
 <!-- PLAYER VIEW -->

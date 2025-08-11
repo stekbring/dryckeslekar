@@ -141,6 +141,54 @@
     #toggleViewButton:hover {
       transform: scale(1.1);
     }
+    /* Desktop-anpassning */
+    @media (min-width: 1024px) {
+      .hero {
+        padding-top: 600px;
+      }
+
+      .hero-title-img {
+        max-width: 1500px;
+      }
+
+      .button-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* större kolumner */
+        gap: 60px; /* lite mer luft mellan knapparna */
+        max-width: 1400px; /* låter dem breda ut sig mer */
+        padding: 40px;
+      }
+
+      .game-button {
+        border: none; /* tar bort rosa kant */
+        min-height: 200px; /* högre knappar */
+        font-size: 1.4em; /* större text */
+        background-color: transparent;
+        box-shadow: none;
+        transition: transform 0.2s ease; /* mjuk animation */
+      }
+
+      .game-button:hover {
+        transform: scale(1.1); /* bara lite större vid hover */
+        background-color: transparent; /* ingen svart rektangel */
+      }
+
+      .image-button img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px; /* lite rundare hörn */
+        transition: transform 0.2s ease;
+      }
+
+      #toggleViewButton {
+        min-width: 40px;
+        min-height: 40px;
+      }
+
+      #toggleViewButton img {
+        width: 20px;
+        height: 20px;
+      }
+    }
 
     @media (max-width: 600px) {
       .background {
