@@ -4,94 +4,136 @@
   <meta charset="UTF-8" />
   <title>Nattas Bday</title>
   <style>
-    body { font-family: 'Comic Sans MS', cursive, sans-serif; background: #fff7e6; }
-    .karaktar { margin: 10px 0; padding: 15px; border-radius: 10px; border: 2px solid #ffb84d; background: #fff3e0; }
-    .reserverad { background: #ffd6d6; border-color: #ff8080; }
-    button { margin-left: 10px; padding: 5px 10px; background: #ffcc66; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #ffb84d; }
+    body { 
+      font-family: 'Comic Sans MS', cursive, sans-serif; 
+      background: #fff7e6; 
+      margin: 0; 
+      padding: 0 10px; 
+    }
+
+    h1 {
+      text-align: center; /* Centrerad rubrik */
+      margin-top: 20px;
+      color: #ff8000;
+    }
+
+    #lista {
+      max-width: 600px;
+      margin: 20px auto; /* centrerar listan på sidan */
+    }
+
+    .karaktar { 
+      margin: 10px 0; 
+      padding: 15px; 
+      border-radius: 10px; 
+      border: 2px solid #ffb84d; 
+      background: #fff3e0; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .reserverad { 
+      background: #ffd6d6; 
+      border-color: #ff8080; 
+    }
+
+    button { 
+      padding: 5px 10px; 
+      background: #ffcc66; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      margin-top: 5px;
+    }
+
+    button:hover { 
+      background: #ffb84d; 
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 0 5px; }
+      .karaktar { flex-direction: column; align-items: flex-start; }
+      button { align-self: flex-end; }
+    }
   </style>
 </head>
 <body>
-  <h1>Reservera din karaktär</h1>
+  <h1>Reservera din utklädnad</h1>
   <div id="lista">Laddar...</div>
 
   <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwj29KVLTVv4h7JDsOgZfoecSiZjMPeCl66q_d0_3R0mSvsWtk46yrfAEi1L7J0cba3/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwj29KVLTVv4h7JDsOgZfoecSiZjMPeCl66q_d0_3R0mSvsWtk46yrfAEi1L7J0cba3/exec";
 
-async function hamtaKaraktarer() {
-  const lista = document.getElementById("lista");
-  try {
-    const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
-    const data = await res.json();
+    async function hamtaKaraktarer() {
+      const lista = document.getElementById("lista");
+      try {
+        const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
+        const data = await res.json();
 
-    if (!Array.isArray(data) || data.length <= 1) {
-      lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
-      return;
-    }
+        if (!Array.isArray(data) || data.length <= 1) {
+          lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
+          return;
+        }
 
-    lista.innerHTML = "";
-    const rows = data.slice(1);
-    rows.forEach(rad => {
-      const namn = rad[0];
-      const reserveradAv = rad[1];
-      const tid = rad[2];
+        lista.innerHTML = "";
+        const rows = data.slice(1);
+        rows.forEach(rad => {
+          const namn = rad[0];
+          const reserveradAv = rad[1];
 
-      const div = document.createElement("div");
-      div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
+          const div = document.createElement("div");
+          div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
 
-      const strong = document.createElement("strong");
-      strong.textContent = namn;
-      div.appendChild(strong);
+          const strong = document.createElement("strong");
+          strong.textContent = namn;
+          div.appendChild(strong);
 
-      if (reserveradAv) {
-        const span = document.createElement("span");
-        span.textContent = ` (Reserverad)`;
-        div.appendChild(span);
-      } else {
-        const btn = document.createElement("button");
-        btn.textContent = "Boka";
-        btn.addEventListener("click", () => boka(namn));
-        div.appendChild(btn);
+          if (reserveradAv) {
+            const span = document.createElement("span");
+            span.textContent = ` (Reserverad)`;
+            div.appendChild(span);
+          } else {
+            const btn = document.createElement("button");
+            btn.textContent = "Resarvera";
+            btn.addEventListener("click", () => boka(namn));
+            div.appendChild(btn);
+          }
+
+          lista.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error(err);
+        lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
       }
-
-      lista.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error(err);
-    lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
-  }
-}
-
-
-async function boka(namn) {
-  const dittNamn = prompt(`Skriv ditt namn för att boka (kommer inte synas för andra)"${namn}":`);
-  if (!dittNamn) return;
-
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        karaktar: namn,
-        namn: dittNamn
-      })
-    });
-    const resultat = await res.json();
-
-    if (resultat.success) {
-      alert(resultat.message || "Bokning lyckades!");
-    } else {
-      alert(resultat.message || "Kunde inte boka.");
     }
-  } catch (e) {
-    alert("Något gick fel vid bokningen.");
-  }
-  hamtaKaraktarer();
-}
 
-hamtaKaraktarer();
-</script>
+    async function boka(namn) {
+      const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}"   (namnet kommer inte synas för andra):`);
+      if (!dittNamn) return;
 
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ karaktar: namn, namn: dittNamn })
+        });
+        const resultat = await res.json();
+
+        if (resultat.success) {
+          alert(resultat.message || "Bokning lyckades!");
+        } else {
+          alert(resultat.message || "Kunde inte boka.");
+        }
+      } catch (e) {
+        alert("Något gick fel vid bokningen.");
+      }
+      hamtaKaraktarer();
+    }
+
+    hamtaKaraktarer();
+  </script>
 </body>
 </html>
