@@ -17,7 +17,7 @@
   h1 {
     text-align: center;
     margin-top: 20px;
-    color: #ff8000;
+    color: #ffb84d;
     font-size: 2.2em;
     font-family: 'Times New Roman';
   }
@@ -185,9 +185,9 @@
         const resultat = await res.json();
 
         if (resultat.success) {
-          alert(resultat.message || "Bokning lyckades!");
+          alert(resultat.message || "Reserveringen lyckades!");
         } else {
-          alert(resultat.message || "Kunde inte boka.");
+          alert(resultat.message || "Kunde inte reservera.");
           hamtaKaraktarer(); // tar bort reservering om det misslyckas
         }
       } catch (e) {
