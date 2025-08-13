@@ -98,56 +98,67 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwj29KVLTVv4h7JDsOgZfoecSiZjMPeCl66q_d0_3R0mSvsWtk46yrfAEi1L7J0cba3/exec";
 
     async function hamtaKaraktarer() {
-      const lista = document.getElementById("lista");
-      try {
-        const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
-        const data = await res.json();
+  const lista = document.getElementById("lista");
+  try {
+    const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
+    const data = await res.json();
 
-        if (!Array.isArray(data) || data.length <= 1) {
-          lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
-          return;
-        }
-
-        lista.innerHTML = "";
-        const rows = data.slice(1);
-        rows.forEach(rad => {
-          const namn = rad[0];
-          const reserveradAv = rad[1];
-
-          const div = document.createElement("div");
-          div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
-
-          const textContainer = document.createElement("div");
-          textContainer.style.flex = "1";
-          textContainer.style.marginRight = "10px";
-
-          const strong = document.createElement("strong");
-          strong.textContent = namn;
-          textContainer.appendChild(strong);
-
-          if (reserveradAv) {
-            const span = document.createElement("span");
-            span.textContent = "(Reserverad)";
-            textContainer.appendChild(span);
-          }
-
-          div.appendChild(textContainer);
-
-          if (!reserveradAv) {
-            const btn = document.createElement("button");
-            btn.textContent = "Reservera";
-            btn.addEventListener("click", (e) => boka(namn, e.target));
-            div.appendChild(btn);
-          }
-
-          lista.appendChild(div);
-        });
-
-      } catch (err) {
-        console.error(err);
-        lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
-      }
+    if (!Array.isArray(data) || data.length <= 1) {
+      lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
+      return;
     }
+
+    lista.innerHTML = "";
+    let rows = data.slice(1);
+
+    // Sortera så att reserverade hamnar först
+    rows.sort((a, b) => {
+      const aRes = a[1] ? 1 : 0;
+      const bRes = b[1] ? 1 : 0;
+      return bRes - aRes; // reserverade först
+    });
+
+    rows.forEach(rad => {
+      const namn = rad[0];
+      const reserveradAv = rad[1];
+
+      const div = document.createElement("div");
+      div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
+
+      const textContainer = document.createElement("div");
+      textContainer.style.flex = "1";
+      textContainer.style.marginRight = "10px";
+
+      const strong = document.createElement("strong");
+      strong.textContent = namn;
+      textContainer.appendChild(strong);
+
+      if (reserveradAv) {
+        const span = document.createElement("span");
+        span.textContent = "(Reserverad)";
+        span.style.marginLeft = "8px"; // extra spacing
+        textContainer.appendChild(span);
+      }
+
+      div.appendChild(textContainer);
+
+      if (!reserveradAv) {
+        const btn = document.createElement("button");
+        btn.textContent = "Reservera";
+        btn.style.color = "black"; // svart text på mobil
+        btn.addEventListener("click", (e) => boka(namn, e.target));
+        div.appendChild(btn);
+      }
+
+      lista.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error(err);
+    lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
+  }
+}
+
 
     async function boka(namn, knappElement) {
       const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}"   (namnet kommer inte synas för andra):`);
