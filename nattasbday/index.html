@@ -11,6 +11,7 @@
     background: #fff7e6; 
     margin: 0; 
     padding: 0 10px; 
+    text-align: center;
   }
 
   h1 {
@@ -47,15 +48,21 @@
   button { 
     padding: 8px 15px; 
     background: #ffcc66; 
+    color: black; /* alltid svart text */
     border: none; 
     border-radius: 5px; 
     cursor: pointer; 
     margin-top: 5px;
     font-size: 1em;
+    -webkit-tap-highlight-color: transparent; /* tar bort blå markeringsfärg på mobil */
   }
 
   button:hover { 
     background: #ffb84d; 
+  }
+
+  .karaktar span {
+    margin-left: 8px; /* extra spacing mellan namn och (Reserverad) */
   }
 
   /* --- Mobilanpassning --- */
@@ -66,8 +73,8 @@
     }
     .karaktar { 
       font-size: 1.2em;
-      align-items: flex-start; /* så knappen inte trycks ner */
-      flex-wrap: nowrap;       /* håll text och knapp på samma rad */
+      align-items: flex-start;
+      flex-wrap: nowrap;
     }
     .karaktar strong,
     .karaktar span {
@@ -120,7 +127,7 @@
 
           if (reserveradAv) {
             const span = document.createElement("span");
-            span.textContent = ` (Reserverad)`;
+            span.textContent = "(Reserverad)";
             textContainer.appendChild(span);
           }
 
@@ -129,7 +136,7 @@
           if (!reserveradAv) {
             const btn = document.createElement("button");
             btn.textContent = "Reservera";
-            btn.addEventListener("click", () => boka(namn));
+            btn.addEventListener("click", (e) => boka(namn, e.target));
             div.appendChild(btn);
           }
 
@@ -142,9 +149,21 @@
       }
     }
 
-    async function boka(namn) {
+    async function boka(namn, knappElement) {
       const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}"   (namnet kommer inte synas för andra):`);
       if (!dittNamn) return;
+
+      const karaktarDiv = knappElement.closest(".karaktar");
+
+      // Ta bort knappen
+      knappElement.remove();
+
+      // Lägg till reserverad text och klass direkt
+      const span = document.createElement("span");
+      span.textContent = "(Reserverad)";
+      span.style.marginLeft = "8px";
+      karaktarDiv.querySelector("div").appendChild(span);
+      karaktarDiv.classList.add("reserverad");
 
       try {
         const res = await fetch(API_URL, {
@@ -158,11 +177,12 @@
           alert(resultat.message || "Bokning lyckades!");
         } else {
           alert(resultat.message || "Kunde inte boka.");
+          hamtaKaraktarer(); // tar bort reservering om det misslyckas
         }
       } catch (e) {
         alert("Något gick fel vid bokningen.");
+        hamtaKaraktarer();
       }
-      hamtaKaraktarer();
     }
 
     hamtaKaraktarer();
