@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Nattas Bday</title>
+  <style>
+    body { font-family: 'Comic Sans MS', cursive, sans-serif; background: #fff7e6; }
+    .karaktar { 
+    margin: 10px 0; padding: 15px; border-radius: 10px;
+    border: 2px solid #ffb84d; background: #fff3e0;
+    }
+    .reserverad { background: #ffd6d6; border-color: #ff8080; }
+    button { 
+    margin-left: 10px; padding: 5px 10px;
+    background: #ffcc66; border: none; border-radius: 5px; cursor: pointer;
+    }
+    button:hover { background: #ffb84d; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+  <h1>Resarvera din karaktär</h1>
+  <div id="lista"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyyLc82KV96sIc_7jQWDCGRLIeilT28H5FtSYtEm0UNZTN328lMzV3WuBOAvs5S7MRY/exec";
+
+    async function hamtaKaraktarer() {
+      let res = await fetch(API_URL);
+      let data = await res.json();
+      let headers = data.shift();
+      let lista = document.getElementById("lista");
+      lista.innerHTML = "";
+
+      data.forEach(rad => {
+        let [namn, reserveradAv] = rad;
+        let div = document.createElement("div");
+        div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
+        div.innerHTML = `
+          <strong>${namn}</strong> 
+          ${reserveradAv ? `(Reserverad av ${reserveradAv})` : `<button onclick="boka('${namn}')">Boka</button>`}
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    async function boka(namn) {
+    let dittNamn = prompt("Skriv ditt namn:");
+    if (!dittNamn) return;
+    await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ karaktar: namn.trim(), namn: dittNamn.trim() })
+    });
+    hamtaKaraktarer();
+    }
+
+
+    hamtaKaraktarer();
+  </script>
+</body>
+</html>
