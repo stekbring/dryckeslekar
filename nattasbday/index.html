@@ -8,10 +8,29 @@
   <style>
   body { 
     font-family: 'Times New Roman'; 
-    background: #fff7e6; 
     margin: 0; 
     padding: 0 10px; 
     text-align: center;
+
+    /* Fast bakgrund */
+    background-image: url('bakgrund2.png'); 
+    background-size: cover;    
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('bakgrund2.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1; /* ser till att allt innehåll ligger ovanför */
   }
 
   h1 {
@@ -20,7 +39,16 @@
     color: #ffb84d;
     font-size: 2.2em;
     font-family: 'Times New Roman';
+
+    background: rgba(255, 243, 224, 0.8); /* semi-transparent bakgrund */
+    display: inline-block; /* bara bakom texten */
+    padding: 10px 20px;
+    border-radius: 10px;
+    
+    /* Samma border som knapparna */
+    border: 2px solid #ffb84d;
   }
+
 
   #lista {
     max-width: 600px;
@@ -28,17 +56,17 @@
   }
 
   .karaktar { 
-    margin: 10px 0; 
-    padding: 15px; 
-    border-radius: 10px; 
-    border: 2px solid #ffb84d; 
-    background: #fff3e0; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    flex-wrap: wrap;
-    font-size: 1.1em;
-  }
+  margin: 10px 0; 
+  padding: 15px; 
+  border-radius: 10px; 
+  border: 2px solid #ffb84d; 
+  background: rgba(255, 243, 224, 0.8); /* transparent så bakgrunden syns */
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 1.1em;
+}
 
   .reserverad { 
     background: #ffd6d6; 
