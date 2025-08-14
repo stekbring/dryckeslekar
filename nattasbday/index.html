@@ -11,8 +11,6 @@
     margin: 0; 
     padding: 0 10px; 
     text-align: center;
-
-    /* Fast bakgrund */
     background-image: url('bakgrund2.png'); 
     background-size: cover;    
     background-position: center;
@@ -30,7 +28,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: -1; /* ser till att allt innehåll ligger ovanför */
+    z-index: -1;
   }
 
   h1 {
@@ -39,16 +37,12 @@
     color: #ffb84d;
     font-size: 2.2em;
     font-family: 'Times New Roman';
-
-    background: rgba(255, 243, 224, 0.9); /* semi-transparent bakgrund */
-    display: inline-block; /* bara bakom texten */
+    background: rgba(255, 243, 224, 0.9);
+    display: inline-block;
     padding: 10px 20px;
     border-radius: 10px;
-    
-    /* Samma border som knapparna */
     border: 2px solid #ffb84d;
   }
-
 
   #lista {
     max-width: 600px;
@@ -56,17 +50,17 @@
   }
 
   .karaktar { 
-  margin: 10px 0; 
-  padding: 15px; 
-  border-radius: 10px; 
-  border: 2px solid #ffb84d; 
-  background: rgba(255, 243, 224, 0.75); /* transparent så bakgrunden syns */
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 1.1em;
-}
+    margin: 10px 0; 
+    padding: 15px; 
+    border-radius: 10px; 
+    border: 2px solid #ffb84d; 
+    background: rgba(255, 243, 224, 0.75);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 1.1em;
+  }
 
   .reserverad { 
     background: #ffd6d6; 
@@ -76,13 +70,13 @@
   button { 
     padding: 8px 15px; 
     background: #ffcc66; 
-    color: black; /* alltid svart text */
+    color: black; 
     border: none; 
     border-radius: 5px; 
     cursor: pointer; 
     margin-top: 5px;
     font-size: 1em;
-    -webkit-tap-highlight-color: transparent; /* tar bort blå markeringsfärg på mobil */
+    -webkit-tap-highlight-color: transparent;
   }
 
   button:hover { 
@@ -90,19 +84,86 @@
   }
 
   .karaktar span {
-    margin-left: 8px; /* extra spacing mellan namn och (Reserverad) */
+    margin-left: 8px;
+  }
+
+  #nyKaraktarContainer {
+    max-width: 600px;
+    margin: 30px auto;
+    background: rgba(255, 243, 224, 0.75);
+    border: 2px solid #ffb84d;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #nyKaraktarInput {
+    padding: 8px;
+    flex: 1;
+    min-width: 200px;
+    border: 2px solid #ffb84d;
+    border-radius: 5px;
+    font-size: 1em;
+  }
+
+  /* Popup bakgrund */
+  #popupBakgrund {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Popup ruta */
+  #popupRuta {
+    background: rgba(255, 243, 224, 0.95);
+    border: 2px solid #ffb84d;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 300px;
+    text-align: center;
+    position: relative;
+  }
+
+  #popupRuta h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #333;
+  }
+
+  #popupRuta input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 2px solid #ffb84d;
+    border-radius: 5px;
+    font-size: 1em;
+  }
+
+  /* Stäng-knapp */
+  .stangPopup {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #666;
   }
 
   /* --- Mobilanpassning --- */
   @media (max-width: 600px) {
     body { padding: 0 5px; }
-    h1 { 
-      font-size: 1.8em; 
-    }
+    h1 { font-size: 1.8em; }
     .karaktar { 
       font-size: 1.2em;
-      align-items: center; /* ändrat från flex-start */
-      flex-wrap: wrap; /* tillåt radbrytning */
+      align-items: center;
+      flex-wrap: wrap;
     }
     .karaktar strong,
     .karaktar span {
@@ -111,101 +172,110 @@
       overflow-wrap: break-word;
       display: inline-block;
     }
-    button { 
-      font-size: 1em; 
-      padding: 10px 20px;
-    }
+    button { font-size: 1em; padding: 10px 20px; }
+    #nyKaraktarContainer { flex-direction: column; align-items: stretch; }
   }
 
 </style>
 </head>
 <body>
-  <!--<img src="natta.png" alt="välkommen till nattas födelsedag" style="width:100%; max-width:600px; margin: 20px auto; display:block; border-radius:10px;">-->
-  <<h1>
-  Välkommen till Nathalies födelsedag
-  <span style="display:block; margin-top:20px; font-size:0.9em;">
-    Vänligen reservera din utklädnad
-  </span>
-</h1>
+  <h1>
+    Välkommen till Nathalies födelsedag
+    <span style="display:block; margin-top:20px; font-size:0.9em;">
+      Vänligen reservera din utklädnad
+    </span>
+  </h1>
 
   <div id="lista">Laddar...</div>
 
+  <!-- Ny karaktärssektion -->
+  <div id="nyKaraktarContainer">
+    <input type="text" id="nyKaraktarInput" placeholder="Ny karaktär">
+    <button id="laggTillBtn">Lägg till</button>
+  </div>
+
+  <!-- Popup -->
+  <div id="popupBakgrund">
+    <div id="popupRuta">
+      <span class="stangPopup" onclick="stangPopup()">✖</span>
+      <h2>Vill du reservera direkt eller lägga som förslag?</h2>
+      <input type="text" id="namnInput" placeholder="Ditt namn (vid reservering)" style="display:none;">
+      <button id="reserveraDirektBtn">Reservera direkt</button>
+      <button id="laggSomForslagBtn">Lägg som förslag</button>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwj29KVLTVv4h7JDsOgZfoecSiZjMPeCl66q_d0_3R0mSvsWtk46yrfAEi1L7J0cba3/exec";
+    let aktuellKaraktar = "";
 
     async function hamtaKaraktarer() {
-  const lista = document.getElementById("lista");
-  try {
-    const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
-    const data = await res.json();
+      const lista = document.getElementById("lista");
+      try {
+        const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
+        const data = await res.json();
 
-    if (!Array.isArray(data) || data.length <= 1) {
-      lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
-      return;
+        if (!Array.isArray(data) || data.length <= 1) {
+          lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
+          return;
+        }
+
+        lista.innerHTML = "";
+        let rows = data.slice(1);
+
+        rows.sort((a, b) => {
+          const aRes = a[1] ? 1 : 0;
+          const bRes = b[1] ? 1 : 0;
+          return bRes - aRes;
+        });
+
+        rows.forEach(rad => {
+          const namn = rad[0];
+          const reserveradAv = rad[1];
+
+          const div = document.createElement("div");
+          div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
+
+          const textContainer = document.createElement("div");
+          textContainer.style.flex = "1";
+          textContainer.style.marginRight = "10px";
+
+          const strong = document.createElement("strong");
+          strong.textContent = namn;
+          textContainer.appendChild(strong);
+
+          if (reserveradAv) {
+            const span = document.createElement("span");
+            span.textContent = "(Reserverad)";
+            span.style.marginLeft = "8px";
+            textContainer.appendChild(span);
+          }
+
+          div.appendChild(textContainer);
+
+          if (!reserveradAv) {
+            const btn = document.createElement("button");
+            btn.textContent = "Reservera";
+            btn.style.color = "black";
+            btn.addEventListener("click", (e) => boka(namn, e.target));
+            div.appendChild(btn);
+          }
+
+          lista.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error(err);
+        lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
+      }
     }
 
-    lista.innerHTML = "";
-    let rows = data.slice(1);
-
-    // Sortera så att reserverade hamnar först
-    rows.sort((a, b) => {
-      const aRes = a[1] ? 1 : 0;
-      const bRes = b[1] ? 1 : 0;
-      return bRes - aRes; // reserverade först
-    });
-
-    rows.forEach(rad => {
-      const namn = rad[0];
-      const reserveradAv = rad[1];
-
-      const div = document.createElement("div");
-      div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
-
-      const textContainer = document.createElement("div");
-      textContainer.style.flex = "1";
-      textContainer.style.marginRight = "10px";
-
-      const strong = document.createElement("strong");
-      strong.textContent = namn;
-      textContainer.appendChild(strong);
-
-      if (reserveradAv) {
-        const span = document.createElement("span");
-        span.textContent = "(Reserverad)";
-        span.style.marginLeft = "8px"; // extra spacing
-        textContainer.appendChild(span);
-      }
-
-      div.appendChild(textContainer);
-
-      if (!reserveradAv) {
-        const btn = document.createElement("button");
-        btn.textContent = "Reservera";
-        btn.style.color = "black"; // svart text på mobil
-        btn.addEventListener("click", (e) => boka(namn, e.target));
-        div.appendChild(btn);
-      }
-
-      lista.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error(err);
-    lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
-  }
-}
-
-
     async function boka(namn, knappElement) {
-      const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}"   (namnet kommer inte synas för andra):`);
+      const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}":`);
       if (!dittNamn) return;
 
-      const karaktarDiv = knappElement.closest(".karaktar");
-
-      // Ta bort knappen
       knappElement.remove();
-
-      // Lägg till reserverad text och klass direkt
+      const karaktarDiv = knappElement.closest(".karaktar");
       const span = document.createElement("span");
       span.textContent = "(Reserverad)";
       span.style.marginLeft = "8px";
@@ -213,22 +283,66 @@
       karaktarDiv.classList.add("reserverad");
 
       try {
-        const res = await fetch(API_URL, {
+        await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({ karaktar: namn, namn: dittNamn })
         });
+      } catch (e) {
+        hamtaKaraktarer();
+      }
+    }
+
+    document.getElementById("laggTillBtn").addEventListener("click", () => {
+      aktuellKaraktar = document.getElementById("nyKaraktarInput").value.trim();
+      if (!aktuellKaraktar) {
+        alert("Skriv in en karaktär först!");
+        return;
+      }
+      document.getElementById("popupBakgrund").style.display = "flex";
+    });
+
+    document.getElementById("reserveraDirektBtn").addEventListener("click", () => {
+      document.getElementById("namnInput").style.display = "block";
+      const namn = document.getElementById("namnInput").value.trim();
+      if (!namn) {
+        alert("Skriv ditt namn för att reservera!");
+        return;
+      }
+      laggTillKaraktar(aktuellKaraktar, namn);
+    });
+
+    document.getElementById("laggSomForslagBtn").addEventListener("click", () => {
+      laggTillKaraktar(aktuellKaraktar, "");
+    });
+
+    function stangPopup() {
+      document.getElementById("popupBakgrund").style.display = "none";
+      document.getElementById("namnInput").value = "";
+      document.getElementById("namnInput").style.display = "none";
+    }
+
+    async function laggTillKaraktar(karaktarNamn, dittNamn) {
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            karaktar: karaktarNamn,
+            namn: dittNamn
+          })
+        });
         const resultat = await res.json();
 
         if (resultat.success) {
-          alert(resultat.message || "Reserveringen lyckades!");
+          document.getElementById("nyKaraktarInput").value = "";
+          stangPopup();
+          hamtaKaraktarer();
         } else {
-          alert(resultat.message || "Kunde inte reservera.");
-          hamtaKaraktarer(); // tar bort reservering om det misslyckas
+          alert(resultat.message || "Kunde inte lägga till karaktären.");
         }
       } catch (e) {
-        alert("Något gick fel vid bokningen.");
-        hamtaKaraktarer();
+        alert("Något gick fel vid tillägg.");
       }
     }
 
