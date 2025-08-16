@@ -138,9 +138,9 @@
   }
 
   #popupRuta input {
-    width: 100%;
+    max-width: 320px;
     padding: 8px;
-    margin: 10px 0;
+    margin: 15px auto;
     border: 2px solid #ffb84d;
     border-radius: 5px;
     font-size: 1em;
@@ -150,7 +150,7 @@
   .stangPopup {
     position: absolute;
     top: 5px;
-    right: 10px;
+    right: 15px;
     cursor: pointer;
     font-size: 1.2em;
     color: #666;
@@ -199,154 +199,200 @@
     <div id="popupRuta">
       <span class="stangPopup" onclick="stangPopup()">✖</span>
       <h2>Vill du reservera direkt eller lägga som förslag?</h2>
-      <input type="text" id="namnInput" placeholder="Ditt namn (vid reservering)" style="display:none;">
+      <input type="text" id="namnInput" placeholder="Ditt namn (för reservering)" style="display:none;">
       <button id="reserveraDirektBtn">Reservera direkt</button>
-      <button id="laggSomForslagBtn">Lägg som förslag</button>
+      <button id="laggSomForslagBtn">Lägg till som förslag</button>
     </div>
   </div>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwj29KVLTVv4h7JDsOgZfoecSiZjMPeCl66q_d0_3R0mSvsWtk46yrfAEi1L7J0cba3/exec";
-    let aktuellKaraktar = "";
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxZW1Aok4CA5u7y-uKsTGLPh6xVdM2mzSz4xS8-MX6Vfa7SBTLiX6M-4v564LQ9QkH0/exec";
+  let aktuellKaraktar = "";
 
-    async function hamtaKaraktarer() {
-      const lista = document.getElementById("lista");
-      try {
-        const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
-        const data = await res.json();
+  async function hamtaKaraktarer() {
+    const lista = document.getElementById("lista");
+    try {
+      const res = await fetch(API_URL + "?t=" + Date.now(), { mode: "cors" });
+      const data = await res.json();
 
-        if (!Array.isArray(data) || data.length <= 1) {
-          lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
-          return;
+      if (!Array.isArray(data) || data.length <= 1) {
+        lista.innerHTML = "<p>Inga karaktärer hittades.</p>";
+        return;
+      }
+
+      lista.innerHTML = "";
+      let rows = data.slice(1); // förutsätter rubrikrad i rad 1
+
+      // sortera – reserverade sist (eller först, beroende på preferens)
+      rows.sort((a, b) => {
+        const aRes = a[1] ? 1 : 0;
+        const bRes = b[1] ? 1 : 0;
+        return bRes - aRes; // ändra till bRes - aRes om du vill ha reserverade överst
+      });
+
+      rows.forEach(rad => {
+        const karaktar = rad[0];
+        const reserveradAv = rad[1];
+
+        const div = document.createElement("div");
+        div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
+
+        const textContainer = document.createElement("div");
+        textContainer.style.flex = "1";
+        textContainer.style.marginRight = "10px";
+
+        const strong = document.createElement("strong");
+        strong.textContent = karaktar;
+        textContainer.appendChild(strong);
+
+        if (reserveradAv) {
+          const span = document.createElement("span");
+          span.textContent = "(Reserverad)";
+          span.style.marginLeft = "8px";
+          textContainer.appendChild(span);
         }
 
-        lista.innerHTML = "";
-        let rows = data.slice(1);
+        div.appendChild(textContainer);
 
-        rows.sort((a, b) => {
-          const aRes = a[1] ? 1 : 0;
-          const bRes = b[1] ? 1 : 0;
-          return bRes - aRes;
-        });
+        if (!reserveradAv) {
+          const btn = document.createElement("button");
+          btn.textContent = "Reservera";
+          btn.style.color = "black";
+          btn.addEventListener("click", (e) => boka(karaktar, e.target));
+          div.appendChild(btn);
+        }
 
-        rows.forEach(rad => {
-          const namn = rad[0];
-          const reserveradAv = rad[1];
+        lista.appendChild(div);
+      });
 
-          const div = document.createElement("div");
-          div.className = "karaktar" + (reserveradAv ? " reserverad" : "");
-
-          const textContainer = document.createElement("div");
-          textContainer.style.flex = "1";
-          textContainer.style.marginRight = "10px";
-
-          const strong = document.createElement("strong");
-          strong.textContent = namn;
-          textContainer.appendChild(strong);
-
-          if (reserveradAv) {
-            const span = document.createElement("span");
-            span.textContent = "(Reserverad)";
-            span.style.marginLeft = "8px";
-            textContainer.appendChild(span);
-          }
-
-          div.appendChild(textContainer);
-
-          if (!reserveradAv) {
-            const btn = document.createElement("button");
-            btn.textContent = "Reservera";
-            btn.style.color = "black";
-            btn.addEventListener("click", (e) => boka(namn, e.target));
-            div.appendChild(btn);
-          }
-
-          lista.appendChild(div);
-        });
-
-      } catch (err) {
-        console.error(err);
-        lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
-      }
+    } catch (err) {
+      console.error(err);
+      lista.innerHTML = `<p>Kunde inte ladda listan (${err.message}).</p>`;
     }
+  }
 
-    async function boka(namn, knappElement) {
-      const dittNamn = prompt(`Skriv ditt namn för att boka "${namn}":`);
-      if (!dittNamn) return;
+  // Vanlig reservation av befintlig karaktär
+  async function boka(karaktar, knappElement) {
+    const dittNamn = prompt(`Skriv ditt namn för att reservera"${karaktar}":`);
+    if (!dittNamn) return;
 
-      knappElement.remove();
+    // Optimistisk UI (vi rullar tillbaka vid fel)
+    knappElement.disabled = true;
+    const originalText = knappElement.textContent;
+    knappElement.textContent = "Reserverar...";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "reserve",   // 👈 viktigt
+          karaktar: karaktar,
+          namn: dittNamn
+        })
+      });
+
+      const resultat = await res.json();
+
+      if (!resultat.success) {
+        alert(resultat.message || "Kunde inte reservera.");
+        knappElement.disabled = false;
+        knappElement.textContent = originalText;
+        return;
+      }
+
+      // Lyckades → uppdatera UI
       const karaktarDiv = knappElement.closest(".karaktar");
       const span = document.createElement("span");
       span.textContent = "(Reserverad)";
       span.style.marginLeft = "8px";
       karaktarDiv.querySelector("div").appendChild(span);
       karaktarDiv.classList.add("reserverad");
+      knappElement.remove();
 
-      try {
-        await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ karaktar: namn, namn: dittNamn })
-        });
-      } catch (e) {
+    } catch (e) {
+      alert("Nätverksfel: kunde inte reservera.");
+      knappElement.disabled = false;
+      knappElement.textContent = originalText;
+    } finally {
+      // Säkerställ att listan reflekterar serverns läge
+      hamtaKaraktarer();
+    }
+  }
+
+  // Popup: öppna
+  document.getElementById("laggTillBtn").addEventListener("click", () => {
+    aktuellKaraktar = document.getElementById("nyKaraktarInput").value.trim();
+    if (!aktuellKaraktar) {
+      alert("Skriv in en karaktär först!");
+      return;
+    }
+    document.getElementById("namnInput").value = "";
+    document.getElementById("namnInput").style.display = "none";
+    document.getElementById("laggSomForslagBtn").style.display = "inline-block";
+    document.getElementById("popupBakgrund").style.display = "flex";
+  });
+
+  // Popup: reservera direkt (tvåsteg – visa input, sen skicka)
+  document.getElementById("reserveraDirektBtn").addEventListener("click", () => {
+    const namnInput = document.getElementById("namnInput");
+    const laggSomForslagBtn = document.getElementById("laggSomForslagBtn");
+
+    if (namnInput.style.display === "none") {
+      namnInput.style.display = "block";
+      laggSomForslagBtn.style.display = "none";
+      namnInput.focus();
+      return;
+    }
+
+    const namn = namnInput.value.trim();
+    if (!namn) {
+      alert("Skriv ditt namn för att reservera!");
+      return;
+    }
+    laggTillKaraktar(aktuellKaraktar, namn); // add + namn => direkt reserverad
+  });
+
+  // Popup: lägg som förslag (utan namn)
+  document.getElementById("laggSomForslagBtn").addEventListener("click", () => {
+    laggTillKaraktar(aktuellKaraktar, "");
+  });
+
+  function stangPopup() {
+    document.getElementById("popupBakgrund").style.display = "none";
+    document.getElementById("namnInput").value = "";
+    document.getElementById("namnInput").style.display = "none";
+  }
+
+  // Lägg till ny karaktär (med eller utan direkt reservation)
+  async function laggTillKaraktar(karaktarNamn, dittNamn) {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "add",            // 👈 alltid "add"
+          karaktar: karaktarNamn,
+          namn: dittNamn            // "" = förslag, annars direkt reserverad
+        })
+      });
+
+      const resultat = await res.json();
+
+      if (resultat.success) {
+        document.getElementById("nyKaraktarInput").value = "";
+        stangPopup();
         hamtaKaraktarer();
+      } else {
+        alert(resultat.message || "Kunde inte lägga till karaktären.");
       }
+    } catch (e) {
+      alert("Något gick fel vid tillägg.");
     }
+  }
 
-    document.getElementById("laggTillBtn").addEventListener("click", () => {
-      aktuellKaraktar = document.getElementById("nyKaraktarInput").value.trim();
-      if (!aktuellKaraktar) {
-        alert("Skriv in en karaktär först!");
-        return;
-      }
-      document.getElementById("popupBakgrund").style.display = "flex";
-    });
+  hamtaKaraktarer();
+</script>
 
-    document.getElementById("reserveraDirektBtn").addEventListener("click", () => {
-      document.getElementById("namnInput").style.display = "block";
-      const namn = document.getElementById("namnInput").value.trim();
-      if (!namn) {
-        alert("Skriv ditt namn för att reservera!");
-        return;
-      }
-      laggTillKaraktar(aktuellKaraktar, namn);
-    });
-
-    document.getElementById("laggSomForslagBtn").addEventListener("click", () => {
-      laggTillKaraktar(aktuellKaraktar, "");
-    });
-
-    function stangPopup() {
-      document.getElementById("popupBakgrund").style.display = "none";
-      document.getElementById("namnInput").value = "";
-      document.getElementById("namnInput").style.display = "none";
-    }
-
-    async function laggTillKaraktar(karaktarNamn, dittNamn) {
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            karaktar: karaktarNamn,
-            namn: dittNamn
-          })
-        });
-        const resultat = await res.json();
-
-        if (resultat.success) {
-          document.getElementById("nyKaraktarInput").value = "";
-          stangPopup();
-          hamtaKaraktarer();
-        } else {
-          alert(resultat.message || "Kunde inte lägga till karaktären.");
-        }
-      } catch (e) {
-        alert("Något gick fel vid tillägg.");
-      }
-    }
-
-    hamtaKaraktarer();
-  </script>
 </body>
 </html>
