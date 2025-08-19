@@ -180,7 +180,10 @@
 </head>
 <body>
   <h1>
+    Välkommen till Nathalies födelsedag
+    <span style="display:block; margin-top:20px; font-size:0.9em;">
       Vänligen reservera din utklädnad
+    </span>
   </h1>
 
   <div id="lista">Laddar...</div>
@@ -199,15 +202,6 @@
       <input type="text" id="namnInput" placeholder="Ditt namn (för reservering)" style="display:none;">
       <button id="reserveraDirektBtn">Reservera direkt</button>
       <button id="laggSomForslagBtn">Lägg till som förslag</button>
-    </div>
-  </div>
-
-  <div id="popupDirektBakgrund" style="display:none;">
-    <div id="popupDirektRuta">
-      <span class="stangPopup" onclick="stangPopupDirekt()">✖</span>
-      <h2>Skriv ditt namn för att reservera denna karaktär:</h2>
-      <input type="text" id="namnDirektInput" placeholder="Ditt namn">
-      <button id="bekraftaDirektBtn">Reservera</button>
     </div>
   </div>
 
@@ -278,49 +272,53 @@
   }
 
   // Vanlig reservation av befintlig karaktär
-async function boka(karaktar, knappElement) {
-  aktuellKaraktar = karaktar;
-  document.getElementById("namnDirektInput").value = "";
-  document.getElementById("popupDirektBakgrund").style.display = "flex";
-}
+  async function boka(karaktar, knappElement) {
+    const dittNamn = prompt(`Skriv ditt namn för att reservera"${karaktar}":`);
+    if (!dittNamn) return;
 
-// Stäng popupDirekt
-function stangPopupDirekt() {
-  document.getElementById("popupDirektBakgrund").style.display = "none";
-}
+    // Optimistisk UI (vi rullar tillbaka vid fel)
+    knappElement.disabled = true;
+    const originalText = knappElement.textContent;
+    knappElement.textContent = "Reserverar...";
 
-// Bekräfta direkt-reservation
-document.getElementById("bekraftaDirektBtn").addEventListener("click", async () => {
-  const dittNamn = document.getElementById("namnDirektInput").value.trim();
-  if (!dittNamn) {
-    alert("Skriv ditt namn!");
-    return;
-  }
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "reserve",   // 👈 viktigt
+          karaktar: karaktar,
+          namn: dittNamn
+        })
+      });
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "reserve",
-        karaktar: aktuellKaraktar,
-        namn: dittNamn
-      })
-    });
+      const resultat = await res.json();
 
-    const resultat = await res.json();
-    if (!resultat.success) {
-      alert(resultat.message || "Kunde inte reservera.");
-      return;
+      if (!resultat.success) {
+        alert(resultat.message || "Kunde inte reservera.");
+        knappElement.disabled = false;
+        knappElement.textContent = originalText;
+        return;
+      }
+
+      // Lyckades → uppdatera UI
+      const karaktarDiv = knappElement.closest(".karaktar");
+      const span = document.createElement("span");
+      span.textContent = "(Reserverad)";
+      span.style.marginLeft = "8px";
+      karaktarDiv.querySelector("div").appendChild(span);
+      karaktarDiv.classList.add("reserverad");
+      knappElement.remove();
+
+    } catch (e) {
+      alert("Nätverksfel: kunde inte reservera.");
+      knappElement.disabled = false;
+      knappElement.textContent = originalText;
+    } finally {
+      // Säkerställ att listan reflekterar serverns läge
+      hamtaKaraktarer();
     }
-
-    stangPopupDirekt();
-    hamtaKaraktarer();
-
-  } catch (e) {
-    alert("Nätverksfel: kunde inte reservera.");
   }
-});
 
   // Popup: öppna
   document.getElementById("laggTillBtn").addEventListener("click", () => {
@@ -336,57 +334,29 @@ document.getElementById("bekraftaDirektBtn").addEventListener("click", async () 
   });
 
   // Popup: reservera direkt (tvåsteg – visa input, sen skicka)
-  document.getElementById("reserveraDirektBtn").addEventListener("click", async () => {
-  const namnInput = document.getElementById("namnInput");
-  const laggSomForslagBtn = document.getElementById("laggSomForslagBtn");
-  const reserveraDirektBtn = document.getElementById("reserveraDirektBtn");
+  document.getElementById("reserveraDirektBtn").addEventListener("click", () => {
+    const namnInput = document.getElementById("namnInput");
+    const laggSomForslagBtn = document.getElementById("laggSomForslagBtn");
 
-  if (namnInput.style.display === "none") {
-    namnInput.style.display = "block";
-    laggSomForslagBtn.style.display = "none";
-    namnInput.focus();
-    return;
-  }
+    if (namnInput.style.display === "none") {
+      namnInput.style.display = "block";
+      laggSomForslagBtn.style.display = "none";
+      namnInput.focus();
+      return;
+    }
 
-  const namn = namnInput.value.trim();
-  if (!namn) {
-    alert("Skriv ditt namn för att reservera!");
-    return;
-  }
-
-  // 🔹 Ändra knappens text under skickning
-  const originalText = reserveraDirektBtn.textContent;
-  reserveraDirektBtn.textContent = "Reserverar...";
-  reserveraDirektBtn.disabled = true;
-
-  await laggTillKaraktar(aktuellKaraktar, namn);
-
-  // 🔹 Efter skickning återställs knappen (popup stängs om det lyckas)
-  reserveraDirektBtn.textContent = originalText;
-  reserveraDirektBtn.disabled = false;
-});
+    const namn = namnInput.value.trim();
+    if (!namn) {
+      alert("Skriv ditt namn för att reservera!");
+      return;
+    }
+    laggTillKaraktar(aktuellKaraktar, namn); // add + namn => direkt reserverad
+  });
 
   // Popup: lägg som förslag (utan namn)
-  document.getElementById("laggSomForslagBtn").addEventListener("click", async (e) => {
-  const knapp = e.target;
-  const originalText = knapp.textContent;
-  const reserveraDirektBtn = document.getElementById("reserveraDirektBtn");
-
-  // Ändra text på knappen som tryckts
-  knapp.textContent = "Lägger till...";
-  knapp.disabled = true;
-
-  // Dölj reservera-direkt knappen
-  reserveraDirektBtn.style.display = "none";
-
-  await laggTillKaraktar(aktuellKaraktar, "");
-
-  // Återställ "lägg till"-knappen (popup stängs ändå vid success)
-  knapp.textContent = originalText;
-  knapp.disabled = false;
-});
-
-
+  document.getElementById("laggSomForslagBtn").addEventListener("click", () => {
+    laggTillKaraktar(aktuellKaraktar, "");
+  });
 
   function stangPopup() {
     document.getElementById("popupBakgrund").style.display = "none";
