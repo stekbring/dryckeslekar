@@ -110,7 +110,8 @@
   }
 
   /* Popup bakgrund */
-  #popupBakgrund {
+  #popupBakgrund,
+  #popupDirektBakgrund {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -202,14 +203,18 @@
     </div>
   </div>
 
+ <!-- Popup för befintlig karaktär -->
   <div id="popupDirektBakgrund" style="display:none;">
-    <div id="popupDirektRuta">
+    <div id="popupRuta">
       <span class="stangPopup" onclick="stangPopupDirekt()">✖</span>
-      <h2>Skriv ditt namn för att reservera denna karaktär:</h2>
+      <h2>Reservera karaktär</h2>
+      <p id="popupDirektKaraktar"></p>
       <input type="text" id="namnDirektInput" placeholder="Ditt namn">
-      <button id="bekraftaDirektBtn">Reservera</button>
+      <button id="bekraftaDirektBtn">Bekräfta</button>
     </div>
   </div>
+
+
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxZW1Aok4CA5u7y-uKsTGLPh6xVdM2mzSz4xS8-MX6Vfa7SBTLiX6M-4v564LQ9QkH0/exec";
@@ -281,8 +286,10 @@
 async function boka(karaktar, knappElement) {
   aktuellKaraktar = karaktar;
   document.getElementById("namnDirektInput").value = "";
+  document.getElementById("popupDirektKaraktar").textContent = karaktar;
   document.getElementById("popupDirektBakgrund").style.display = "flex";
 }
+
 
 // Stäng popupDirekt
 function stangPopupDirekt() {
@@ -297,6 +304,27 @@ document.getElementById("bekraftaDirektBtn").addEventListener("click", async () 
     return;
   }
 
+  // 🔹 Optimistisk uppdatering direkt i listan
+  const lista = document.getElementById("lista");
+  const divar = lista.querySelectorAll(".karaktar");
+  divar.forEach(div => {
+    const strong = div.querySelector("strong");
+    if (strong && strong.textContent === aktuellKaraktar) {
+      div.classList.add("reserverad");
+      let span = div.querySelector("span");
+      if (!span) {
+        span = document.createElement("span");
+        div.querySelector("div").appendChild(span);
+      }
+      span.textContent = "(Reserverad)";
+      const btn = div.querySelector("button");
+      if (btn) btn.remove(); // ta bort reservera-knappen
+    }
+  });
+
+  stangPopupDirekt(); // stäng popup direkt
+
+  // 🔹 Skicka till servern i bakgrunden
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -311,16 +339,21 @@ document.getElementById("bekraftaDirektBtn").addEventListener("click", async () 
     const resultat = await res.json();
     if (!resultat.success) {
       alert(resultat.message || "Kunde inte reservera.");
+      // ⚠ Om du vill kan du här återställa listan genom att köra om hamtaKaraktarer();
+      hamtaKaraktarer();
       return;
     }
 
-    stangPopupDirekt();
+    // ✅ Om allt gick bra, hämta fräscha data så allt är synkat
     hamtaKaraktarer();
 
   } catch (e) {
     alert("Nätverksfel: kunde inte reservera.");
+    // ⚠ Återställ med senaste data
+    hamtaKaraktarer();
   }
 });
+
 
   // Popup: öppna
   document.getElementById("laggTillBtn").addEventListener("click", () => {
@@ -354,17 +387,59 @@ document.getElementById("bekraftaDirektBtn").addEventListener("click", async () 
     return;
   }
 
-  // 🔹 Ändra knappens text under skickning
-  const originalText = reserveraDirektBtn.textContent;
-  reserveraDirektBtn.textContent = "Reserverar...";
-  reserveraDirektBtn.disabled = true;
+  // 🔹 Optimistisk uppdatering – lägg in karaktären direkt i listan
+  const lista = document.getElementById("lista");
+  const div = document.createElement("div");
+  div.className = "karaktar reserverad";
 
-  await laggTillKaraktar(aktuellKaraktar, namn);
+  const textContainer = document.createElement("div");
+  textContainer.style.flex = "1";
+  textContainer.style.marginRight = "10px";
 
-  // 🔹 Efter skickning återställs knappen (popup stängs om det lyckas)
-  reserveraDirektBtn.textContent = originalText;
-  reserveraDirektBtn.disabled = false;
+  const strong = document.createElement("strong");
+  strong.textContent = aktuellKaraktar;
+  textContainer.appendChild(strong);
+
+  const span = document.createElement("span");
+  span.textContent = "(Reserverad)";
+  span.style.marginLeft = "8px";
+  textContainer.appendChild(span);
+
+  div.appendChild(textContainer);
+  lista.insertBefore(div, lista.firstChild); // lägg överst
+
+  // 🔹 Stäng popup direkt
+  stangPopup();
+
+  // 🔹 Skicka till servern i bakgrunden
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        action: "add",
+        karaktar: aktuellKaraktar,
+        namn: namn
+      })
+    });
+
+    const resultat = await res.json();
+
+    if (!resultat.success) {
+      alert(resultat.message || "Kunde inte reservera.");
+      hamtaKaraktarer(); // återställ om fel
+      return;
+    }
+
+    // ✅ Synka listan med servern
+    hamtaKaraktarer();
+
+  } catch (e) {
+    alert("Nätverksfel: kunde inte reservera.");
+    hamtaKaraktarer(); // återställ om nätverksfel
+  }
 });
+
 
   // Popup: lägg som förslag (utan namn)
   document.getElementById("laggSomForslagBtn").addEventListener("click", async (e) => {
