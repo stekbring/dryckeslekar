@@ -17,7 +17,7 @@
     canvas{position:absolute;inset:0}
 
     /* spik-bild */
-    .needle{position:absolute;left:50%;top:50%;height:calc(var(--size)*1.0);width:auto;transform-origin:50% 50%; transform:translate(-50%,-50%) rotate(0deg);touch-action:none;pointer-events:none}
+    .needle{position:absolute;left:50%;top:50%;height:calc(var(--size)*1.0);width:auto;transform-origin:50% 50%; transform:translate(-50%,-50%) rotate(180deg);touch-action:none;pointer-events:none}
 
     .spin-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2rem;opacity:0.5;pointer-events:none}
 
@@ -183,7 +183,7 @@
     });
 
     let spinning = false;
-    let currentRotation = 0;
+    let currentRotation = 180;
 
     function animateSpin(){
       if(spinning) return;
@@ -196,13 +196,13 @@
         const anglePer = 360/playerCount;
         targetIndex = Math.floor(Math.random()*playerCount);
         const offset = (Math.random()*0.8 - 0.4) * anglePer * 0.9;
-        targetAngle = (targetIndex+0.5)*anglePer + offset; // spiken pekar uppåt (0°), så +0 är uppåt
+        targetAngle = (targetIndex+0.5)*anglePer + offset;
       } else {
         targetAngle = Math.random()*360;
       }
 
-      const accelTime = 400;
-      const steadyTime = 2500;
+      const accelTime = 800;
+      const steadyTime = 2000;
       const decelTime = 2000;
       const total = accelTime + steadyTime + decelTime;
 
@@ -212,18 +212,18 @@
 
       const start = performance.now();
       function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
-      function easeInQuad(t){ return t*t; }
+      function easeInOutQuad(t){ return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
       function frame(now){
         const elapsed = now - start;
         let rotDelta;
         if(elapsed <= accelTime){
           const p = elapsed/accelTime;
-          const frac = easeInQuad(p) * 0.2;
+          const frac = easeInOutQuad(p) * 0.25;
           rotDelta = finalDelta * frac;
         } else if(elapsed <= accelTime + steadyTime){
           const p = (elapsed - accelTime)/steadyTime;
-          const frac = 0.2 + p*0.55;
+          const frac = 0.25 + p*0.5;
           rotDelta = finalDelta * Math.min(frac,0.75);
         } else {
           const p = (elapsed - accelTime - steadyTime)/decelTime;
