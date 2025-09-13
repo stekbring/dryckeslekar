@@ -115,6 +115,19 @@
       transform: scale(1.05);
     }
 
+    .footer {
+      text-align: center;
+      color: white;
+      padding: 20px 20px;
+      margin-top: 20px;
+    }
+
+    .footer a {
+      color: rgb(255, 255, 255); /* standard blå länk */
+      text-decoration: underline; /* standard understruken */
+      font-size: 1.1em;
+      font-weight: bold;
+    }
 
     #toggleViewButton {
       background-color: #fa7325;
@@ -142,6 +155,8 @@
     #toggleViewButton:hover {
       transform: scale(1.1);
     }
+
+    
     /* Desktop-anpassning */
     @media (min-width: 1024px) {
       .hero {
@@ -343,8 +358,15 @@
       <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthefire'">
         <img src="bilder/fthefire.png" alt="fuck the fire">
       </button>
-      <button class="game-button">Kom på en lek själv</button>
     </div>
+
+    <footer class="footer">
+      <p>Förslag på lekar?</p>
+      <p>Maila namn och regler till: </p>
+      <br> 
+      <p><a href="mailto:nyalekar@ollesdryckeslekar.se">nyalekar@ollesdryckeslekar.se</a></p>
+    </footer>
+
   </section>
 
   <script>
