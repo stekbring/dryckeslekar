@@ -30,7 +30,7 @@
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
     .modal .box{background:#000;padding:16px;border:1px solid #333;border-radius:10px;max-width:90vw;width:380px}
     .names-list{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto;padding-right:8px}
-    .names-list input{width:100%;padding:8px;border-radius:6px;border:1px solid #222;background:#111;color:#fff}
+    .names-list input{width:100%;font-size: 16px;padding:8px;border-radius:6px;border:1px solid #222;background:#111;color:#fff}
     .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 
     @media (min-width:600px){:root{--size:420px}}
@@ -201,9 +201,9 @@
         targetAngle = Math.random()*360;
       }
 
-      const accelTime = 800;
-      const steadyTime = 2000;
-      const decelTime = 2000;
+      const accelTime = 1000;
+      const steadyTime = 1500;
+      const decelTime = 1500;
       const total = accelTime + steadyTime + decelTime;
 
       const fullSpins = 5 + Math.floor(Math.random()*3);
@@ -213,40 +213,33 @@
       const start = performance.now();
       function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
       function easeInOutQuad(t){ return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
+      function easeInOutCubic(t) {
+            return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+        }
+
 
       function frame(now){
-        const elapsed = now - start;
-        let rotDelta;
-        if(elapsed <= accelTime){
-          const p = elapsed/accelTime;
-          const frac = easeInOutQuad(p) * 0.25;
-          rotDelta = finalDelta * frac;
-        } else if(elapsed <= accelTime + steadyTime){
-          const p = (elapsed - accelTime)/steadyTime;
-          const frac = 0.25 + p*0.5;
-          rotDelta = finalDelta * Math.min(frac,0.75);
-        } else {
-          const p = (elapsed - accelTime - steadyTime)/decelTime;
-          const frac = 0.75 + easeOutCubic(p)*0.25;
-          rotDelta = finalDelta * Math.min(frac,1);
+            const elapsed = now - start;
+            const t = Math.min(elapsed / total, 1); // normaliserad tid 0→1
+            const eased = easeInOutCubic(t);        // easing värde 0→1
+            const newRotation = currentRotation + finalDelta * eased;
+
+            needleImg.style.transform = `translate(-50%,-50%) rotate(${newRotation}deg)`;
+
+            if(elapsed < total){
+                requestAnimationFrame(frame);
+            } else {
+                currentRotation += finalDelta;
+                needleImg.style.transform = `translate(-50%,-50%) rotate(${currentRotation}deg)`;
+                spinning = false;
+                if(playerCount>=2){
+                    selectedIndex = targetIndex;
+                    drawWheel(selectedIndex);
+                }
+                spinLabel.style.display='block';
+            }
         }
 
-        const newRotation = currentRotation + rotDelta;
-        needleImg.style.transform = `translate(-50%,-50%) rotate(${newRotation}deg)`;
-
-        if(elapsed < total){
-          requestAnimationFrame(frame);
-        } else {
-          currentRotation = currentRotation + finalDelta;
-          needleImg.style.transform = `translate(-50%,-50%) rotate(${currentRotation}deg)`;
-          spinning = false;
-          if(playerCount>=2){
-            selectedIndex = targetIndex;
-            drawWheel(selectedIndex);
-          }
-          spinLabel.style.display='block';
-        }
-      }
       requestAnimationFrame(frame);
     }
 
