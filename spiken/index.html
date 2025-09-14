@@ -156,7 +156,17 @@
       playerCountEl.textContent = playerCount;
       resize();
     }
-    minus.addEventListener('click', ()=>{ if(playerCount>2){ playerCount--; names.splice(playerCount); updateCountDisplay(); } });
+      minus.addEventListener('click', ()=>{ 
+        if (playerCount > 2) {
+          playerCount--; 
+          names.splice(playerCount);
+          updateCountDisplay();
+        } else if (playerCount === 2) {
+          playerCount = 0; 
+          names = []; 
+          updateCountDisplay();
+        }
+      });
     plus.addEventListener('click', ()=>{ if(playerCount===0){ playerCount=2; names=["Spelare1","Spelare2"]; } else if(playerCount<12){ playerCount++; names.push('Spelare'+playerCount); } updateCountDisplay(); });
 
     chooseNames.addEventListener('click', ()=>{ openModal(); });
