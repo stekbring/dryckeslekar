@@ -14,12 +14,14 @@
     .stage{position:relative; width:var(--size); height:var(--size); cursor:pointer;}
 
     .plate{position:absolute;inset:0;background-image:url('spikplatta3.png');background-size:contain;background-repeat:no-repeat;background-position:center;}
-    canvas{position:absolute;inset:0}
+    canvas{position:absolute;inset:0;z-index:1}
 
     /* spik-bild */
-    .needle{position:absolute;left:50%;top:50%;height:calc(var(--size)*1.1);width:auto;transform-origin:50% 50%; transform:translate(-50%,-50%) rotate(180deg);touch-action:none;pointer-events:none}
+    .needle{position:absolute;left:50%;top:50%;height:calc(var(--size)*1.1);width:auto;transform-origin:50% 50%; transform:translate(-50%,-50%) rotate(180deg);touch-action:none;pointer-events:none;z-index:2}
 
-    .spin-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2rem;opacity:0.5;pointer-events:none}
+    .highlight-name{position:absolute;font-size:1rem;color:#fff;border:2px solid red;padding:2px 6px;border-radius:4px;display:none;z-index:3;white-space:nowrap;background:rgba(0,0,0,0.7);transform:translate(-50%,-50%);}
+
+    .spin-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2rem;opacity:0.75;pointer-events:none;z-index:4}
 
     .controls{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px}
     .players{display:flex;align-items:center;gap:12px}
@@ -42,6 +44,7 @@
       <div class="plate"></div>
       <canvas id="wheel"></canvas>
       <img src="spik.png" id="needle" class="needle" draggable="false" alt="spik">
+      <div class="highlight-name" id="highlightName"></div>
       <div class="spin-label" id="spinLabel">Spin</div>
     </div>
 
@@ -74,6 +77,7 @@
     const ctx = canvas.getContext('2d');
     const needleImg = document.getElementById('needle');
     const spinLabel = document.getElementById('spinLabel');
+    const highlightNameEl = document.getElementById('highlightName');
     const playerCountEl = document.getElementById('playerCount');
     const minus = document.getElementById('minus');
     const plus = document.getElementById('plus');
@@ -126,8 +130,8 @@
         ctx.stroke();
 
         const name = names[i] || ('Spelare'+(i+1));
-        const textOpacity = (highlightIndex === i) ? 1 : 0.5;
-        ctx.fillStyle = `rgba(0,0,0,${textOpacity})`;
+        const opacity = (highlightIndex !== null && i !== highlightIndex) ? 0.2 : 0.5;
+        ctx.fillStyle = `rgba(0,0,0,${opacity})`;
 
         const tx = cx + Math.cos(mid)*(radius*0.62);
         const ty = cy + Math.sin(mid)*(radius*0.62);
@@ -138,17 +142,18 @@
         ctx.fillText(name,0,0);
         ctx.restore();
 
+        // Om det är det valda namnet, placera overlay-div på samma ställe
         if(highlightIndex === i){
-          ctx.save();
-          ctx.translate(tx,ty);
-          ctx.rotate(deg);
-          ctx.strokeStyle = 'red';
-          ctx.lineWidth = 3;
-          const tw = ctx.measureText(name).width;
-          const th = parseInt(ctx.font,10)+8;
-          ctx.strokeRect(-tw/2-6, -th/2, tw+12, th);
-          ctx.restore();
+          highlightNameEl.style.left = `${tx}px`;
+          highlightNameEl.style.top = `${ty}px`;
+          highlightNameEl.style.transform = `translate(-50%,-50%) rotate(${deg}rad)`;
+          highlightNameEl.textContent = name;
+          highlightNameEl.style.display = 'block';
         }
+      }
+
+      if(highlightIndex === null){
+        highlightNameEl.style.display = 'none';
       }
     }
 
@@ -167,7 +172,7 @@
           updateCountDisplay();
         }
       });
-    plus.addEventListener('click', ()=>{ if(playerCount===0){ playerCount=2; names=["Spelare1","Spelare2"]; } else if(playerCount<12){ playerCount++; names.push('Spelare'+playerCount); } updateCountDisplay(); });
+    plus.addEventListener('click', ()=>{ if(playerCount===0){ playerCount=2; names=["Spelare1","Spelare2"]; } else if(playerCount<20){ playerCount++; names.push('Spelare'+playerCount); } updateCountDisplay(); });
 
     chooseNames.addEventListener('click', ()=>{ openModal(); });
     cancelNames.addEventListener('click', ()=>{ modal.style.display='none'; });
@@ -199,6 +204,7 @@
       if(spinning) return;
       spinning = true;
       spinLabel.style.display='none';
+      highlightNameEl.style.display = 'none';
 
       let targetIndex = null;
       let targetAngle = null;
@@ -221,17 +227,14 @@
       let finalDelta = fullSpins*360 + ((targetAngle - currentNorm + 360) % 360);
 
       const start = performance.now();
-      function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
-      function easeInOutQuad(t){ return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
       function easeInOutCubic(t) {
             return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
         }
 
-
       function frame(now){
             const elapsed = now - start;
-            const t = Math.min(elapsed / total, 1); // normaliserad tid 0→1
-            const eased = easeInOutCubic(t);        // easing värde 0→1
+            const t = Math.min(elapsed / total, 1);
+            const eased = easeInOutCubic(t);
             const newRotation = currentRotation + finalDelta * eased;
 
             needleImg.style.transform = `translate(-50%,-50%) rotate(${newRotation}deg)`;
