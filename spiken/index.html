@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spiken</title>
+  <style>
+    :root{--size: min(86vw,420px);} 
+    html,body{height:100%;margin:0;background:#000; color:#fff; font-family:system-ui,Segoe UI,Roboto,Arial}
+    body{display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+    .container{display:flex;flex-direction:column;touch-action: manipulation;align-items:center;gap:18px}
+
+    .stage{position:relative; width:var(--size); height:var(--size); cursor:pointer;}
+
+    .plate{position:absolute;inset:0;background-image:url('spikplatta3.png');background-size:contain;background-repeat:no-repeat;background-position:center;}
+    canvas{position:absolute;inset:0;z-index:1}
+
+    /* spik-bild */
+    .needle{position:absolute;left:50%;top:50%;height:calc(var(--size)*1.1);width:auto;transform-origin:50% 50%; transform:translate(-50%,-50%) rotate(180deg);touch-action:none;pointer-events:none;z-index:2}
+
+    .highlight-name{position:absolute;font-size:1rem;color:#fff;border:2px solid red;padding:2px 6px;border-radius:4px;display:none;z-index:3;white-space:nowrap;background:rgba(0,0,0,0.7);transform:translate(-50%,-50%);}
+
+    .spin-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2rem;opacity:0.75;pointer-events:none;z-index:4}
+
+    .controls{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px}
+    .players{display:flex;align-items:center;gap:12px}
+    .btn{background:#111;border:1px solid #333;color:#fff;padding:12px 16px;border-radius:8px;font-size:1rem}
+    .circle-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .count{min-width:48px;text-align:center;font-size:1.1rem}
+
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
+    .modal .box{background:#000;padding:16px;border:1px solid #333;border-radius:10px;max-width:90vw;width:380px}
+    .names-list{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto;padding-right:8px}
+    .names-list input{width:100%;font-size: 16px;padding:8px;border-radius:6px;border:1px solid #222;background:#111;color:#fff}
+    .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+
+    @media (min-width:600px){:root{--size:420px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="stage" id="stage">
+      <div class="plate"></div>
+      <canvas id="wheel"></canvas>
+      <img src="spik.png" id="needle" class="needle" draggable="false" alt="spik">
+      <div class="highlight-name" id="highlightName"></div>
+      <div class="spin-label" id="spinLabel">Spin</div>
+    </div>
+
+    <div class="controls">
+      <div class="players">
+        <button class="btn circle-btn" id="minus">−</button>
+        <div class="count" id="playerCount">0</div>
+        <button class="btn circle-btn" id="plus">+</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="chooseNames">Välj namn</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="box">
+      <h3 style="margin:0 0 8px 0">Skriv spelarnamn</h3>
+      <div class="names-list" id="namesList"></div>
+      <div class="actions">
+        <button class="btn" id="cancelNames">Avbryt</button>
+        <button class="btn" id="saveNames">Spara</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const needleImg = document.getElementById('needle');
+    const spinLabel = document.getElementById('spinLabel');
+    const highlightNameEl = document.getElementById('highlightName');
+    const playerCountEl = document.getElementById('playerCount');
+    const minus = document.getElementById('minus');
+    const plus = document.getElementById('plus');
+    const chooseNames = document.getElementById('chooseNames');
+    const modal = document.getElementById('modal');
+    const namesList = document.getElementById('namesList');
+    const saveNames = document.getElementById('saveNames');
+    const cancelNames = document.getElementById('cancelNames');
+
+    let playerCount = 0;
+    let names = [];
+    let selectedIndex = null;
+
+    function resize(){
+      const rect = stage.getBoundingClientRect();
+      canvas.width = rect.width * devicePixelRatio;
+      canvas.height = rect.height * devicePixelRatio;
+      canvas.style.width = rect.width+'px';
+      canvas.style.height = rect.height+'px';
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      drawWheel();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function drawWheel(highlightIndex=null){
+      const w = canvas.width / devicePixelRatio;
+      const h = canvas.height / devicePixelRatio;
+      ctx.clearRect(0,0,w,h);
+      if(playerCount < 2) return;
+      const cx = w/2, cy = h/2;
+      const radius = Math.min(w,h)/2 * 0.9;
+
+      const n = playerCount;
+      const anglePer = (2*Math.PI)/n;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = Math.floor(radius*0.12)+'px sans-serif';
+
+      for(let i=0;i<n;i++){
+        const a1 = -Math.PI/2 + i*anglePer;
+        const a2 = a1 + anglePer;
+        const mid = (a1+a2)/2;
+
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.lineTo(cx + Math.cos(a1)*radius, cy + Math.sin(a1)*radius);
+        ctx.stroke();
+
+        const name = names[i] || ('Spelare'+(i+1));
+        const opacity = (highlightIndex !== null && i !== highlightIndex) ? 0.2 : 0.5;
+        ctx.fillStyle = `rgba(0,0,0,${opacity})`;
+
+        const tx = cx + Math.cos(mid)*(radius*0.62);
+        const ty = cy + Math.sin(mid)*(radius*0.62);
+        ctx.save();
+        ctx.translate(tx,ty);
+        let deg = mid + Math.PI/2;
+        ctx.rotate(deg);
+        ctx.fillText(name,0,0);
+        ctx.restore();
+
+        // Om det är det valda namnet, placera overlay-div på samma ställe
+        if(highlightIndex === i){
+          highlightNameEl.style.left = `${tx}px`;
+          highlightNameEl.style.top = `${ty}px`;
+          highlightNameEl.style.transform = `translate(-50%,-50%) rotate(${deg}rad)`;
+          highlightNameEl.textContent = name;
+          highlightNameEl.style.display = 'block';
+        }
+      }
+
+      if(highlightIndex === null){
+        highlightNameEl.style.display = 'none';
+      }
+    }
+
+    function updateCountDisplay(){
+      playerCountEl.textContent = playerCount;
+      resize();
+    }
+      minus.addEventListener('click', ()=>{ 
+        if (playerCount > 2) {
+          playerCount--; 
+          names.splice(playerCount);
+          updateCountDisplay();
+        } else if (playerCount === 2) {
+          playerCount = 0; 
+          names = []; 
+          updateCountDisplay();
+        }
+      });
+    plus.addEventListener('click', ()=>{ if(playerCount===0){ playerCount=2; names=["Spelare1","Spelare2"]; } else if(playerCount<20){ playerCount++; names.push('Spelare'+playerCount); } updateCountDisplay(); });
+
+    chooseNames.addEventListener('click', ()=>{ openModal(); });
+    cancelNames.addEventListener('click', ()=>{ modal.style.display='none'; });
+
+    function openModal(){
+      namesList.innerHTML='';
+      for(let i=0;i<playerCount;i++){
+        const input = document.createElement('input');
+        input.value = names[i] || '';
+        input.placeholder = 'Spelare'+(i+1);
+        input.dataset.index = i;
+        namesList.appendChild(input);
+      }
+      modal.style.display='flex';
+    }
+
+    saveNames.addEventListener('click', ()=>{
+      const inputs = namesList.querySelectorAll('input');
+      names = [];
+      inputs.forEach((inp,i)=> names[i] = inp.value || ('Spelare'+(i+1)) );
+      modal.style.display='none';
+      drawWheel(selectedIndex);
+    });
+
+    let spinning = false;
+    let currentRotation = 180;
+
+    function animateSpin(){
+      if(spinning) return;
+      spinning = true;
+      spinLabel.style.display='none';
+      highlightNameEl.style.display = 'none';
+
+      let targetIndex = null;
+      let targetAngle = null;
+      if(playerCount >= 2){
+        const anglePer = 360/playerCount;
+        targetIndex = Math.floor(Math.random()*playerCount);
+        const offset = (Math.random()*0.8 - 0.4) * anglePer * 0.9;
+        targetAngle = (targetIndex+0.5)*anglePer + offset;
+      } else {
+        targetAngle = Math.random()*360;
+      }
+
+      const accelTime = 1000;
+      const steadyTime = 1500;
+      const decelTime = 1500;
+      const total = accelTime + steadyTime + decelTime;
+
+      const fullSpins = 5 + Math.floor(Math.random()*3);
+      const currentNorm = ((currentRotation % 360) + 360) % 360;
+      let finalDelta = fullSpins*360 + ((targetAngle - currentNorm + 360) % 360);
+
+      const start = performance.now();
+      function easeInOutCubic(t) {
+            return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+        }
+
+      function frame(now){
+            const elapsed = now - start;
+            const t = Math.min(elapsed / total, 1);
+            const eased = easeInOutCubic(t);
+            const newRotation = currentRotation + finalDelta * eased;
+
+            needleImg.style.transform = `translate(-50%,-50%) rotate(${newRotation}deg)`;
+
+            if(elapsed < total){
+                requestAnimationFrame(frame);
+            } else {
+                currentRotation += finalDelta;
+                needleImg.style.transform = `translate(-50%,-50%) rotate(${currentRotation}deg)`;
+                spinning = false;
+                if(playerCount>=2){
+                    selectedIndex = targetIndex;
+                    drawWheel(selectedIndex);
+                }
+                spinLabel.style.display='block';
+            }
+        }
+
+      requestAnimationFrame(frame);
+    }
+
+    stage.addEventListener('click', ()=>{
+      if(spinning) return;
+      if(selectedIndex !== null){ selectedIndex = null; drawWheel(null); }
+      animateSpin();
+    });
+
+    stage.addEventListener('touchstart', (e)=>{ e.preventDefault(); });
+    stage.addEventListener('touchend', ()=>{ stage.click(); });
+
+    drawWheel(null);
+    document.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+    document.addEventListener('keydown', (e)=>{ if(e.key===' '){ stage.click(); } });
+  </script>
+</body>
+</html>
