@@ -5,196 +5,142 @@
   <title>Who's the Imposter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Arial', sans-serif; }
+    .background { position: fixed; top: 0; left: 0; height: 100vh; width: 100vw; z-index: -1; background-image: url("background.png"); background-size: cover; background-position: center; background-repeat: no-repeat; }
+    body { padding: 60px 10px 10px 10px; color: #fff; }
+    h1, h2 { text-align: center; text-shadow: 2px 2px 6px #000; margin-bottom: 20px; }
+    .container { background: none; border-radius: 15px; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .header-image { max-width: 100%; height: auto; display: block; margin: 0 auto 30px auto; border-radius: 10px; }
+    input, button { display: block; margin-bottom: 15px; padding: 10px; font-size: 1em; border-radius: 10px; border: none; }
+    .name-input-wrapper { position: relative; margin-bottom: 15px; }
+    .name-input { width: 100%; }
+    .remove-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #c00; color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 20px; padding: 0; }
+    button { background-color: #444; color: #fff; cursor: pointer; }
+    button:hover { background-color: #666; }
+    .player-btn { margin: 15px 0; padding: 10px; font-size: 1em; width: 100%; border-radius: 10px; }
+    .used { background-color: #777 !important; cursor: not-allowed; }
+    #overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7); z-index: 999; }
+    #revealBox { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.85); padding: 15px; border-radius: 20px; text-align: center; color: #fff; z-index: 1000; max-width: 280px; }
+    #revealBox button { margin-top: 15px; width: 100%; }
+    .imposter-text { color: red; font-weight: bold; font-size: 1.2em; }
+    #game, #roundControl { display: none; }
+    #roundControl { margin-top: 60px; }
+    .small-button { padding: 8px 16px; font-size: 0.9em; display: inline-block; margin-top: 0px; width: auto; }
+    .start-button { margin-top: 25px; width: 100%; }
+    .inline-flex { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .disabled { opacity: 0.5; pointer-events: none; }
 
-    html, body {
-      height: 100%;
-      font-family: 'Arial', sans-serif;
-    }
-
-    .background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 100vw;
-      z-index: -1;
-      background-image: url("background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    body {
-      padding: 60px 10px 10px 10px;
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9em;
       color: #fff;
     }
+    .checkbox-label input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #444;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0;
+    }
 
-    h1, h2 {
+    .imposter-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-grow: 1;
+    }
+    .imposter-btn {
+      background-color: #444;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .imposter-value {
+      min-width: 30px;
       text-align: center;
-      text-shadow: 2px 2px 6px #000;
-      margin-bottom: 20px;
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .imposter-disabled {
+      opacity: 0.5;
     }
 
-    .container {
-      background: none;
-      border-radius: 15px;
-      padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .header-image {
-      max-width: 100%;
-      height: auto;
+    .custom-location-label {
+      margin-top: 30px;
       display: block;
-      margin: 0 auto 30px auto;
-      border-radius: 10px;
-    }
-
-    input, select, button {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 10px;
-      font-size: 1em;
-      border-radius: 10px;
-      border: none;
-    }
-
-    .name-input-wrapper {
-      position: relative;
       margin-bottom: 10px;
     }
-
-    .name-input {
+    #customLocation {
       width: 100%;
     }
-
-    .remove-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: #c00;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      cursor: pointer;
-      font-size: 16px;
-      line-height: 20px;
-      padding: 0;
+    .inline-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
-
-    button {
+    .inline-buttons button {
+      flex: 1;
+      width: 100%;
+    }
+    .clear-button {
       background-color: #444;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #666;
-    }
-
-    .player-btn {
-      margin: 15px 0;
-      padding: 10px;
-      font-size: 1em;
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    .used {
-      background-color: #777 !important;
-      cursor: not-allowed;
-    }
-
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 999;
-    }
-
-    #revealBox {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: rgba(0, 0, 0, 0.85);
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      color: #fff;
-      z-index: 1000;
-    }
-
-    #revealBox button {
-      margin-top: 20px;
-    }
-
-    .imposter-text {
       color: red;
-      font-weight: bold;
-      font-size: 1.2em;
+    }
+    .clear-button:hover {
+      background-color: #666;
+      color: #ff6666;
     }
 
-    #game, #roundControl {
-      display: none;
-    }
-
-    #roundControl {
-      margin-top: 60px;
-    }
-    .small-button {
-      padding: 8px 16px;
-      font-size: 0.9em;
-      display: inline-block;
-      margin-top: 0px;
-    }
-
-    .start-button {
-      margin-top: 25px;
+    /* Full width buttons */
+    #setup > button,
+    #roundControl > button,
+    #revealBox button {
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div class="background"></div>
-
   <img src="rubrik.png" alt="Who's the Imposter" class="header-image">
-
   <div class="container">
-
     <div id="setup">
       <div id="nameInputsContainer"></div>
       <button onclick="addNameInput()">Lägg till spelare</button>
 
-      <label>Antal imposters:
-        <select id="numImposters">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-      </label>
-      <label>Lägg till egna platser:
-        <input type="text" id="customLocation" placeholder="T.ex. Olle Ahlgrens sexkammare">
-        <button class="small-button" onclick="addLocation()">Lägg till plats</button>
-      </label>
-      <button class="start-button" onclick="startGame()">Starta spelet</button>
+      <div class="inline-flex">
+        <label>Antal imposters:</label>
+        <div class="imposter-selector" id="imposterSelector">
+          <button type="button" class="imposter-btn" onclick="changeImposters(-1)">−</button>
+          <span id="numImpostersValue" class="imposter-value">0</span>
+          <button type="button" class="imposter-btn" onclick="changeImposters(1)">+</button>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="randomImpostersCheckbox" onchange="toggleRandomImposters()">
+          Slumpa antalet Imposters
+        </label>
+      </div>
 
+      <label class="custom-location-label">Lägg till egna platser:</label>
+      <input type="text" id="customLocation" placeholder="T.ex. Olle Ahlgrens sexkammare">
+      <div class="inline-buttons">
+        <button class="small-button" onclick="addLocation()">Lägg till plats</button>
+        <button class="small-button clear-button" onclick="clearCustomLocations()">Rensa platser</button>
+      </div>
+
+      <button class="start-button" onclick="startGame()">Starta spelet</button>
     </div>
 
     <div id="game">
@@ -209,24 +155,44 @@
   </div>
 
   <div id="overlay"></div>
-
   <div id="revealBox">
     <div id="revealText"></div>
     <button onclick="closeReveal()">Stäng</button>
   </div>
 
   <script>
-    const defaultLocations = [
-      "Biblioteket", "Skola", "Ubåt", "Flygplan", "Fängelse", "Restaurang",
-      "Biograf", "Strand", "Camping", "Rymdskepp", "Nattklubb", "Kyrka",
-      "Badhus", "Supermarket", "Tunnelbana", "Bergstopp", "Isbrytare",
-      "Klassrum", "Garage", "Slakteri", "Torsvägen"
-    ];
+    const defaultLocations = ["Biblioteket", "Skola", "Ubåt", "Flygplan", "Fängelse", "Restaurang", "Biograf", "Strand", "Camping", "Rymdskepp", "Nattklubb", "Kyrka", "Badhus", "Supermarket", "Tunnelbana", "Bergstopp", "Isbrytare", "Klassrum", "Garage", "Slakteri", "Torsvägen"];
 
     let locations = [...defaultLocations];
     let players = [];
     let roles = {};
     let currentLocation = "";
+    let randomImpostersMode = false;
+    let numImposters = 0;
+
+    function saveState() {
+      localStorage.setItem('savedPlayers', JSON.stringify(players));
+      localStorage.setItem('numImposters', numImposters);
+      localStorage.setItem('randomImpostersMode', randomImpostersMode);
+      localStorage.setItem('customLocations', JSON.stringify(locations.filter(l => !defaultLocations.includes(l))));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('savedPlayers');
+      if (saved) players = JSON.parse(saved);
+      const savedNum = localStorage.getItem('numImposters');
+      if (savedNum !== null) numImposters = parseInt(savedNum);
+      randomImpostersMode = localStorage.getItem('randomImpostersMode') === 'true';
+      const savedCustom = localStorage.getItem('customLocations');
+      if (savedCustom) locations = [...defaultLocations, ...JSON.parse(savedCustom)];
+    }
+
+    function createPopup(message) {
+      const revealText = document.getElementById('revealText');
+      revealText.innerText = message;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('revealBox').style.display = 'block';
+    }
 
     function createNameInput(name = '', index = null) {
       const wrapper = document.createElement('div');
@@ -238,11 +204,15 @@
       input.placeholder = `Spelare ${index !== null ? index + 1 : document.querySelectorAll('.name-input-wrapper').length + 1}`;
       input.value = name;
       input.onkeydown = handleEnter;
+      input.oninput = updatePlayers;
 
       const remove = document.createElement('button');
       remove.innerText = '×';
       remove.className = 'remove-btn';
-      remove.onclick = () => wrapper.remove();
+      remove.onclick = () => {
+        wrapper.remove();
+        updatePlayers();
+      };
 
       wrapper.appendChild(input);
       wrapper.appendChild(remove);
@@ -250,39 +220,62 @@
       input.focus();
     }
 
-    function addNameInput() {
-      createNameInput();
-    }
+    function addNameInput() { createNameInput(); }
 
     function handleEnter(e) {
       if (e.key === 'Enter') {
         const inputs = Array.from(document.querySelectorAll('.name-input'));
         const index = inputs.indexOf(e.target);
-        if (index !== -1 && index + 1 < inputs.length) {
-          inputs[index + 1].focus();
-        } else {
-          addNameInput();
-        }
+        if (index !== -1 && index + 1 < inputs.length) inputs[index + 1].focus();
+        else addNameInput();
       }
+    }
+
+    function updatePlayers() {
+      players = Array.from(document.querySelectorAll('.name-input')).map(input => input.value.trim()).filter(n => n);
+      if (numImposters > players.length) numImposters = players.length;
+      document.getElementById('numImpostersValue').innerText = randomImpostersMode ? '?' : numImposters;
+      saveState();
     }
 
     function addLocation() {
       const loc = document.getElementById('customLocation').value.trim();
       if (loc) {
         locations.push(loc);
-        alert(`Lade till plats: ${loc}`);
         document.getElementById('customLocation').value = "";
+        saveState();
+        createPopup(`Lade till plats: ${loc}`);
       }
     }
 
-    function startGame() {
-      const names = Array.from(document.querySelectorAll('.name-input')).map(input => input.value.trim()).filter(n => n);
-      if (names.length < 3) return alert("Minst 3 spelare krävs.");
-      const numImposters = parseInt(document.getElementById('numImposters').value);
-      if (numImposters >= names.length) return alert("Fler imposters än spelare!");
+    function clearCustomLocations() {
+      locations = [...defaultLocations];
+      saveState();
+      createPopup("Egna platser rensades.");
+    }
 
-      players = names;
-      localStorage.setItem('savedPlayers', JSON.stringify(players));
+    function toggleRandomImposters() {
+      const checkbox = document.getElementById('randomImpostersCheckbox');
+      randomImpostersMode = checkbox.checked;
+      document.getElementById('numImpostersValue').innerText = randomImpostersMode ? '?' : numImposters;
+      document.getElementById('imposterSelector').classList.toggle('imposter-disabled', randomImpostersMode);
+      saveState();
+    }
+
+    function changeImposters(delta) {
+      if (randomImpostersMode) return;
+      numImposters = Math.max(0, Math.min(numImposters + delta, players.length));
+      document.getElementById('numImpostersValue').innerText = numImposters;
+      saveState();
+    }
+
+    function startGame() {
+      if (players.length < 3) return createPopup("Minst 3 spelare krävs.");
+
+      if (randomImpostersMode) {
+        numImposters = Math.floor(Math.random() * (players.length + 1));
+      }
+
       document.getElementById('setup').style.display = 'none';
       document.getElementById('game').style.display = 'block';
       document.getElementById('roundControl').style.display = 'block';
@@ -324,7 +317,10 @@
 
     function newRound() {
       closeReveal();
-      assignRoles(parseInt(document.getElementById('numImposters').value));
+      if (randomImpostersMode) {
+        numImposters = Math.floor(Math.random() * (players.length + 1));
+      }
+      assignRoles(numImposters);
       Array.from(document.querySelectorAll('.player-btn')).forEach(btn => {
         btn.classList.remove('used');
         btn.disabled = false;
@@ -337,26 +333,23 @@
     }
 
     function goBack() {
-      const saved = localStorage.getItem('savedPlayers');
-      if (saved) {
-        const container = document.getElementById('nameInputsContainer');
-        container.innerHTML = "";
-        JSON.parse(saved).forEach((name, i) => createNameInput(name, i));
-      }
       document.getElementById('setup').style.display = 'block';
       document.getElementById('game').style.display = 'none';
       document.getElementById('roundControl').style.display = 'none';
     }
 
     window.onload = () => {
-      const saved = localStorage.getItem('savedPlayers');
+      loadState();
       const container = document.getElementById('nameInputsContainer');
       container.innerHTML = "";
-      if (saved) {
-        JSON.parse(saved).forEach((name, i) => createNameInput(name, i));
+      if (players.length > 0) {
+        players.forEach((name, i) => createNameInput(name, i));
       } else {
         ["", "", ""].forEach((_, i) => createNameInput("", i));
       }
+      document.getElementById('numImpostersValue').innerText = randomImpostersMode ? '?' : numImposters;
+      document.getElementById('randomImpostersCheckbox').checked = randomImpostersMode;
+      document.getElementById('imposterSelector').classList.toggle('imposter-disabled', randomImpostersMode);
     }
   </script>
 </body>
