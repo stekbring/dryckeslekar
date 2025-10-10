@@ -132,22 +132,26 @@
     .catch(error => {
       console.error("Kunde inte läsa filen:", error);
     });
-    const GAME_NAME = "Långa bollar på Bengt";  // <-- ändra beroende på sida
-    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxc2_PLQ04uDHhj7NuZpmU1Smi_C9v3-mAGrneDNjvpO0C7e03GQc3LGs6cPC_AEx3xWw/exec";
+    /* --- Anpassa dessa två --- */
+    const GAME_NAME = "Långa bollar på Bengt";    // ändra per leksida
+    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbz_bNFpua7LMy6I9Cs7H8_wSxWq_cUKAFq5OOa5c-IM/dev"; // din Apps Script URL
+    /* ------------------------- */
 
-    let pageEnterTime = Date.now();
+    let elapsed = 0;
+    let sent = false;
+    let timerId = null;
 
-    // Funktion för att identifiera browser/OS
+    // Enkel UA-parse (OS + browser)
     function parseUserAgent(ua) {
-      let os = "Unknown OS";
+      let os = "Unknown";
       if (/Windows/i.test(ua)) os = "Windows";
       else if (/Mac/i.test(ua)) os = "Mac";
-      else if (/Linux/i.test(ua)) os = "Linux";
       else if (/Android/i.test(ua)) os = "Android";
       else if (/iPhone|iPad/i.test(ua)) os = "iOS";
+      else if (/Linux/i.test(ua)) os = "Linux";
 
-      let browser = "Unknown Browser";
-      if (/Chrome/i.test(ua)) browser = "Chrome";
+      let browser = "Unknown";
+      if (/CriOS|Chrome/i.test(ua) && !/Edge/i.test(ua)) browser = "Chrome";
       else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
       else if (/Firefox/i.test(ua)) browser = "Firefox";
       else if (/Edge/i.test(ua)) browser = "Edge";
@@ -155,32 +159,83 @@
       return { os, browser };
     }
 
-    // När sidan stängs / laddas om
-    window.addEventListener("beforeunload", async () => {
-      const timeOnPage = Math.round((Date.now() - pageEnterTime) / 1000);
+    function startCounting() {
+      if (timerId) return;
+      timerId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          elapsed++;
+          // debug: console.log("elapsed:", elapsed);
+          if (!sent && elapsed >= 30) {
+            sendLog(elapsed);
+            sent = true;
+            clearInterval(timerId);
+          }
+        }
+      }, 1000);
+    }
 
-      const ua = navigator.userAgent;
+    document.addEventListener('visibilitychange', () => {
+      // timer fortsätter bara räkna när sidan är synlig (fokus)
+      // inget särskilt behövs här då interval-koll gör jobbet
+    });
+
+    // Kör räknaren direkt vid load
+    startCounting();
+
+    // Funktion som skickar loggen — vi skickar form-encoded (URLSearchParams) för enklare CORS
+    async function sendLog(timeOnPage) {
+      const ua = navigator.userAgent || '';
       const { os, browser } = parseUserAgent(ua);
-      const screenSize = `${window.screen.width}x${window.screen.height}`;
-      const referrer = document.referrer || "Direct";
-
-      // Hämta IP-adress
-      const ipRes = await fetch("https://api.ipify.org?format=json");
-      const ipData = await ipRes.json();
-
       const payload = {
         game: GAME_NAME,
-        ip: ipData.ip,
+        timeOnPage: timeOnPage,
         userAgent: ua,
         os: os,
         browser: browser,
-        screen: screenSize,
-        referrer: referrer,
-        timeOnPage: timeOnPage
+        screenSize: `${window.screen.width}x${window.screen.height}`,
+        referrer: document.referrer || 'Direct',
+        language: navigator.language || '',
+        languages: (navigator.languages && navigator.languages.join ? navigator.languages.join(',') : navigator.language || ''),
+        deviceMemory: navigator.deviceMemory || '',
+        hardwareConcurrency: navigator.hardwareConcurrency || '',
+        doNotTrack: navigator.doNotTrack || navigator.msDoNotTrack || '',
+        cookieEnabled: navigator.cookieEnabled,
+        connection: (navigator.connection ? { effectiveType: navigator.connection.effectiveType, downlink: navigator.connection.downlink, rtt: navigator.connection.rtt } : {}),
+        navType: (performance.getEntriesByType && performance.getEntriesByType('navigation').length) ? performance.getEntriesByType('navigation')[0].type : (performance.navigation ? performance.navigation.type : 'unknown'),
+        url: location.href,
+        timezoneOffset: new Date().getTimezoneOffset()
       };
 
-      navigator.sendBeacon(LOG_ENDPOINT, JSON.stringify(payload));
-    });
+      // Hämta publik IP (om möjligt). Om fel: spara "N/A"
+      try {
+        const r = await fetch('https://api.ipify.org?format=json');
+        const j = await r.json();
+        payload.ip = j.ip || 'N/A';
+      } catch (err) {
+        payload.ip = 'N/A';
+      }
+
+      // Form-encoding (enkelt för att undvika preflight)
+      const form = new URLSearchParams();
+      for (const k in payload) {
+        if (typeof payload[k] === 'object') form.append(k, JSON.stringify(payload[k]));
+        else form.append(k, String(payload[k]));
+      }
+
+      // Skicka — vi behöver inte läsa svaret
+      fetch(LOG_ENDPOINT, {
+        method: 'POST',
+        body: form
+      }).catch((err) => {
+        // fallback: försök sendBeacon (bra vid navigation/close)
+        try {
+          const blob = new Blob([form.toString()], { type: 'application/x-www-form-urlencoded' });
+          navigator.sendBeacon(LOG_ENDPOINT, blob);
+        } catch (e) {
+          // swallow
+        }
+      });
+    }
 
 </script>
 
