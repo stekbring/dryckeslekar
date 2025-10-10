@@ -132,6 +132,56 @@
     .catch(error => {
       console.error("Kunde inte läsa filen:", error);
     });
+    const GAME_NAME = "Långa bollar på Bengt";  // <-- ändra beroende på sida
+    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxc2_PLQ04uDHhj7NuZpmU1Smi_C9v3-mAGrneDNjvpO0C7e03GQc3LGs6cPC_AEx3xWw/exec";
+
+    let pageEnterTime = Date.now();
+
+    // Funktion för att identifiera browser/OS
+    function parseUserAgent(ua) {
+      let os = "Unknown OS";
+      if (/Windows/i.test(ua)) os = "Windows";
+      else if (/Mac/i.test(ua)) os = "Mac";
+      else if (/Linux/i.test(ua)) os = "Linux";
+      else if (/Android/i.test(ua)) os = "Android";
+      else if (/iPhone|iPad/i.test(ua)) os = "iOS";
+
+      let browser = "Unknown Browser";
+      if (/Chrome/i.test(ua)) browser = "Chrome";
+      else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+      else if (/Firefox/i.test(ua)) browser = "Firefox";
+      else if (/Edge/i.test(ua)) browser = "Edge";
+
+      return { os, browser };
+    }
+
+    // När sidan stängs / laddas om
+    window.addEventListener("beforeunload", async () => {
+      const timeOnPage = Math.round((Date.now() - pageEnterTime) / 1000);
+
+      const ua = navigator.userAgent;
+      const { os, browser } = parseUserAgent(ua);
+      const screenSize = `${window.screen.width}x${window.screen.height}`;
+      const referrer = document.referrer || "Direct";
+
+      // Hämta IP-adress
+      const ipRes = await fetch("https://api.ipify.org?format=json");
+      const ipData = await ipRes.json();
+
+      const payload = {
+        game: GAME_NAME,
+        ip: ipData.ip,
+        userAgent: ua,
+        os: os,
+        browser: browser,
+        screen: screenSize,
+        referrer: referrer,
+        timeOnPage: timeOnPage
+      };
+
+      navigator.sendBeacon(LOG_ENDPOINT, JSON.stringify(payload));
+    });
+
 </script>
 
 </body>
