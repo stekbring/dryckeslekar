@@ -125,6 +125,104 @@
     #revealBox button {
       width: 100%;
     }
+    /* === Vem börjar-popup === */
+    /* === Vem börjar-popup (förbättrad) === */
+    /* === Vem börjar-popup (kompakt & centrerad) === */
+    #starterPopup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.9);
+      border-radius: 20px;
+      padding: 10px;
+      text-align: center;
+      color: #fff;
+      z-index: 1200;
+      width: 250px;   /* mindre popup */
+      height: 250px;  /* mindre popup */
+      overflow: hidden;
+    }
+
+    #wheelContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #wheelNames {
+      position: absolute;
+      width: 200px;  /* fast storlek eller max 80% av popupen */
+      height: 200px; /* samma som width */
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      transform: translate(-50%, -52%);
+      transition: opacity 0.5s ease;
+    }
+
+    #wheelNames span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: center;
+      font-size: 0.8em;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    /* Pilen */
+    #wheelArrow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80%; /* anpassar sig snyggt i mindre ruta */
+      height: auto;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transition: transform 0.1s linear;
+      z-index: 10;
+    }
+
+    #chosenName {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #ff5555;
+      display: none;
+      z-index: 20;
+    }
+
+    #closeStarterBtn {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      padding: 6px 14px;
+      font-size: 0.85em;
+      border-radius: 10px;
+      background-color: #444;
+      color: white;
+      z-index: 30;
+    }
+
+    .dimmed {
+      opacity: 0.10;
+      transition: opacity 0.5s ease;
+    }
+    #startPickerBtn {
+      display: block;
+      margin: 20px auto; /* centrerar horisontellt */
+      margin-top: 50px;
+      padding: 8px 8px;
+      font-size: 0.9em;
+    }
+
+
   </style>
 </head>
 <body>
@@ -161,6 +259,7 @@
     <div id="game">
       <h2>Klicka på ditt namn</h2>
       <div id="playerButtons"></div>
+      <button id="startPickerBtn" class="startPickerBtn" onclick="openStarterPopup()">Vem börjar?</button>
     </div>
 
     <div id="roundControl">
@@ -175,7 +274,19 @@
     <button onclick="closeReveal()">Stäng</button>
   </div>
 
+  <!-- Popup för Vem börjar -->
+  <div id="starterOverlay"></div>
+  <div id="starterPopup">
+    <div id="wheelContainer">
+      <div id="wheelNames"></div>
+      <img id="wheelArrow" src="pil.png" alt="Arrow">
+      <div id="chosenName"></div>
+      <button id="closeStarterBtn" onclick="closeStarterPopup()">Stäng</button>
+    </div>
+  </div>
+
   <script>
+    let lastNumImposters = null; // sparar antal imposters från förra rundan
     let defaultLocations = [];
     let locations = [...defaultLocations];
     let players = [];
@@ -305,9 +416,14 @@
       if (players.length < 3) return createPopup("Minst 3 spelare krävs.");
 
       if (randomImpostersMode) {
-        numImposters = Math.floor(Math.random() * (players.length + 1));
+        const maxImposters = players.length; // kan inkludera 0
+        let newNum;
+        do {
+          newNum = Math.floor(Math.random() * (maxImposters + 1)); // 0 till max
+        } while (newNum === lastNumImposters && maxImposters > 0);
+        numImposters = newNum;
+        lastNumImposters = numImposters;
       }
-
       document.getElementById('setup').style.display = 'none';
       document.getElementById('game').style.display = 'block';
       document.getElementById('roundControl').style.display = 'block';
@@ -350,7 +466,13 @@
     function newRound() {
       closeReveal();
       if (randomImpostersMode) {
-        numImposters = Math.floor(Math.random() * (players.length + 1));
+        const maxImposters = players.length;
+        let newNum;
+        do {
+          newNum = Math.floor(Math.random() * (maxImposters + 1));
+        } while (newNum === lastNumImposters && maxImposters > 0);
+        numImposters = newNum;
+        lastNumImposters = numImposters;
       }
       assignRoles(numImposters);
       Array.from(document.querySelectorAll('.player-btn')).forEach(btn => {
@@ -384,6 +506,125 @@
       document.getElementById('randomImpostersCheckbox').checked = randomImpostersMode;
       document.getElementById('imposterSelector').classList.toggle('imposter-disabled', randomImpostersMode);
     }
+
+    // === Vem börjar-funktioner ===
+    let spinning = false;
+    let currentRotation = 0;
+
+    function openStarterPopup() {
+      if (players.length === 0) return createPopup("Inga spelare ännu!");
+
+      const overlay = document.getElementById("starterOverlay");
+      const popup = document.getElementById("starterPopup");
+      const namesContainer = document.getElementById("wheelNames");
+      const chosenNameEl = document.getElementById("chosenName");
+      const closeBtn = document.getElementById("closeStarterBtn");
+      const arrow = document.getElementById("wheelArrow");
+
+      overlay.style.display = "block";
+      popup.style.display = "block";
+      chosenNameEl.style.display = "none";
+      closeBtn.style.display = "none";
+
+      namesContainer.innerHTML = "";
+      const playerCount = players.length;
+      const angleStep = 360 / playerCount;
+
+      // Placera namn runt cirkeln
+      players.forEach((name, i) => {
+        const angle = i * angleStep;
+        const span = document.createElement("span");
+        span.style.transform = `rotate(${angle}deg) translate(0, -100px) rotate(${-angle}deg) translateX(-50%)`;
+
+        span.innerText = name;
+        namesContainer.appendChild(span);
+      });
+
+      animateSpin(playerCount, arrow, chosenNameEl, closeBtn);
+    }
+
+    function animateSpin(playerCount, arrow, highlightNameEl, closeBtn) {
+      if (spinning) return;
+      spinning = true;
+      highlightNameEl.style.display = "none";
+      document.getElementById("wheelNames").classList.remove("dimmed");
+      arrow.classList.remove("dimmed");
+
+      let targetIndex = null;
+      let targetAngle = null;
+
+      if (playerCount >= 2) {
+        const anglePer = 360 / playerCount;
+        targetIndex = Math.floor(Math.random() * playerCount);
+        const offset = (Math.random() * 0.8 - 0.4) * anglePer * 0.9;
+        targetAngle = (targetIndex + 0.5) * anglePer + offset;
+      } else {
+        targetAngle = Math.random() * 360;
+      }
+
+      const accelTime = 1000;
+      const steadyTime = 1500;
+      const decelTime = 1500;
+      const total = accelTime + steadyTime + decelTime;
+
+      const fullSpins = 5 + Math.floor(Math.random() * 3);
+      const currentNorm = ((currentRotation % 360) + 360) % 360;
+      const finalDelta = fullSpins * 360 + ((targetAngle - currentNorm + 360) % 360);
+
+      const start = performance.now();
+
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function step(now) {
+        const elapsed = now - start;
+        const t = Math.min(elapsed / total, 1);
+        const eased = easeInOutCubic(t);
+        const rotation = currentRotation + finalDelta * eased;
+        arrow.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+
+        if (elapsed < total) {
+          requestAnimationFrame(step);
+        } else {
+          currentRotation = rotation;
+          spinning = false;
+
+          // Visa resultat
+          const chosenIndex = getPlayerIndexFromRotation(currentRotation, playerCount);
+          const chosenPlayer = players[chosenIndex];
+          highlightNameEl.innerText = chosenPlayer;
+          highlightNameEl.style.display = "block";
+          closeBtn.style.display = "block";
+
+          // Dämpa övriga element
+          document.getElementById("wheelNames").classList.add("dimmed");
+          arrow.classList.add("dimmed");
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+
+    function closeStarterPopup() {
+      document.getElementById("starterOverlay").style.display = "none";
+      document.getElementById("starterPopup").style.display = "none";
+      spinning = false;
+    }
+
+    function getPlayerIndexFromRotation(rotation, playerCount) {
+      const anglePer = 360 / playerCount;
+      // Normera rotation 0-360
+      const normRot = ((rotation % 360) + 360) % 360;
+      // Kompensera pilens startvinkel (uppåt)
+      const adjustedRot = (normRot + 90 + anglePer / 2) % 360;
+      // Räkna index
+      const index = Math.floor(adjustedRot / anglePer);
+      return index;
+    }
+
+
   </script>
 </body>
 </html>
