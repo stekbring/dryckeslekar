@@ -46,7 +46,7 @@ Regeringshuset
 Teater
 Biblioteksfilial
 Tågstation
-Öde ö
+Öde Ö
 Las Vegas
 New York
 Hollywood
@@ -64,3 +64,19 @@ Post Malone
 Olof Palme
 Mona Lisa
 Darth Vader
+The Office
+Systembolaget
+Ullared
+Liseberg
+Månen
+Hogwarts
+Kebnekaise
+Stureplan
+Jockeboi
+Kungen
+Pontus Rasmusson
+Ove Sundberg
+Donald Trump
+Donald Duck
+Jimmie Åkesson
+
