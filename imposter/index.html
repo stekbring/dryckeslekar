@@ -22,8 +22,22 @@
     .player-btn { margin: 15px 0; padding: 10px; font-size: 1em; width: 100%; border-radius: 10px; }
     .used { background-color: #777 !important; cursor: not-allowed; }
     #overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7); z-index: 999; }
-    #revealBox { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.85); padding: 15px; border-radius: 20px; text-align: center; color: #fff; z-index: 1000; max-width: 280px; }
-    #revealBox button { margin-top: 15px; width: 100%; }
+    #revealBox {
+      display: none;
+      position: fixed;
+      top: 45%; /* lyfter upp rutan lite */
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 25px 40px 15px 40px; /* mer plats åt höger, vänster och över, men inte under */
+      border-radius: 20px;
+      text-align: center;
+      color: #fff;
+      z-index: 1000;
+      max-width: 360px; /* gör rutan bredare */
+    }
+
+    #revealBox button { margin-top: 25px; width: 100%; }
     .imposter-text { color: red; font-weight: bold; font-size: 1.2em; }
     #game, #roundControl { display: none; }
     #roundControl { margin-top: 60px; }
@@ -145,7 +159,7 @@
     </div>
 
     <div id="game">
-      <h2>Klicka på ditt namn för att se platsen</h2>
+      <h2>Klicka på ditt namn</h2>
       <div id="playerButtons"></div>
     </div>
 
@@ -162,14 +176,31 @@
   </div>
 
   <script>
-    const defaultLocations = ["Biblioteket", "Skola", "Ubåt", "Flygplan", "Fängelse", "Restaurang", "Biograf", "Strand", "Camping", "Rymdskepp", "Nattklubb", "Kyrka", "Badhus", "Supermarket", "Tunnelbana", "Bergstopp", "Isbrytare", "Klassrum", "Garage", "Slakteri", "Torsvägen", "Kyrkogård", "Volvo i Braås"];
-
+    let defaultLocations = [];
     let locations = [...defaultLocations];
     let players = [];
     let roles = {};
     let currentLocation = "";
     let randomImpostersMode = false;
     let numImposters = 0;
+
+    async function loadLocations() {
+      try {
+        const response = await fetch("platser.txt");
+        const text = await response.text();
+        defaultLocations = text
+          .split("\n")
+          .map(line => line.trim())
+          .filter(line => line.length > 0);
+        locations = [...defaultLocations];
+        console.log(`Laddade ${locations.length} platser från platser.txt`);
+      } catch (error) {
+        console.error("Kunde inte läsa platser.txt:", error);
+        defaultLocations = ["Biblioteket", "Skola", "Ubåt"]; // fallback
+        locations = [...defaultLocations];
+      }
+    }
+
 
     function saveState() {
       localStorage.setItem('savedPlayers', JSON.stringify(players));
@@ -307,7 +338,7 @@
           if (roles[p] === "Imposter") {
             revealText.innerHTML = `<span class='imposter-text'>IMPOSTER!</span>`;
           } else {
-            revealText.innerText = `Plats: ${roles[p]}`;
+            revealText.innerText = `${roles[p]}`;
           }
           document.getElementById('overlay').style.display = 'block';
           document.getElementById('revealBox').style.display = 'block';
@@ -339,7 +370,8 @@
       document.getElementById('roundControl').style.display = 'none';
     }
 
-    window.onload = () => {
+    window.onload = async () => {
+      await loadLocations();
       loadState();
       const container = document.getElementById('nameInputsContainer');
       container.innerHTML = "";
