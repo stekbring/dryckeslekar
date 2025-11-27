@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>10000 — Farkle</title>
+  <style>
+    :root{--size: min(92vw,820px); --accent:#f59e0b; --bg:#0b0b0d; --card:#0f1113;}
+    html,body{height:100%;margin:0;background:var(--bg); color:#e6eef8; font-family:system-ui,Segoe UI,Roboto,Arial}
+    body{display:flex;align-items:center;justify-content:center;padding:18px}
+
+    .app{width:100%;max-width:1100px;display:grid;grid-template-columns:1fr 380px;gap:18px}
+    @media (max-width:900px){ .app{grid-template-columns:1fr;}}
+
+    /* Left area — game board */
+    .board{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;gap:12px}
+    .header{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .title{font-weight:700;font-size:1.3rem;display:flex;gap:8px;align-items:center}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--card);border:1px solid rgba(255,255,255,0.04);color:inherit;padding:10px 14px;border-radius:10px;font-size:0.95rem}
+    .muted{opacity:0.7;font-size:0.95rem}
+
+    .settings{display:flex;gap:12px;align-items:center}
+    select,input[type=number]{background:#0b0b0b;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04);color:inherit}
+
+    .dice-area{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px}
+    .die{width:64px;height:64px;border-radius:10px;background:linear-gradient(180deg,#111315,#0b0b0d);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.03);touch-action:manipulation}
+    .die.kept{outline:3px solid rgba(245,158,11,0.18);transform:translateY(-6px)}
+    .die.disabled{opacity:0.35}
+    .dice-row{display:flex;gap:6px;justify-content:center}
+
+    .action-row{display:flex;gap:8px;align-items:center;justify-content:center;padding:8px}
+    .big-btn{padding:12px 18px;border-radius:12px;font-weight:700;background:linear-gradient(180deg,var(--accent),#b45309);color:#081219;border:none}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+
+    .info{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .turn-card{background:linear-gradient(180deg, rgba(255,255,255,0.02),transparent);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-width:200px}
+
+    /* Right area — sidebar */
+    .sidebar{display:flex;flex-direction:column;gap:12px}
+    .panel{background:var(--card);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .players-list{display:flex;flex-direction:column;gap:8px}
+    .player-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border-radius:8px}
+    .player-row.active{background:linear-gradient(90deg, rgba(245,158,11,0.06), transparent);border:1px solid rgba(245,158,11,0.08)}
+    .player-name{font-weight:600}
+    .small{font-size:0.86rem;color:#b9c2d6}
+
+    .score-breakdown{font-family:monospace;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:8px;border-radius:8px;max-height:220px;overflow:auto}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:40}
+    .box{background:var(--card);padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);width:92%;max-width:480px}
+    .names{display:flex;flex-direction:column;gap:8px}
+    .names input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+    /* footer */
+    .footer{display:flex;gap:8px;align-items:center;justify-content:space-between;padding-top:6px}
+    .rules{font-size:0.9rem}
+
+    /* responsive die sizes */
+    @media (max-width:540px){ .die{width:52px;height:52px;font-size:1.2rem} .dice-area{gap:8px}}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="board">
+      <div class="header">
+        <div class="title">🎲 10000 - Farkle</div>
+        <div class="controls">
+          <div class="settings">
+            <label class="muted">Tärningar</label>
+            <select id="diceCount">
+              <option value="6">6</option>
+              <option value="5">5</option>
+              <option value="4">4</option>
+              <option value="3">3</option>
+              <option value="2">2</option>
+              <option value="1">1</option>
+            </select>
+            <label class="muted">Spelare</label>
+            <button class="btn" id="editPlayers">Ställ in</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small">På tur:</div>
+            <div id="currentPlayerName" style="font-weight:800;font-size:1.1rem">Ingen</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Turpoäng</div>
+            <div id="turnScore" style="font-weight:800;font-size:1.1rem">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dice-area" id="diceArea" aria-live="polite" role="application"></div>
+
+      <div class="action-row">
+        <button class="big-btn" id="rollBtn">Kasta</button>
+        <button class="btn secondary" id="bankBtn">Avsluta tur</button>
+        <button class="btn" id="showRules">Visa regler</button>
+      </div>
+
+      <div class="info">
+        <div class="muted">Runda: <span id="roundInfo">0</span></div>
+        <div class="muted">Hot dice: <span id="hotDice">Nej</span></div>
+      </div>
+
+      <div class="footer">
+        <div class="rules muted">Klicka på tärningarna för att spara dem. Poäng räknas automatiskt enligt vald regeluppsättning. Mobilvänlig.</div>
+        <div class="muted">Mål: 10 000</div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700">Leaderboard</div>
+          <div class="small">Först till 10 000</div>
+        </div>
+        <div class="players-list" id="playersList"></div>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:700;margin-bottom:6px">Poäng - hur det räknas</div>
+        <div class="small" style="margin-bottom:6px">Aktuell räkning av sparade tärningar:</div>
+        <div class="score-breakdown" id="scoreBreakdown">Ingen sparad tärning</div>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:700;margin-bottom:6px">Kontroller</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="resetGame">Starta om</button>
+          <button class="btn" id="undoKeep">Ångra markering</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- modal players -->
+  <div class="modal" id="modal">
+    <div class="box">
+      <h3 style="margin:0 0 8px 0">Spelare och namn</h3>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn" id="addPlayer">+ Spelare</button>
+        <button class="btn" id="removePlayer">− Spelare</button>
+        <div style="margin-left:auto;display:flex;gap:6px"><button class="btn" id="modalCancel">Avbryt</button><button class="btn" id="modalSave">Spara</button></div>
+      </div>
+      <div class="names" id="namesContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Game configuration according to user's rules ---
+    const TARGET_SCORE = 10000;
+    const MIN_FIRST_SCORE = 1000; // need this on first scoring round to enter
+
+    // scoring helper according to provided rules
+    function scoreDice(values){
+      // values: array of integers 1..6
+      const counts = [0,0,0,0,0,0,0];
+      for(const v of values) counts[v]++;
+      const used = [];
+      let score = 0;
+      const breakdown = [];
+
+      const totalDice = values.length;
+
+      // Check straight 1-6
+      const isStraight = counts.slice(1).every(c=>c===1) && totalDice===6;
+      if(isStraight){ score += 1500; breakdown.push({label:'Stege 1-6', pts:1500, usedCount:6}); return {score, breakdown}; }
+
+      // Two triplets
+      const triplets = counts.map((c,i)=> c>=3 ? i : 0).filter(Boolean);
+      if(triplets.length>=2){ score += 2500; breakdown.push({label:'Två tripplar', pts:2500, usedCount:6}); return {score, breakdown}; }
+
+      // Three pairs (exactly three faces with count==2 and totalDice==6)
+      const pairs = counts.filter(c => c===2).length;
+      if(pairs===3 && totalDice===6){ score += 1500; breakdown.push({label:'Tre par', pts:1500, usedCount:6}); return {score, breakdown}; }
+
+      // Four of a kind + pair
+      if(totalDice===6){
+        const fourIndex = counts.findIndex(c=>c===4);
+        const pairIndex = counts.findIndex(c=>c===2);
+        if(fourIndex>0 && pairIndex>0){ score += 1500; breakdown.push({label:'Fyra lika + par', pts:1500, usedCount:6}); return {score, breakdown}; }
+      }
+
+      // Six/Five/Four of any number (scores fixed)
+      for(let face=1; face<=6; face++){
+        if(counts[face]===6){ score += 3000; breakdown.push({label:`Sex ${face}:or`, pts:3000, usedCount:6}); counts[face]=0; }
+      }
+      for(let face=1; face<=6; face++){
+        if(counts[face]===5){ score += 2000; breakdown.push({label:`Fem ${face}:or`, pts:2000, usedCount:5}); counts[face]=0; }
+      }
+      for(let face=1; face<=6; face++){
+        if(counts[face]===4){ score += 1000; breakdown.push({label:`Fyra ${face}:or`, pts:1000, usedCount:4}); counts[face]=counts[face]-4; }
+      }
+
+      // Three of a kind mapping per user's rules
+      const threeMap = {1:300,2:200,3:300,4:400,5:500,6:600};
+      for(let face=1; face<=6; face++){
+        while(counts[face]>=3){ score += threeMap[face]; breakdown.push({label:`Tre ${face}:or`, pts:threeMap[face], usedCount:3}); counts[face]-=3; }
+      }
+
+      // Singles: 1 => 100, 5 => 50
+      if(counts[1]>0){ score += counts[1]*100; breakdown.push({label:`Enor (1) x${counts[1]}`, pts:counts[1]*100, usedCount:counts[1]}); counts[1]=0; }
+      if(counts[5]>0){ score += counts[5]*50; breakdown.push({label:`Femmor (5) x${counts[5]}`, pts:counts[5]*50, usedCount:counts[5]}); counts[5]=0; }
+
+      return {score, breakdown};
+    }
+
+    // --- UI & game state ---
+    const diceArea = document.getElementById('diceArea');
+    const diceCountEl = document.getElementById('diceCount');
+    const rollBtn = document.getElementById('rollBtn');
+    const bankBtn = document.getElementById('bankBtn');
+    const playersListEl = document.getElementById('playersList');
+    const currentPlayerNameEl = document.getElementById('currentPlayerName');
+    const turnScoreEl = document.getElementById('turnScore');
+    const scoreBreakdownEl = document.getElementById('scoreBreakdown');
+    const roundInfo = document.getElementById('roundInfo');
+    const hotDiceEl = document.getElementById('hotDice');
+
+    const editPlayersBtn = document.getElementById('editPlayers');
+    const modal = document.getElementById('modal');
+    const namesContainer = document.getElementById('namesContainer');
+    const addPlayer = document.getElementById('addPlayer');
+    const removePlayer = document.getElementById('removePlayer');
+    const modalSave = document.getElementById('modalSave');
+    const modalCancel = document.getElementById('modalCancel');
+    const resetGameBtn = document.getElementById('resetGame');
+    const undoKeepBtn = document.getElementById('undoKeep');
+    const showRulesBtn = document.getElementById('showRules');
+
+    let players = [];
+    let currentPlayer = 0;
+    let round = 0;
+
+    // turn state
+    let diceCount = parseInt(diceCountEl.value,10);
+    let dice = []; // {value, kept(bool), disabled}
+    let hasEntered = []; // per player whether they've gotten initial MIN_FIRST_SCORE
+    let turnAccum = 0;
+    let hotDice = false;
+
+    function initDefaults(){
+      players = [{name:'Spelare 1',score:0},{name:'Spelare 2',score:0}];
+      hasEntered = [false,false];
+      currentPlayer = 0; round = 1;
+      resetTurn();
+      renderPlayers();
+    }
+
+    function resetTurn(){
+      diceCount = parseInt(diceCountEl.value,10);
+      dice = Array.from({length:diceCount}).map(()=> ({value:1,kept:false,disabled:false}));
+      turnAccum = 0;
+      hotDice = false;
+      updateUI();
+    }
+
+    function rollDice(){
+      // ensure there are rollable dice
+      if(dice.every(d=>d.kept)){
+        // hot dice: reset all to rollable
+        dice = Array.from({length:diceCount}).map(()=> ({value:1,kept:false,disabled:false}));
+      }
+
+      // roll only not kept
+      for(const d of dice){ if(!d.kept){ d.value = Math.floor(Math.random()*6)+1; d.disabled=false; } }
+
+      // check if roll gave any scoring combination among the rolled dice (not counting previously kept)
+      const rollValues = dice.filter(d=>!d.kept).map(d=>d.value);
+      const test = scoreDice(rollValues);
+      if(test.score===0){ // farkle -> lose accumulated turn points
+        alert(players[currentPlayer].name + ' fick inget — turen går förlorad!');
+        endTurn(false); // lose accumulated
+        return;
+      }
+
+      updateUI();
+    }
+
+    function endTurn(savePoints=true){
+      // if savePoints, add turnAccum to player's total
+      if(savePoints){
+        players[currentPlayer].score += turnAccum;
+        // mark entry if first time reached MIN_FIRST_SCORE
+        if(!hasEntered[currentPlayer] && players[currentPlayer].score>=MIN_FIRST_SCORE) hasEntered[currentPlayer]=true;
+      }
+
+      // check win
+      if(players[currentPlayer].score >= TARGET_SCORE){
+        // start final round for others
+        const winner = players[currentPlayer];
+        const confirmMsg = `${winner.name} nådde ${winner.score} poäng! Övriga spelare får en sista runda.`;
+        alert(confirmMsg);
+        // For simplicity: declare winner if nobody beats on next rounds — here we just reset
+      }
+
+      // next player
+      currentPlayer = (currentPlayer + 1) % players.length;
+      round++;
+      resetTurn();
+      renderPlayers();
+    }
+
+    function toggleKeep(index){
+      const d = dice[index];
+      if(!d) return;
+      // toggle only if die is active (i.e., has been rolled at least once this turn)
+      if(d.disabled && !d.kept) return;
+      d.kept = !d.kept;
+
+      // after toggling, recalc turnAccum based on kept dice
+      const keptValues = dice.filter(x=>x.kept).map(x=>x.value);
+      const sc = scoreDice(keptValues);
+      turnAccum = sc.score;
+      updateBreakdown(sc.breakdown);
+      updateUI();
+    }
+
+    function updateBreakdown(breakdown){
+      if(!breakdown || breakdown.length===0){ scoreBreakdownEl.textContent = 'Inga poäng i valda tärningar'; return; }
+      scoreBreakdownEl.innerHTML = breakdown.map(b=>`<div>${b.label} — ${b.pts}p</div>`).join('');
+    }
+
+    function renderDice(){
+      diceArea.innerHTML='';
+      for(let i=0;i<dice.length;i++){
+        const d = dice[i];
+        const el = document.createElement('button');
+        el.className = 'die' + (d.kept? ' kept':'') + (d.disabled? ' disabled':'');
+        el.setAttribute('aria-pressed', d.kept ? 'true':'false');
+        el.innerHTML = `<div style="text-align:center"><div style=\"font-size:0.8rem;color:#b9c2d6\">#${i+1}</div><div style=\"font-size:1.4rem;margin-top:6px\">${d.value}</div></div>`;
+        el.addEventListener('click', ()=> toggleKeep(i));
+        diceArea.appendChild(el);
+      }
+    }
+
+    function renderPlayers(){
+      playersListEl.innerHTML='';
+      for(let i=0;i<players.length;i++){
+        const p = players[i];
+        const row = document.createElement('div');
+        row.className = 'player-row' + (i===currentPlayer? ' active':'');
+        row.innerHTML = `<div style="display:flex;flex-direction:column"><div class="player-name">${p.name}</div><div class="small">Poäng: ${p.score}</div></div><div style=\"text-align:right\"><div class=\"small\">${i===currentPlayer? 'På tur':''}</div><div style=\"font-weight:800\">${p.score}</div></div>`;
+        playersListEl.appendChild(row);
+      }
+      currentPlayerNameEl.textContent = players[currentPlayer]?.name || 'Ingen';
+      turnScoreEl.textContent = turnAccum;
+      roundInfo.textContent = round;
+      hotDiceEl.textContent = hotDice? 'Ja':'Nej';
+    }
+
+    function updateUI(){
+      renderDice();
+      renderPlayers();
+      // update breakdown based on currently kept dice
+      const keptVals = dice.filter(d=>d.kept).map(d=>d.value);
+      const sc = scoreDice(keptVals);
+      updateBreakdown(sc.breakdown);
+      turnScoreEl.textContent = turnAccum;
+      // disable roll if no dice left? handled in roll
+    }
+
+    // --- players modal ---
+    function openPlayersModal(){
+      namesContainer.innerHTML = '';
+      for(let i=0;i<players.length;i++){
+        const div = document.createElement('div');
+        div.style.display='flex';div.style.gap='8px';div.style.alignItems='center';
+        const inp = document.createElement('input'); inp.value = players[i].name; inp.dataset.index=i; inp.style.flex='1';
+        const scoreInp = document.createElement('input'); scoreInp.type='number'; scoreInp.value = players[i].score; scoreInp.dataset.index=i; scoreInp.style.width='90px';
+        div.appendChild(inp); div.appendChild(scoreInp);
+        namesContainer.appendChild(div);
+      }
+      modal.style.display='flex';
+    }
+
+    addPlayer.addEventListener('click', ()=>{ players.push({name:'Spelare '+(players.length+1), score:0}); openPlayersModal(); });
+    removePlayer.addEventListener('click', ()=>{ if(players.length>2) players.pop(); openPlayersModal(); });
+    editPlayersBtn.addEventListener('click', openPlayersModal);
+    modalCancel.addEventListener('click', ()=>{ modal.style.display='none'; });
+    modalSave.addEventListener('click', ()=>{
+      const inputs = namesContainer.querySelectorAll('input');
+      const newPlayers = [];
+      for(let i=0;i<inputs.length;i+=2){
+        const name = inputs[i].value || ('Spelare '+(i/2+1));
+        const score = Number(inputs[i+1].value) || 0;
+        newPlayers.push({name, score});
+      }
+      if(newPlayers.length>=2){ players = newPlayers; currentPlayer = 0; round=1; hasEntered = players.map(()=>false); resetTurn(); renderPlayers(); modal.style.display='none'; }
+    });
+
+    resetGameBtn.addEventListener('click', ()=>{ if(confirm('Starta om spelet?')){ initDefaults(); } });
+    undoKeepBtn.addEventListener('click', ()=>{ // unkeep last kept die if any
+      for(let i=dice.length-1;i>=0;i--){ if(dice[i].kept){ dice[i].kept=false; break; } }
+      const keptVals = dice.filter(d=>d.kept).map(d=>d.value);
+      const sc = scoreDice(keptVals); turnAccum = sc.score; updateBreakdown(sc.breakdown); updateUI();
+    });
+
+    showRulesBtn.addEventListener('click', ()=>{
+      alert(`Poängregler (snabb):\n1 = 100p, 5 = 50p, 3st av en sort: 1=>300,2=>200,3=>300,4=>400,5=>500,6=>600.\nFyra lika = 1000, Fem = 2000, Sex = 3000.\nStege 1-6 = 1500, Tre par = 1500, Fyra+par = 1500, Två tripplar = 2500.\nMinst ${MIN_FIRST_SCORE} poäng krävs första gången du sätter poäng.`);
+    });
+
+    // roll & bank handlers
+    rollBtn.addEventListener('click', ()=>{
+      rollDice();
+    });
+
+    bankBtn.addEventListener('click', ()=>{
+      if(turnAccum<=0){ alert('Du har inga poäng att banka.'); return; }
+      endTurn(true);
+    });
+
+    diceCountEl.addEventListener('change', ()=>{
+      diceCount = parseInt(diceCountEl.value,10);
+      resetTurn();
+    });
+
+    // init
+    initDefaults();
+    updateUI();
+
+  </script>
+</body>
+</html>
