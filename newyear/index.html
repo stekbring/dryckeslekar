@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>New Year Treasure Hunt</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    body, html {
+        margin: 0;
+        height: 100%;
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+    }
+
+    h1 {
+        text-align: center;
+        padding: 20px 0 10px 0;
+        margin: 0;
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    #controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 10px;
+    }
+
+    button {
+        padding: 6px 14px;
+        font-size: 20px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        background: #333;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+    }
+
+    #floorNumber {
+        font-size: 22px;
+        font-weight: bold;
+        width: 40px;
+        text-align: center;
+    }
+
+    #map {
+        width: 100%;
+        height: calc(100vh - 130px);
+        border-top: 2px solid #333;
+    }
+</style>
+</head>
+<body>
+
+<h1>New Year Treasure Hunt</h1>
+
+<div id="controls">
+    <button id="floorDown">−</button>
+    <div id="floorNumber">0</div>
+    <button id="floorUp">+</button>
+</div>
+
+<div id="map"></div>
+
+<script>
+// ===========================
+//  INSTÄLLNINGAR
+// ===========================
+
+// Dina våningsbilder (justera till 4 om du har 0–3)
+const floorImages = [
+    "test1.jpg",
+    "vaning1.jpg",
+    "test1.jpg", // lägg till riktiga senare
+    "test2.jpg"
+];
+
+// Bildmått (byt till dina riktiga)
+const imgWidth = 11199;
+const imgHeight = 14999;
+
+// Leaflet-bounds
+const bounds = [[0,0], [imgHeight, imgWidth]];
+
+// ===========================
+//  SKAPA KARTA
+// ===========================
+const map = L.map("map", {
+    crs: L.CRS.Simple,
+    minZoom: -2,
+    maxZoom: 4
+});
+map.fitBounds(bounds);
+
+// Skapa overlay-lager
+const floorLayers = floorImages.map(img =>
+    L.imageOverlay(img, bounds)
+);
+
+// Visa våning 0
+let currentFloor = 0;
+floorLayers[currentFloor].addTo(map);
+
+document.getElementById("floorNumber").textContent = currentFloor;
+
+// ===========================
+//  FUNKTION FÖR BYT VÅNING
+// ===========================
+function switchFloor(newFloor) {
+    if (newFloor < 0 || newFloor > 3) return;
+
+    map.removeLayer(floorLayers[currentFloor]);
+    currentFloor = newFloor;
+    floorLayers[currentFloor].addTo(map);
+
+    document.getElementById("floorNumber").textContent = currentFloor;
+}
+
+// ===========================
+//  KNAPPAR
+// ===========================
+document.getElementById("floorUp").onclick = () => {
+    switchFloor(currentFloor + 1);
+};
+
+document.getElementById("floorDown").onclick = () => {
+    switchFloor(currentFloor - 1);
+};
+
+</script>
+
+</body>
+</html>
