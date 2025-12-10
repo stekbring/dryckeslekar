@@ -60,6 +60,10 @@
 // gdal2tiles skapar oftast .png, men ändra till ".jpg" här om dina filer är jpg.
 const fileExtension = ".png"; 
 
+// BILDENS STORLEK (Pixlar) - Används för att begränsa kartan
+const imgWidth = 11199;
+const imgHeight = 14999;
+
 // Sökvägar till tile-mapparna
 // {z} = zoom, {x} = kolumn, {y} = rad (Leaflet fyller i dessa automatiskt)
 const floorPaths = [
@@ -77,14 +81,20 @@ const map = L.map("map", {
     minZoom: 0,        
     maxZoom: 6,        // Matchar din generering (0-6)
     zoomControl: false, 
-    attributionControl: false
+    attributionControl: false,
+    maxBoundsViscosity: 0.85 // Gör kanten stum (ingen studs)
 });
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// Ställ in startvy (Lat, Long, Zoom). 
-// Eftersom vi kör CRS.Simple är koordinaterna abstrakta.
-map.setView([-100, 100], 1);
+// --- RÄKNA UT OCH SÄTT GRÄNSER ---
+// Vi använder maxZoom (6) för att konvertera bildens pixlar till kartkoordinater
+const southWest = map.unproject([0, imgHeight], map.getMaxZoom());
+const northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
+const bounds = L.latLngBounds(southWest, northEast);
+
+map.setMaxBounds(bounds);
+map.fitBounds(bounds); // Centrera kartan över bilden direkt
 
 let currentFloor = -1;
 let currentLayer = null;
@@ -118,7 +128,8 @@ function switchFloor(newFloor) {
         tileSize: 256,
         noWrap: true, // Förhindrar att kartan upprepas i sidled
         tms: false,   // false eftersom du körde --xyz
-        attribution: ''
+        attribution: '',
+        bounds: bounds // Hjälper till att inte ladda tiles utanför området
     });
     
     // Lyssna på när synliga tiles har laddat klart
