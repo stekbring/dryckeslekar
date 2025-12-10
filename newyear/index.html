@@ -10,149 +10,31 @@
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
 <style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: #111;
-        color: #fff;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    .main-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 10px;
-        box-sizing: border-box;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 15px;
-        font-size: 24px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .game-card {
-        width: 100%;
-        max-width: 500px;
-        background: #1a1a1a;
-        padding: 15px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    #controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        background: #252525;
-        padding: 10px 20px;
-        border-radius: 12px;
-    }
-
-    button {
-        padding: 0;
-        font-size: 24px;
-        cursor: pointer;
-        border: none;
-        border-radius: 8px;
-        background: #444;
-        color: #fff;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
-
-    button:active {
-        background: #666;
-        transform: scale(0.95);
-    }
-
-    #floorDisplay {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #floorLabel {
-        font-size: 10px;
-        color: #888;
-        text-transform: uppercase;
-    }
-
-    #floorNumber {
-        font-size: 24px;
-        font-weight: bold;
-        color: #ffd700;
-    }
-
-    /* Container för att positionera kartan och laddaren */
-    .map-container {
-        position: relative;
-        width: 100%;
-        height: 60vh;
-        max-height: 500px;
-        min-height: 300px;
-    }
-
-    #map {
-        width: 100%;
-        height: 100%; /* Fyller map-container */
-        border-radius: 12px;
-        background: #222;
-        z-index: 1;
-    }
-
-    /* --- LADDNINGSSYMBOL --- */
-    .loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 50px;
-        height: 50px;
-        border: 5px solid rgba(255, 255, 255, 0.1); /* Svag ring */
-        border-top: 5px solid #ffd700; /* Snurrande del (Guld) */
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        z-index: 1000; /* Ligger ovanpå kartan */
-        display: none; /* Dold som standard */
-        pointer-events: none; /* Klick går igenom */
-    }
-
-    @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    .leaflet-bar a {
-        background-color: #333;
-        color: #fff;
-        border-bottom: 1px solid #444;
-    }
-    .leaflet-bar a:hover {
-        background-color: #444;
-    }
-    .leaflet-container {
-        background: #222;
-    }
+    body, html { margin: 0; padding: 0; height: 100%; background: #111; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .main-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 10px; box-sizing: border-box; }
+    h1 { text-align: center; margin-bottom: 15px; font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
+    button { padding: 0; font-size: 24px; cursor: pointer; border: none; border-radius: 8px; background: #444; color: #fff; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    button:active { background: #666; transform: scale(0.95); }
+    #floorDisplay { display: flex; flex-direction: column; align-items: center; }
+    #floorLabel { font-size: 10px; color: #888; text-transform: uppercase; }
+    #floorNumber { font-size: 24px; font-weight: bold; color: #ffd700; }
+    .map-container { position: relative; width: 100%; height: 60vh; max-height: 500px; min-height: 300px; }
+    #map { width: 100%; height: 100%; border-radius: 12px; background: #222; z-index: 1; }
+    
+    /* LADDNINGSSYMBOL */
+    .loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; border: 5px solid rgba(255, 255, 255, 0.1); border-top: 5px solid #ffd700; border-radius: 50%; animation: spin 1s linear infinite; z-index: 1000; display: none; pointer-events: none; }
+    @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+    
+    .leaflet-bar a { background-color: #333; color: #fff; border-bottom: 1px solid #444; }
+    .leaflet-container { background: #222; }
 </style>
 </head>
 <body>
 
 <div class="main-wrapper">
     <h1>New Year Hunt</h1>
-
     <div class="game-card">
         <div id="controls">
             <button id="floorDown" aria-label="Gå ner"> − </button>
@@ -162,9 +44,7 @@
             </div>
             <button id="floorUp" aria-label="Gå upp"> + </button>
         </div>
-
         <div class="map-container">
-            <!-- Laddningssymbolen -->
             <div id="loader" class="loader"></div>
             <div id="map"></div>
         </div>
@@ -176,44 +56,43 @@
 //  INSTÄLLNINGAR
 // ===========================
 
-const floorImages = [
-    "test1.jpg",   // Våning 0
-    "vaning1.2.jpg", // Våning 1
-    "test1.jpg",   // Våning 2
-    "vaning3.jpg"    // Våning 3
-];
+// VIKTIGT: Kontrollera mappen 'tiles/1/0/0/'. Heter filen '0.png' eller '0.jpg'?
+// gdal2tiles skapar oftast .png, men ändra till ".jpg" här om dina filer är jpg.
+const fileExtension = ".png"; 
 
-const imgWidth = 11199;
-const imgHeight = 14999;
-const bounds = [[0,0], [imgHeight, imgWidth]];
+// Sökvägar till tile-mapparna
+// {z} = zoom, {x} = kolumn, {y} = rad (Leaflet fyller i dessa automatiskt)
+const floorPaths = [
+    `tiles/0/{z}/{x}/{y}${fileExtension}`, // Våning 0
+    `tiles/1/{z}/{x}/{y}${fileExtension}`, // Våning 1 (Den du genererade)
+    `tiles/2/{z}/{x}/{y}${fileExtension}`, // Våning 2
+    `tiles/3/{z}/{x}/{y}${fileExtension}`  // Våning 3
+];
 
 // ===========================
 //  SKAPA KARTA
 // ===========================
 const map = L.map("map", {
-    crs: L.CRS.Simple,
-    minZoom: -3, 
-    maxZoom: 2,
+    crs: L.CRS.Simple, // Används för platta bilder
+    minZoom: 0,        
+    maxZoom: 6,        // Matchar din generering (0-6)
     zoomControl: false, 
-    attributionControl: false,
-    maxBounds: bounds,
-    maxBoundsViscosity: 0.8
+    attributionControl: false
 });
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
-map.fitBounds(bounds);
 
-// Förbered lager
-const floorLayers = floorImages.map(img => 
-    L.imageOverlay(img, bounds)
-);
+// Ställ in startvy (Lat, Long, Zoom). 
+// Eftersom vi kör CRS.Simple är koordinaterna abstrakta.
+map.setView([-100, 100], 1);
 
-let currentFloor = -1; // Startar på -1 för att tvinga en uppdatering första gången
+let currentFloor = -1;
+let currentLayer = null;
 const floorNumDisplay = document.getElementById("floorNumber");
 const loader = document.getElementById("loader");
 
 // ===========================
-//  FUNKTION FÖR ATT VISA LADDARE
+//  FUNKTION FÖR LADDNINGSSYMBOL
 // ===========================
 function setLoading(loading) {
     loader.style.display = loading ? 'block' : 'none';
@@ -223,31 +102,35 @@ function setLoading(loading) {
 //  FUNKTION FÖR BYT VÅNING
 // ===========================
 function switchFloor(newFloor) {
-    if (newFloor < 0 || newFloor >= floorImages.length) return;
-    if (newFloor === currentFloor) return; // Gör inget om vi redan är på rätt våning
+    if (newFloor < 0 || newFloor >= floorPaths.length) return;
+    if (newFloor === currentFloor) return; 
 
-    // Visa laddare direkt
     setLoading(true);
 
-    // Ta bort gammalt lager om det finns
-    if (currentFloor !== -1 && floorLayers[currentFloor]) {
-        map.removeLayer(floorLayers[currentFloor]);
-    }
+    if (currentLayer) map.removeLayer(currentLayer);
 
     currentFloor = newFloor;
-    const nextLayer = floorLayers[currentFloor];
-
-    // Lyssna på när bilden är färdigladdad
-    // Vi använder .once() så vi slipper dubbla event-lyssnare i framtiden
-    nextLayer.once('load', function() {
+    
+    // Skapa nytt TileLayer
+    const newLayer = L.tileLayer(floorPaths[currentFloor], {
+        minZoom: 0,
+        maxZoom: 6,
+        tileSize: 256,
+        noWrap: true, // Förhindrar att kartan upprepas i sidled
+        tms: false,   // false eftersom du körde --xyz
+        attribution: ''
+    });
+    
+    // Lyssna på när synliga tiles har laddat klart
+    newLayer.on('load', function() {
         setLoading(false);
     });
-
-    nextLayer.addTo(map);
     
-    // Om bilden är cachad och laddas omedelbart kan 'load' ibland missas i vissa webbläsare
-    // (Leaflet är oftast bra på detta, men som säkerhetsåtgärd kan man sätta en timeout för att dölja laddaren om det hänger sig)
-    setTimeout(() => setLoading(false), 5000); // Säkerhetsstopp efter 5 sekunder
+    newLayer.addTo(map);
+    currentLayer = newLayer; 
+
+    // Säkerhetsstopp för laddaren
+    setTimeout(() => setLoading(false), 5000);
 
     // Uppdatera text
     floorNumDisplay.style.opacity = 0;
@@ -260,17 +143,13 @@ function switchFloor(newFloor) {
 // ===========================
 //  KNAPPAR
 // ===========================
-document.getElementById("floorUp").onclick = () => {
-    switchFloor(currentFloor + 1);
-};
-
-document.getElementById("floorDown").onclick = () => {
-    switchFloor(currentFloor - 1);
-};
+document.getElementById("floorUp").onclick = () => switchFloor(currentFloor + 1);
+document.getElementById("floorDown").onclick = () => switchFloor(currentFloor - 1);
 
 // Starta på våning 1
 switchFloor(1);
 
+// Fix för mobil-orientation
 window.addEventListener('resize', () => {
     map.invalidateSize();
 });
