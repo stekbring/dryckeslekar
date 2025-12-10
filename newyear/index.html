@@ -96,6 +96,9 @@ const bounds = L.latLngBounds(southWest, northEast);
 map.setMaxBounds(bounds);
 map.fitBounds(bounds); // Centrera kartan över bilden direkt
 
+// NYTT: Zooma in ett steg extra från start för att motverka att det blir för smått på mobil
+map.setZoom(map.getZoom() + 1);
+
 let currentFloor = -1;
 let currentLayer = null;
 const floorNumDisplay = document.getElementById("floorNumber");
