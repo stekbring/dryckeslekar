@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vänta lite!</title>
+<link rel="icon" type="image/x-icon" href="newyearico.ico">
+
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #111;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        background: #1a1a1a;
+        padding: 40px 20px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+        color: #ffd700;
+        margin-bottom: 20px;
+        font-size: 28px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 1.5;
+        margin-bottom: 30px;
+        color: #ddd;
+    }
+
+    #countdown {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-weight: bold;
+    }
+
+    .time-box {
+        background: #252525;
+        padding: 10px;
+        border-radius: 8px;
+        min-width: 60px;
+        border: 1px solid #333;
+    }
+
+    .number {
+        display: block;
+        font-size: 32px;
+        color: #ffd700;
+    }
+
+    .label {
+        font-size: 10px;
+        color: #888;
+        text-transform: uppercase;
+        margin-top: 5px;
+    }
+
+    /* Justering för små skärmar */
+    @media (max-width: 400px) {
+        .time-box {
+            min-width: 50px;
+            padding: 8px;
+        }
+        .number {
+            font-size: 24px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Aja baja!</h1>
+    <p>Du får vänta till nyårsafton för att hitta skatten!</p>
+    
+    <div id="countdown">
+        <div class="time-box">
+            <span class="number" id="days">00</span>
+            <span class="label">Dagar</span>
+        </div>
+        <div class="time-box">
+            <span class="number" id="hours">00</span>
+            <span class="label">Tim</span>
+        </div>
+        <div class="time-box">
+            <span class="number" id="minutes">00</span>
+            <span class="label">Min</span>
+        </div>
+        <div class="time-box">
+            <span class="number" id="seconds">00</span>
+            <span class="label">Sek</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Målet: Nyårsafton 2025 kl 20:00
+    const targetDate = new Date("December 31, 2025 20:00:00").getTime();
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+            // Om tiden är ute
+            document.querySelector(".container").innerHTML = "<h1>Nu kör vi!</h1><p><a href='index.html' style='color:#ffd700'>Klicka här för att starta</a></p>";
+            clearInterval(timerInterval);
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("days").innerText = days;
+        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+        document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+        document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+    }
+
+    // Uppdatera varje sekund
+    const timerInterval = setInterval(updateCountdown, 1000);
+    updateCountdown(); // Kör direkt vid start
+</script>
+
+</body>
+</html>
