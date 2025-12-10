@@ -7,7 +7,6 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Ersätt med din ikon -->
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
 <style>
@@ -20,7 +19,6 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Huvudcontainer för att centrera allt och begränsa bredden */
     .main-wrapper {
         display: flex;
         flex-direction: column;
@@ -40,10 +38,9 @@
         letter-spacing: 1px;
     }
 
-    /* "Kortet" som håller spelet */
     .game-card {
         width: 100%;
-        max-width: 500px; /* Begränsar bredden på desktop så det blir en "ruta" */
+        max-width: 500px;
         background: #1a1a1a;
         padding: 15px;
         border-radius: 20px;
@@ -68,7 +65,7 @@
         border-radius: 8px;
         background: #444;
         color: #fff;
-        width: 44px; /* Större touch-yta */
+        width: 44px;
         height: 44px;
         display: flex;
         align-items: center;
@@ -96,20 +93,48 @@
     #floorNumber {
         font-size: 24px;
         font-weight: bold;
-        color: #ffd700; /* Guld-färg för nyårskänsla */
+        color: #ffd700;
+    }
+
+    /* Container för att positionera kartan och laddaren */
+    .map-container {
+        position: relative;
+        width: 100%;
+        height: 60vh;
+        max-height: 500px;
+        min-height: 300px;
     }
 
     #map {
         width: 100%;
-        height: 60vh; /* 60% av skärmhöjden, passar bra på mobil */
-        max-height: 500px; /* Inte för hög på desktop */
-        min-height: 300px;
+        height: 100%; /* Fyller map-container */
         border-radius: 12px;
-        background: #222; /* Lite ljusare bakgrund ifall man laddar sega bilder */
+        background: #222;
         z-index: 1;
     }
 
-    /* Fix för Leaflet kontroller så de ser snygga ut i mörkt tema */
+    /* --- LADDNINGSSYMBOL --- */
+    .loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.1); /* Svag ring */
+        border-top: 5px solid #ffd700; /* Snurrande del (Guld) */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 1000; /* Ligger ovanpå kartan */
+        display: none; /* Dold som standard */
+        pointer-events: none; /* Klick går igenom */
+    }
+
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     .leaflet-bar a {
         background-color: #333;
         color: #fff;
@@ -138,7 +163,11 @@
             <button id="floorUp" aria-label="Gå upp"> + </button>
         </div>
 
-        <div id="map"></div>
+        <div class="map-container">
+            <!-- Laddningssymbolen -->
+            <div id="loader" class="loader"></div>
+            <div id="map"></div>
+        </div>
     </div>
 </div>
 
@@ -147,12 +176,11 @@
 //  INSTÄLLNINGAR
 // ===========================
 
-// OBS: Se till att dessa bilder finns, annars visas inget i rutan
 const floorImages = [
     "test1.jpg",   // Våning 0
     "vaning1.2.jpg", // Våning 1
-    "test1.jpg",   // Våning 2 (Placeholder)
-    "test2.jpg"    // Våning 3
+    "test1.jpg",   // Våning 2
+    "vaning3.jpg"    // Våning 3
 ];
 
 const imgWidth = 11199;
@@ -168,50 +196,65 @@ const map = L.map("map", {
     maxZoom: 2,
     zoomControl: false, 
     attributionControl: false,
-    // --- NYA RADER FÖR ATT LÅSA VYN ---
-    maxBounds: bounds,       // Sätter en hård gräns för hur långt man kan panorera
-    maxBoundsViscosity: 0.8  // 1.0 gör kanten helt stum (ingen "studs")
+    maxBounds: bounds,
+    maxBoundsViscosity: 0.8
 });
 
-// Lägg till zoom-knappar nere till höger (bättre för tummen på mobil)
-L.control.zoom({
-    position: 'bottomright'
-}).addTo(map);
-
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 map.fitBounds(bounds);
 
-// Skapa overlay-lager
+// Förbered lager
 const floorLayers = floorImages.map(img => 
     L.imageOverlay(img, bounds)
 );
 
-// Visa våning 0
-let currentFloor = 1;
-floorLayers[currentFloor].addTo(map);
-
+let currentFloor = -1; // Startar på -1 för att tvinga en uppdatering första gången
 const floorNumDisplay = document.getElementById("floorNumber");
-floorNumDisplay.textContent = currentFloor;
+const loader = document.getElementById("loader");
+
+// ===========================
+//  FUNKTION FÖR ATT VISA LADDARE
+// ===========================
+function setLoading(loading) {
+    loader.style.display = loading ? 'block' : 'none';
+}
 
 // ===========================
 //  FUNKTION FÖR BYT VÅNING
 // ===========================
 function switchFloor(newFloor) {
-    // Kontrollera gränser (dynamiskt baserat på array-längd)
     if (newFloor < 0 || newFloor >= floorImages.length) return;
+    if (newFloor === currentFloor) return; // Gör inget om vi redan är på rätt våning
 
-    map.removeLayer(floorLayers[currentFloor]);
+    // Visa laddare direkt
+    setLoading(true);
+
+    // Ta bort gammalt lager om det finns
+    if (currentFloor !== -1 && floorLayers[currentFloor]) {
+        map.removeLayer(floorLayers[currentFloor]);
+    }
+
     currentFloor = newFloor;
-    floorLayers[currentFloor].addTo(map);
+    const nextLayer = floorLayers[currentFloor];
+
+    // Lyssna på när bilden är färdigladdad
+    // Vi använder .once() så vi slipper dubbla event-lyssnare i framtiden
+    nextLayer.once('load', function() {
+        setLoading(false);
+    });
+
+    nextLayer.addTo(map);
     
-    // Animera texten lite vid byte
+    // Om bilden är cachad och laddas omedelbart kan 'load' ibland missas i vissa webbläsare
+    // (Leaflet är oftast bra på detta, men som säkerhetsåtgärd kan man sätta en timeout för att dölja laddaren om det hänger sig)
+    setTimeout(() => setLoading(false), 5000); // Säkerhetsstopp efter 5 sekunder
+
+    // Uppdatera text
     floorNumDisplay.style.opacity = 0;
     setTimeout(() => {
         floorNumDisplay.textContent = currentFloor;
         floorNumDisplay.style.opacity = 1;
     }, 150);
-
-    // Centrera kartan igen vid våningsbyte (valfritt)
-    // map.flyToBounds(bounds); 
 }
 
 // ===========================
@@ -225,7 +268,9 @@ document.getElementById("floorDown").onclick = () => {
     switchFloor(currentFloor - 1);
 };
 
-// Se till att kartan ritas om korrekt om man vrider på mobilen
+// Starta på våning 1
+switchFloor(1);
+
 window.addEventListener('resize', () => {
     map.invalidateSize();
 });
