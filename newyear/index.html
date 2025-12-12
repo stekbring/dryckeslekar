@@ -89,7 +89,7 @@ const floorPaths = [
 // ===========================
 const map = L.map("map", {
     crs: L.CRS.Simple, // Används för platta bilder
-    minZoom: 0,        
+    minZoom: 2,        
     maxZoom: 6,        // Matchar din generering (0-6)
     zoomControl: false, 
     attributionControl: false,
@@ -137,7 +137,7 @@ function switchFloor(newFloor) {
     
     // Skapa nytt TileLayer
     const newLayer = L.tileLayer(floorPaths[currentFloor], {
-        minZoom: 0,
+        minZoom: 2,
         maxZoom: 6,
         tileSize: 256,
         noWrap: true, // Förhindrar att kartan upprepas i sidled
@@ -172,7 +172,7 @@ document.getElementById("floorUp").onclick = () => switchFloor(currentFloor + 1)
 document.getElementById("floorDown").onclick = () => switchFloor(currentFloor - 1);
 
 // Starta på våning 1
-switchFloor(1);
+switchFloor(3);
 
 // Fix för mobil-orientation
 window.addEventListener('resize', () => {
