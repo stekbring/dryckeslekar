@@ -256,11 +256,11 @@
         </label>
       </div>
 
-      <label class="custom-location-label">Lägg till egna platser:</label>
+      <label class="custom-location-label">Lägg till egna ord:</label>
       <input type="text" id="customLocation" placeholder="T.ex. Olle Ahlgrens sexkammare">
       <div class="inline-buttons">
         <button class="small-button" onclick="addLocation()">Lägg till plats</button>
-        <button class="small-button clear-button" onclick="clearCustomLocations()">Rensa platser</button>
+        <button class="small-button clear-button" onclick="clearCustomLocations()">Rensa egna ord</button>
       </div>
 
       <button class="start-button" onclick="startGame()">Starta spelet</button>
@@ -404,7 +404,7 @@
     function clearCustomLocations() {
       locations = [...defaultLocations];
       saveState();
-      createPopup("Egna platser rensades.");
+      createPopup("Egna ord rensades.");
     }
 
     function toggleRandomImposters() {
