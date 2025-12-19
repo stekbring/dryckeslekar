@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Observera: newyearico.ico måste finnas i samma mapp för att ikonen ska synas -->
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
 <style>
@@ -40,6 +41,28 @@
     
     .leaflet-bar a { background-color: #333; color: #fff; border-bottom: 1px solid #444; }
     .leaflet-container { background: #222; }
+
+    /* NY STIL FÖR KOD-INPUT */
+    .code-section { margin-top: 20px; display: flex; gap: 10px; width: 100%; }
+    #secretCode { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px; outline: none; }
+    #secretCode:focus { border-color: #ffd700; }
+    #submitCode { width: auto; padding: 0 20px; font-size: 16px; background: #ffd700; color: #000; font-weight: bold; }
+    #submitCode:active { background: #e5c100; }
+    #messageArea { margin-top: 10px; min-height: 20px; font-size: 14px; color: #ffd700; text-align: center; font-weight: 500; }
+
+    /* NOLLSTÄLLNINGSKNAPP */
+    .reset-section { margin-top: 20px; text-align: center; border-top: 1px solid #333; padding-top: 15px; }
+    #resetGame { 
+        background: transparent; 
+        color: #ff4444; 
+        border: 1px solid #ff4444; 
+        font-size: 14px; 
+        width: auto; 
+        height: auto; 
+        padding: 8px 16px; 
+        font-weight: normal; 
+    }
+    #resetGame:active { background: #ff4444; color: #fff; }
 </style>
 </head>
 <body>
@@ -59,6 +82,19 @@
             <div id="loader" class="loader"></div>
             <div id="map"></div>
         </div>
+
+        <!-- NYTT: Input för kod -->
+        <div class="code-section">
+            <input type="text" id="secretCode" placeholder="Ange hemlig kod..." autocomplete="off">
+            <button id="submitCode">Lås upp</button>
+        </div>
+        <div id="messageArea"></div>
+
+        <!-- NYTT: Nollställningsknapp -->
+        <div class="reset-section">
+            <button id="resetGame">Nollställ spelet</button>
+        </div>
+
     </div>
 </div>
 
@@ -68,62 +104,161 @@
 // ===========================
 
 // VIKTIGT: Kontrollera mappen 'tiles/1/0/0/'. Heter filen '0.png' eller '0.jpg'?
-// gdal2tiles skapar oftast .png, men ändra till ".jpg" här om dina filer är jpg.
 const fileExtension = ".png"; 
 
-// BILDENS STORLEK (Pixlar) - Används för att begränsa kartan
+// BILDENS STORLEK (Pixlar)
 const imgWidth = 11199;
 const imgHeight = 14999;
 
-// Sökvägar till tile-mapparna
-// {z} = zoom, {x} = kolumn, {y} = rad (Leaflet fyller i dessa automatiskt)
 const floorPaths = [
-    `tiles/0/{z}/{x}/{y}${fileExtension}`, // Våning 0
-    `tiles/1/{z}/{x}/{y}${fileExtension}`, // Våning 1 (Den du genererade)
-    `tiles/2/{z}/{x}/{y}${fileExtension}`, // Våning 2
-    `tiles/3/{z}/{x}/{y}${fileExtension}`  // Våning 3
+    `tiles/0/{z}/{x}/{y}${fileExtension}`,
+    `tiles/1/{z}/{x}/{y}${fileExtension}`,
+    `tiles/2/{z}/{x}/{y}${fileExtension}`,
+    `tiles/3/{z}/{x}/{y}${fileExtension}`
 ];
+
+// ===========================
+//  HEMLIGA PLATSER (REDIGERA HÄR)
+// ===========================
+// Koordinater (x, y) är pixlar på originalbilden. 
+// x=0, y=0 är uppe till vänster.
+const secretLocations = [
+    { id: 1, code: "NYÅR",  floor: 0, x: 2000, y: 3000, title: "Startpunkten", msg: "Grattis! Du hittade startpunkten." },
+    { id: 2, code: "GULD",  floor: 1, x: 5500, y: 7500, title: "Gömstället",   msg: "Bra jobbat! En ledtråd finns här." },
+    { id: 3, code: "RAKET", floor: 2, x: 8000, y: 4000, title: "Utsikten",     msg: "Här har du bra utsikt!" },
+    { id: 4, code: "2025",  floor: 3, x: 3000, y: 9000, title: "Slutmålet",    msg: "Nästan framme!" },
+    { id: 5, code: "SKÅL",  floor: 2, x: 5120, y: 10245, title: "Baren",       msg: "Dags för en skål!" }
+];
+
+// Ladda upplåsta platser från minnet
+let unlockedIds = JSON.parse(localStorage.getItem('unlockedLocations') || "[]");
+// Ladda senast sparade våning (eller 3 om ingen finns)
+let savedFloor = parseInt(localStorage.getItem('currentFloor'));
+if (isNaN(savedFloor)) savedFloor = 3;
+
 
 // ===========================
 //  SKAPA KARTA
 // ===========================
 const map = L.map("map", {
-    crs: L.CRS.Simple, // Används för platta bilder
+    crs: L.CRS.Simple, 
     minZoom: 2,        
-    maxZoom: 6,        // Matchar din generering (0-6)
+    maxZoom: 6,        
     zoomControl: false, 
     attributionControl: false,
-    maxBoundsViscosity: 0.85 // Gör kanten stum (ingen studs)
+    maxBoundsViscosity: 0.85
 });
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// --- RÄKNA UT OCH SÄTT GRÄNSER ---
-// Vi använder maxZoom (6) för att konvertera bildens pixlar till kartkoordinater
+// Lager för markörer - ÄNDRAT TILL FeatureGroup för att stödja bringToFront()
+const markersLayer = L.featureGroup().addTo(map);
+
 const southWest = map.unproject([0, imgHeight], map.getMaxZoom());
 const northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
 const bounds = L.latLngBounds(southWest, northEast);
 
 map.setMaxBounds(bounds);
-map.fitBounds(bounds); // Centrera kartan över bilden direkt
-
-// NYTT: Zooma in ett steg extra från start för att motverka att det blir för smått på mobil
+map.fitBounds(bounds);
 map.setZoom(map.getZoom() + 1);
 
 let currentFloor = -1;
 let currentLayer = null;
 const floorNumDisplay = document.getElementById("floorNumber");
 const loader = document.getElementById("loader");
+const messageArea = document.getElementById("messageArea");
 
-// ===========================
-//  FUNKTION FÖR LADDNINGSSYMBOL
-// ===========================
 function setLoading(loading) {
     loader.style.display = loading ? 'block' : 'none';
 }
 
 // ===========================
-//  FUNKTION FÖR BYT VÅNING
+//  DEFINIERA IKON (Rött Kryss)
+// ===========================
+const redCrossIcon = L.icon({
+    // Uppdaterad: stroke-width ändrad från 4 till 3 för ett smalare kryss
+    iconUrl: 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23ff0000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+    iconSize: [40, 40],   
+    iconAnchor: [20, 20], 
+    popupAnchor: [0, -20] 
+});
+
+
+// ===========================
+//  HANTERA MARKÖRER
+// ===========================
+function updateMarkers() {
+    markersLayer.clearLayers(); // Ta bort gamla markörer
+
+    secretLocations.forEach(loc => {
+        // Visa bara om platsen är upplåst OCH vi är på rätt våning
+        if (unlockedIds.includes(loc.id) && loc.floor === currentFloor) {
+            
+            const latLng = map.unproject([loc.x, loc.y], map.getMaxZoom());
+            const marker = L.marker(latLng, { icon: redCrossIcon }).addTo(markersLayer);
+            marker.bindPopup(`<b>${loc.title}</b><br>${loc.msg}`);
+        }
+    });
+}
+
+// ===========================
+//  HANTERA KODER
+// ===========================
+function checkCode() {
+    const input = document.getElementById("secretCode");
+    const code = input.value.trim().toUpperCase(); 
+    
+    const foundLocation = secretLocations.find(loc => loc.code === code);
+
+    if (foundLocation) {
+        if (!unlockedIds.includes(foundLocation.id)) {
+            // Ny upplåsning
+            unlockedIds.push(foundLocation.id);
+            localStorage.setItem('unlockedLocations', JSON.stringify(unlockedIds));
+            
+            messageArea.textContent = `✅ Plats upplåst: ${foundLocation.title} (Våning ${foundLocation.floor})`;
+            messageArea.style.color = "#4caf50"; 
+            
+            if (currentFloor !== foundLocation.floor) {
+                switchFloor(foundLocation.floor);
+            } else {
+                updateMarkers();
+            }
+            
+            const latLng = map.unproject([foundLocation.x, foundLocation.y], map.getMaxZoom());
+            map.flyTo(latLng, 5);
+
+        } else {
+            messageArea.textContent = "⚠️ Den här platsen är redan upplåst.";
+            messageArea.style.color = "#ffd700";
+        }
+        input.value = ""; 
+    } else {
+        messageArea.textContent = "❌ Felaktig kod.";
+        messageArea.style.color = "#ff4444";
+    }
+
+    setTimeout(() => { messageArea.textContent = ""; }, 5000);
+}
+
+// ===========================
+//  NOLLSTÄLL SPELET
+// ===========================
+function resetGame() {
+    if(confirm("Är du säker på att du vill nollställa alla framsteg?")) {
+        unlockedIds = [];
+        localStorage.removeItem('unlockedLocations');
+        // Vi tar INTE bort currentFloor så man stannar där man är, men rensar upplåsningar
+        updateMarkers();
+        messageArea.textContent = "🔄 Spelet är nollställt.";
+        messageArea.style.color = "#fff";
+        setTimeout(() => { messageArea.textContent = ""; }, 3000);
+    }
+}
+
+
+// ===========================
+//  BYT VÅNING
 // ===========================
 function switchFloor(newFloor) {
     if (newFloor < 0 || newFloor >= floorPaths.length) return;
@@ -135,29 +270,28 @@ function switchFloor(newFloor) {
 
     currentFloor = newFloor;
     
-    // Skapa nytt TileLayer
+    // SPARA VÅNING I MINNET
+    localStorage.setItem('currentFloor', currentFloor);
+
     const newLayer = L.tileLayer(floorPaths[currentFloor], {
         minZoom: 2,
         maxZoom: 6,
         tileSize: 256,
-        noWrap: true, // Förhindrar att kartan upprepas i sidled
-        tms: false,   // false eftersom du körde --xyz
+        noWrap: true,
+        tms: false,
         attribution: '',
-        bounds: bounds // Hjälper till att inte ladda tiles utanför området
+        bounds: bounds
     });
     
-    // Lyssna på när synliga tiles har laddat klart
-    newLayer.on('load', function() {
-        setLoading(false);
-    });
-    
+    newLayer.on('load', function() { setLoading(false); });
     newLayer.addTo(map);
     currentLayer = newLayer; 
 
-    // Säkerhetsstopp för laddaren
+    markersLayer.bringToFront();
+    updateMarkers();
+
     setTimeout(() => setLoading(false), 5000);
 
-    // Uppdatera text
     floorNumDisplay.style.opacity = 0;
     setTimeout(() => {
         floorNumDisplay.textContent = currentFloor;
@@ -166,15 +300,22 @@ function switchFloor(newFloor) {
 }
 
 // ===========================
-//  KNAPPAR
+//  EVENT LISTENERS
 // ===========================
 document.getElementById("floorUp").onclick = () => switchFloor(currentFloor + 1);
 document.getElementById("floorDown").onclick = () => switchFloor(currentFloor - 1);
+document.getElementById("submitCode").onclick = checkCode;
+document.getElementById("resetGame").onclick = resetGame;
 
-// Starta på våning 1
-switchFloor(3);
+document.getElementById("secretCode").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        checkCode();
+    }
+});
 
-// Fix för mobil-orientation
+// Starta på sparad våning (eller 3 om ingen finns)
+switchFloor(savedFloor);
+
 window.addEventListener('resize', () => {
     map.invalidateSize();
 });
