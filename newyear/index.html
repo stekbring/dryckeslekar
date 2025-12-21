@@ -226,7 +226,12 @@ function checkCode() {
             }
             
             const latLng = map.unproject([foundLocation.x, foundLocation.y], map.getMaxZoom());
-            map.flyTo(latLng, 5);
+            
+            // Lade till { duration: 3 } för att göra animationen långsammare (3 sekunder)
+            map.flyTo(latLng, 5, {
+                animate: true,
+                duration: 2.5 
+            });
 
         } else {
             messageArea.textContent = "⚠️ Den här platsen är redan upplåst.";
