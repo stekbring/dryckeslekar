@@ -5,9 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>New Year Treasure Hunt</title>
 
+<!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Observera: newyearico.ico måste finnas i samma mapp för att ikonen ska synas -->
+
+<!-- FONTS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
 <style>
@@ -40,9 +46,9 @@
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
         transition: all 0.2s;
-        border-radius: 0; /* Tar bort standard radie */
-        height: auto; /* Återställer höjd */
-        width: auto; /* Återställer bredd */
+        border-radius: 0; 
+        height: auto; 
+        width: auto; 
     }
     .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
     .tab-content { padding: 15px; display: none; }
@@ -51,7 +57,6 @@
     /* INNEHÅLLSKONTROLLER */
     #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
     
-    /* Knappar (Generell stil + golvknappar) */
     button.floor-btn { padding: 0; font-size: 24px; cursor: pointer; border: none; border-radius: 8px; background: #444; color: #fff; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     button.floor-btn:active { background: #666; transform: scale(0.95); }
     
@@ -100,13 +105,134 @@
     }
     #resetGame:active { background: #ff4444; color: #fff; }
 
-    /* STIL FÖR GÅTOR-FLIKEN */
-    .riddles-placeholder {
-        text-align: center;
-        padding: 40px 20px;
-        color: #666;
-        font-style: italic;
+    /* ========================================= */
+    /* ORAKEL & PRATBUBBLA STYLING */
+    /* ========================================= */
+    .riddle-container { 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: flex-end; /* Tryck ner innehållet */
+        height: 100%; 
+        min-height: 400px;
+        padding-bottom: 20px;
+        position: relative;
     }
+
+    /* Pratbubblan */
+    .speech-bubble {
+        position: relative;
+        background: #fff;
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        color: #000;
+        font-family: 'Indie Flower', cursive; /* Rolig font */
+        font-size: 24px;
+        line-height: 1.3;
+        font-weight: bold;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        margin-bottom: 20px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #000;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Pilen på pratbubblan */
+    .speech-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border: 15px solid transparent;
+        border-top-color: #fff;
+        border-bottom: 0;
+        border-left: 0;
+        margin-left: -7px;
+        margin-bottom: -15px;
+        transform: rotate(45deg); /* Enkel pil */
+    }
+    /* Svart kant på pilen (lite trixigt, men enklast så här) */
+    .speech-bubble::before {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border: 17px solid transparent;
+        border-top-color: #000;
+        border-bottom: 0;
+        border-left: 0;
+        margin-left: -8px;
+        margin-bottom: -16px;
+        transform: rotate(45deg);
+        z-index: -1;
+    }
+
+    /* Orakel-bilden */
+    .oracle-avatar {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 20px auto;
+        border-radius: 50%;
+        border: 4px solid #ffd700;
+        overflow: hidden;
+        background: #333; /* Bakgrund om bild saknas */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .oracle-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Input-gruppen */
+    .riddle-input-group { 
+        position: relative; 
+        display: flex; 
+        gap: 0; 
+        background: #333;
+        border-radius: 30px; 
+        padding: 5px;
+        border: 1px solid #444;
+    }
+    
+    #riddleQuestion { 
+        flex: 1; 
+        padding: 12px 20px; 
+        border: none; 
+        background: transparent; 
+        color: white; 
+        outline: none; 
+        font-size: 16px;
+    }
+    
+    #askRiddleBtn { 
+        background: #ffd700;
+        color: #000; 
+        border: none; 
+        padding: 10px 25px; 
+        border-radius: 25px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        transition: transform 0.2s, background 0.2s;
+    }
+    #askRiddleBtn:hover { background: #e5c100; }
+    #askRiddleBtn:active { transform: scale(0.95); }
+    #askRiddleBtn:disabled { opacity: 0.5; cursor: not-allowed; background: #666; }
+
 </style>
 </head>
 <body>
@@ -139,7 +265,7 @@
 
             <!-- Input för kod -->
             <div class="code-section">
-                <input type="text" id="secretCode" placeholder="Ange hemlig kod..." autocomplete="off">
+                <input type="text" id="secretCode" placeholder="Skriv in föremålet här..." autocomplete="off">
                 <button id="submitCode">Lås upp</button>
             </div>
             <div id="messageArea"></div>
@@ -152,9 +278,23 @@
 
         <!-- FLIK 2: GÅTOR -->
         <div id="tab-riddles" class="tab-content">
-            <div class="riddles-placeholder">
-                <p>Här kommer dina ledtrådar att samlas...</p>
-                <!-- Här kan du lägga in mer innehåll senare -->
+            <div class="riddle-container">
+                
+                <!-- Pratbubblan -->
+                <div class="speech-bubble" id="riddleAnswer">
+                    Hrmph... ställ en fråga då!
+                </div>
+
+                <!-- Orakel-bilden -->
+                <div class="oracle-avatar">
+                    <!-- Lägg in din bild här, döp den till oracle.png eller ändra src -->
+                    <img src="oracle.png" alt="Oraklet" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4712/4712009.png'">
+                </div>
+
+                <div class="riddle-input-group">
+                    <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
+                    <button id="askRiddleBtn">Fråga</button>
+                </div>
             </div>
         </div>
 
@@ -166,23 +306,19 @@
 //  FLIK-HANTERING
 // ===========================
 function switchTab(tabName) {
-    // Dölj alla flikar
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-    // Visa vald flik
     document.getElementById(`tab-${tabName}`).classList.add('active');
     
-    // Markera knappen
     const buttons = document.querySelectorAll('.tab-btn');
     if(tabName === 'map') buttons[0].classList.add('active');
     if(tabName === 'riddles') buttons[1].classList.add('active');
 
-    // Fix för Leaflet-kartan (den måste uppdatera sin storlek när den blir synlig igen)
     if (tabName === 'map' && map) {
         setTimeout(() => {
             map.invalidateSize();
-        }, 100); // Liten fördröjning för att säkerställa att CSS-övergången är klar
+        }, 100); 
     }
 }
 
@@ -191,8 +327,6 @@ function switchTab(tabName) {
 // ===========================
 
 const fileExtension = ".png"; 
-
-// BILDENS STORLEK (Pixlar)
 const imgWidth = 11199;
 const imgHeight = 14999;
 
@@ -204,14 +338,59 @@ const floorPaths = [
 ];
 
 // ===========================
-//  HEMLIGA PLATSER
+//  HEMLIGA OBJEKT
 // ===========================
 const secretLocations = [
-    { id: 1, code: "NYÅR",  floor: 0, x: 2000, y: 3000, title: "Startpunkten", msg: "Grattis! Du hittade startpunkten." },
-    { id: 2, code: "GULD",  floor: 1, x: 5500, y: 7500, title: "Gömstället",   msg: "Bra jobbat! En ledtråd finns här." },
-    { id: 3, code: "RAKET", floor: 2, x: 8000, y: 4000, title: "Utsikten",     msg: "Här har du bra utsikt!" },
-    { id: 4, code: "2025",  floor: 0, x: 5000, y: 10060, title: "Katakomberna",    msg: "Se upp för råttorna..." },
-    { id: 5, code: "SKÅL",  floor: 2, x: 5120, y: 10245, title: "Den sista skatten",       msg: "Den gömdaste av de gömsta" }
+    { 
+        id: 1, 
+        code: "NYCKEL",  
+        floor: 0, 
+        x: 2000, 
+        y: 3000, 
+        title: "Startpunkten", 
+        msg: "Dörren är öppen!",
+        aiDescription: "Det är ett litet föremål av metall. Den har ett huvud och 'tänder'. Man använder den för att låsa upp dörrar." 
+    },
+    { 
+        id: 2, 
+        code: "BOK",  
+        floor: 1, 
+        x: 5500, 
+        y: 7500, 
+        title: "Biblioteket",   
+        msg: "Kunskap är makt.",
+        aiDescription: "Den är gjord av papper. Den har en rygg men inga ben. Man läser i den. Den har sidor och ett omslag."
+    },
+    { 
+        id: 3, 
+        code: "KARTA", 
+        floor: 2, 
+        x: 8000, 
+        y: 4000, 
+        title: "Navigeringsrummet",     
+        msg: "Nu hittar du bättre!",
+        aiDescription: "Det är en ritning över ett område. Den visar vägar och landskap. Man använder den för att hitta rätt. Pirater har ofta en sådan med ett kryss på."
+    },
+    { 
+        id: 4, 
+        code: "FICKLAMPA",  
+        floor: 0, 
+        x: 5000, 
+        y: 10060, 
+        title: "Mörka källaren",    
+        msg: "Varde ljus!",
+        aiDescription: "Den är cylinderformad och man håller den i handen. Den lyser i mörkret. Den behöver batterier."
+    },
+    { 
+        id: 5, 
+        code: "SKATTKISTA",  
+        floor: 2, 
+        x: 5120, 
+        y: 10245, 
+        title: "Slutmålet",       
+        msg: "Du hittade den stora skatten!",
+        aiDescription: "Det är en stor låda, ofta av trä med metallbeslag. Den har ett lock som är välvt. Den innehåller guld och juveler."
+    }
 ];
 
 // Ladda data från minnet
@@ -322,6 +501,113 @@ function checkCode() {
 }
 
 // ===========================
+//  GEMINI API - SARKASTISK AI
+// ===========================
+const apiKey = "AIzaSyAbe0y2HN75ujiKxEqQF0Ho81w7g0b-43M"; // KLISTRA IN API-NYCKEL HÄR
+
+async function callGemini(userPrompt, systemPrompt = "") {
+    if (!apiKey) return "⚠️ Ingen API-nyckel inlagd.";
+
+    const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+    };
+
+    const model = "gemini-2.5-flash-preview-09-2025";
+    const delays = [1000, 2000, 4000];
+
+    for (let i = 0; i <= delays.length; i++) {
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            if (!response.ok) {
+                if (response.status === 429 && i < delays.length) {
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                    continue;
+                }
+                throw new Error(`Fel ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Inget svar...";
+        } catch (error) {
+            console.log(`Modell ${model} misslyckades:`, error);
+            if (i === delays.length) return `Kunde inte nå AI. Kontrollera nyckeln.`;
+            await new Promise(resolve => setTimeout(resolve, delays[i]));
+        }
+    }
+}
+
+async function handleRiddleQuestion() {
+    const input = document.getElementById("riddleQuestion");
+    const answerDisplay = document.getElementById("riddleAnswer");
+    const btn = document.getElementById("askRiddleBtn");
+    
+    const question = input.value.trim();
+    if (!question) return;
+
+    const nextLocked = secretLocations.find(loc => !unlockedIds.includes(loc.id));
+    
+    if (!nextLocked) {
+        answerDisplay.textContent = "Du är redan klar, gå och lägg dig.";
+        return;
+    }
+
+    btn.disabled = true;
+    answerDisplay.textContent = "..."; // Visar att den laddar
+
+    // PROMPT MED SARKASM
+    const systemPrompt = `
+    Du är ett urgammalt, lite vresigt och sarkastiskt Orakel i en skattjakt. 
+    Spelaren försöker gissa vilket hemligt föremål jag tänker på.
+    
+    RÄTT SVAR (DET HEMLIGA FÖREMÅLET): "${nextLocked.code}"
+    FAKTA OM FÖREMÅLET: "${nextLocked.aiDescription}"
+
+    INSTRUKTIONER FÖR SVAREN:
+    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar! Skriv in ordet på kartan."
+    2. Om frågan är en relevant Ja/Nej-fråga om föremålets egenskaper, svara ENDAST "Ja" eller "Nej" baserat på faktan.
+    3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga.
+    `;
+
+    const response = await callGemini(question, systemPrompt);
+    
+    let cleanResponse = response.trim();
+    // Ta bort ev punkt på slutet för Ja/Nej
+    if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
+
+    answerDisplay.textContent = cleanResponse;
+    
+    // Färgkoda
+    if (cleanResponse.toLowerCase().includes("rätt svar")) {
+        answerDisplay.style.color = "#4caf50"; 
+    } else if (cleanResponse.toLowerCase() === "ja" || cleanResponse.toLowerCase() === "nej") {
+        answerDisplay.style.color = "#000"; 
+    } else {
+        // Sarkastiska svar i en annan färg kanske? Eller bara svart.
+        answerDisplay.style.color = "#444"; 
+    }
+
+    btn.disabled = false;
+    input.value = "";
+}
+
+document.getElementById("askRiddleBtn").onclick = handleRiddleQuestion;
+document.getElementById("riddleQuestion").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        handleRiddleQuestion();
+    }
+});
+
+
+// ===========================
 //  NOLLSTÄLL SPELET
 // ===========================
 function resetGame() {
@@ -331,6 +617,7 @@ function resetGame() {
         updateMarkers();
         messageArea.textContent = "🔄 Spelet är nollställt.";
         messageArea.style.color = "#fff";
+        document.getElementById("riddleAnswer").textContent = "Kom igen då, fråga nåt!";
         setTimeout(() => { messageArea.textContent = ""; }, 3000);
     }
 }
