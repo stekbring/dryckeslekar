@@ -14,7 +14,7 @@
     body, html { margin: 0; padding: 0; height: 100%; background: #111; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     .main-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 10px; box-sizing: border-box; }
     
-    /* Uppdaterad H1 för att matcha väntesidan */
+    /* H1 Rubrik */
     h1 { 
         text-align: center; 
         margin-bottom: 20px; 
@@ -25,10 +25,36 @@
         color: #ffd700; /* Guld */
     }
 
-    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 0; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; }
+    
+    /* FLIK-SYSTEM (TABS) */
+    .tab-nav { display: flex; background: #222; border-bottom: 1px solid #333; }
+    .tab-btn { 
+        flex: 1; 
+        padding: 15px; 
+        background: transparent; 
+        border: none; 
+        color: #888; 
+        font-size: 16px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        border-bottom: 3px solid transparent; 
+        transition: all 0.2s;
+        border-radius: 0; /* Tar bort standard radie */
+        height: auto; /* Återställer höjd */
+        width: auto; /* Återställer bredd */
+    }
+    .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
+    .tab-content { padding: 15px; display: none; }
+    .tab-content.active { display: block; }
+
+    /* INNEHÅLLSKONTROLLER */
     #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
-    button { padding: 0; font-size: 24px; cursor: pointer; border: none; border-radius: 8px; background: #444; color: #fff; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-    button:active { background: #666; transform: scale(0.95); }
+    
+    /* Knappar (Generell stil + golvknappar) */
+    button.floor-btn { padding: 0; font-size: 24px; cursor: pointer; border: none; border-radius: 8px; background: #444; color: #fff; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    button.floor-btn:active { background: #666; transform: scale(0.95); }
+    
     #floorDisplay { display: flex; flex-direction: column; align-items: center; }
     #floorLabel { font-size: 10px; color: #888; text-transform: uppercase; }
     #floorNumber { font-size: 24px; font-weight: bold; color: #ffd700; }
@@ -42,11 +68,21 @@
     .leaflet-bar a { background-color: #333; color: #fff; border-bottom: 1px solid #444; }
     .leaflet-container { background: #222; }
 
-    /* NY STIL FÖR KOD-INPUT */
+    /* KOD-INPUT */
     .code-section { margin-top: 20px; display: flex; gap: 10px; width: 100%; }
     #secretCode { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px; outline: none; }
     #secretCode:focus { border-color: #ffd700; }
-    #submitCode { width: auto; padding: 0 20px; font-size: 16px; background: #ffd700; color: #000; font-weight: bold; }
+    #submitCode { 
+        width: auto; 
+        padding: 0 20px; 
+        font-size: 16px; 
+        background: #ffd700; 
+        color: #000; 
+        font-weight: bold; 
+        border: none; 
+        border-radius: 8px; 
+        cursor: pointer;
+    }
     #submitCode:active { background: #e5c100; }
     #messageArea { margin-top: 10px; min-height: 20px; font-size: 14px; color: #ffd700; text-align: center; font-weight: 500; }
 
@@ -57,12 +93,20 @@
         color: #ff4444; 
         border: 1px solid #ff4444; 
         font-size: 14px; 
-        width: auto; 
-        height: auto; 
         padding: 8px 16px; 
         font-weight: normal; 
+        border-radius: 8px;
+        cursor: pointer;
     }
     #resetGame:active { background: #ff4444; color: #fff; }
+
+    /* STIL FÖR GÅTOR-FLIKEN */
+    .riddles-placeholder {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-style: italic;
+    }
 </style>
 </head>
 <body>
@@ -70,29 +114,48 @@
 <div class="main-wrapper">
     <h1>New Year Hunt</h1>
     <div class="game-card">
-        <div id="controls">
-            <button id="floorDown" aria-label="Gå ner"> − </button>
-            <div id="floorDisplay">
-                <span id="floorLabel">Våning</span>
-                <span id="floorNumber">0</span>
+        
+        <!-- FLIK-MENY -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('map')">KARTA</button>
+            <button class="tab-btn" onclick="switchTab('riddles')">GÅTOR</button>
+        </div>
+
+        <!-- FLIK 1: KARTA -->
+        <div id="tab-map" class="tab-content active">
+            <div id="controls">
+                <button id="floorDown" class="floor-btn" aria-label="Gå ner"> − </button>
+                <div id="floorDisplay">
+                    <span id="floorLabel">Våning</span>
+                    <span id="floorNumber">0</span>
+                </div>
+                <button id="floorUp" class="floor-btn" aria-label="Gå upp"> + </button>
             </div>
-            <button id="floorUp" aria-label="Gå upp"> + </button>
-        </div>
-        <div class="map-container">
-            <div id="loader" class="loader"></div>
-            <div id="map"></div>
+            
+            <div class="map-container">
+                <div id="loader" class="loader"></div>
+                <div id="map"></div>
+            </div>
+
+            <!-- Input för kod -->
+            <div class="code-section">
+                <input type="text" id="secretCode" placeholder="Ange hemlig kod..." autocomplete="off">
+                <button id="submitCode">Lås upp</button>
+            </div>
+            <div id="messageArea"></div>
+
+            <!-- Nollställningsknapp -->
+            <div class="reset-section">
+                <button id="resetGame">Nollställ spelet</button>
+            </div>
         </div>
 
-        <!-- NYTT: Input för kod -->
-        <div class="code-section">
-            <input type="text" id="secretCode" placeholder="Ange hemlig kod..." autocomplete="off">
-            <button id="submitCode">Lås upp</button>
-        </div>
-        <div id="messageArea"></div>
-
-        <!-- NYTT: Nollställningsknapp -->
-        <div class="reset-section">
-            <button id="resetGame">Nollställ spelet</button>
+        <!-- FLIK 2: GÅTOR -->
+        <div id="tab-riddles" class="tab-content">
+            <div class="riddles-placeholder">
+                <p>Här kommer dina ledtrådar att samlas...</p>
+                <!-- Här kan du lägga in mer innehåll senare -->
+            </div>
         </div>
 
     </div>
@@ -100,10 +163,33 @@
 
 <script>
 // ===========================
+//  FLIK-HANTERING
+// ===========================
+function switchTab(tabName) {
+    // Dölj alla flikar
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    // Visa vald flik
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    
+    // Markera knappen
+    const buttons = document.querySelectorAll('.tab-btn');
+    if(tabName === 'map') buttons[0].classList.add('active');
+    if(tabName === 'riddles') buttons[1].classList.add('active');
+
+    // Fix för Leaflet-kartan (den måste uppdatera sin storlek när den blir synlig igen)
+    if (tabName === 'map' && map) {
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100); // Liten fördröjning för att säkerställa att CSS-övergången är klar
+    }
+}
+
+// ===========================
 //  INSTÄLLNINGAR
 // ===========================
 
-// VIKTIGT: Kontrollera mappen 'tiles/1/0/0/'. Heter filen '0.png' eller '0.jpg'?
 const fileExtension = ".png"; 
 
 // BILDENS STORLEK (Pixlar)
@@ -118,10 +204,8 @@ const floorPaths = [
 ];
 
 // ===========================
-//  HEMLIGA PLATSER (REDIGERA HÄR)
+//  HEMLIGA PLATSER
 // ===========================
-// Koordinater (x, y) är pixlar på originalbilden. 
-// x=0, y=0 är uppe till vänster.
 const secretLocations = [
     { id: 1, code: "NYÅR",  floor: 0, x: 2000, y: 3000, title: "Startpunkten", msg: "Grattis! Du hittade startpunkten." },
     { id: 2, code: "GULD",  floor: 1, x: 5500, y: 7500, title: "Gömstället",   msg: "Bra jobbat! En ledtråd finns här." },
@@ -130,12 +214,10 @@ const secretLocations = [
     { id: 5, code: "SKÅL",  floor: 2, x: 5120, y: 10245, title: "Den sista skatten",       msg: "Den gömdaste av de gömsta" }
 ];
 
-// Ladda upplåsta platser från minnet
+// Ladda data från minnet
 let unlockedIds = JSON.parse(localStorage.getItem('unlockedLocations') || "[]");
-// Ladda senast sparade våning (eller 3 om ingen finns)
 let savedFloor = parseInt(localStorage.getItem('currentFloor'));
 if (isNaN(savedFloor)) savedFloor = 3;
-
 
 // ===========================
 //  SKAPA KARTA
@@ -151,7 +233,6 @@ const map = L.map("map", {
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// Lager för markörer - ÄNDRAT TILL FeatureGroup för att stödja bringToFront()
 const markersLayer = L.featureGroup().addTo(map);
 
 const southWest = map.unproject([0, imgHeight], map.getMaxZoom());
@@ -176,24 +257,20 @@ function setLoading(loading) {
 //  DEFINIERA IKON (Rött Kryss)
 // ===========================
 const redCrossIcon = L.icon({
-    // Uppdaterad: stroke-width ändrad från 4 till 3 för ett smalare kryss
     iconUrl: 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23ff0000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
     iconSize: [40, 40],   
     iconAnchor: [20, 20], 
     popupAnchor: [0, -20] 
 });
 
-
 // ===========================
 //  HANTERA MARKÖRER
 // ===========================
 function updateMarkers() {
-    markersLayer.clearLayers(); // Ta bort gamla markörer
+    markersLayer.clearLayers(); 
 
     secretLocations.forEach(loc => {
-        // Visa bara om platsen är upplåst OCH vi är på rätt våning
         if (unlockedIds.includes(loc.id) && loc.floor === currentFloor) {
-            
             const latLng = map.unproject([loc.x, loc.y], map.getMaxZoom());
             const marker = L.marker(latLng, { icon: redCrossIcon }).addTo(markersLayer);
             marker.bindPopup(`<b>${loc.title}</b><br>${loc.msg}`);
@@ -212,7 +289,6 @@ function checkCode() {
 
     if (foundLocation) {
         if (!unlockedIds.includes(foundLocation.id)) {
-            // Ny upplåsning
             unlockedIds.push(foundLocation.id);
             localStorage.setItem('unlockedLocations', JSON.stringify(unlockedIds));
             
@@ -227,7 +303,6 @@ function checkCode() {
             
             const latLng = map.unproject([foundLocation.x, foundLocation.y], map.getMaxZoom());
             
-            // Lade till { duration: 3 } för att göra animationen långsammare (3 sekunder)
             map.flyTo(latLng, 5, {
                 animate: true,
                 duration: 2.5 
@@ -253,14 +328,12 @@ function resetGame() {
     if(confirm("Är du säker på att du vill nollställa alla framsteg?")) {
         unlockedIds = [];
         localStorage.removeItem('unlockedLocations');
-        // Vi tar INTE bort currentFloor så man stannar där man är, men rensar upplåsningar
         updateMarkers();
         messageArea.textContent = "🔄 Spelet är nollställt.";
         messageArea.style.color = "#fff";
         setTimeout(() => { messageArea.textContent = ""; }, 3000);
     }
 }
-
 
 // ===========================
 //  BYT VÅNING
@@ -274,8 +347,6 @@ function switchFloor(newFloor) {
     if (currentLayer) map.removeLayer(currentLayer);
 
     currentFloor = newFloor;
-    
-    // SPARA VÅNING I MINNET
     localStorage.setItem('currentFloor', currentFloor);
 
     const newLayer = L.tileLayer(floorPaths[currentFloor], {
@@ -318,7 +389,7 @@ document.getElementById("secretCode").addEventListener("keypress", function(even
     }
 });
 
-// Starta på sparad våning (eller 3 om ingen finns)
+// Starta på sparad våning
 switchFloor(savedFloor);
 
 window.addEventListener('resize', () => {
