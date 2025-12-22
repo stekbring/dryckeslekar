@@ -501,17 +501,31 @@ function checkCode() {
 }
 
 // ===========================
-//  GEMINI VIA CLOUDFLARE WORKER
+//  GEMINI KONFIGURATION (NYTT!)
 // ===========================
 
-// VIKTIGT: Ersätt detta med din Cloudflare URL!
+// ALTERNATIV 1: Cloudflare Worker (Fyll i din riktiga URL här!)
 const workerUrl = "https://broken-field-c503.oekbring.workers.dev/"; 
 
+// ALTERNATIV 2: Direkt API-nyckel (Enklast för testning lokalt)
+const apiKey = ""; 
+
 async function callGemini(userPrompt, systemPrompt = "") {
-    if (workerUrl === "DIN_CLOUDFLARE_WORKER_URL_HÄR" || !workerUrl) {
-        return "⚠️ Ingen Worker URL inställd i koden.";
+    // 1. Kolla om vi har en API-nyckel (Prioriteras för testning)
+    if (apiKey && apiKey.length > 10) {
+        return callGeminiDirect(userPrompt, systemPrompt);
     }
 
+    // 2. Kolla om vi har en Worker URL och om den är korrekt ifylld
+    if (workerUrl && workerUrl !== "DIN_CLOUDFLARE_WORKER_URL_HÄR") {
+        return callGeminiWorker(userPrompt, systemPrompt);
+    }
+
+    return "⚠️ Konfiguration saknas! Fyll i 'workerUrl' eller 'apiKey' i koden.";
+}
+
+// Funktion för att anropa Cloudflare Worker
+async function callGeminiWorker(userPrompt, systemPrompt) {
     const payload = {
         contents: [{ parts: [{ text: userPrompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] }
@@ -525,20 +539,43 @@ async function callGemini(userPrompt, systemPrompt = "") {
         });
 
         if (!response.ok) {
-            throw new Error(`Serverfel ${response.status}`);
+            // Försök läsa felmeddelandet om det är text/html (t.ex. Cloudflare Error Page)
+            const text = await response.text();
+            console.error("Worker Error Body:", text);
+            throw new Error(`Serverfel ${response.status}: ${text.substring(0, 50)}...`);
         }
 
         const data = await response.json();
-        // Om workern returnerar ett felmeddelande i JSON
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
+        if (data.error) throw new Error(data.error);
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "Inget svar...";
-
     } catch (error) {
-        console.log("Worker error:", error);
-        return `Kunde inte nå oraklet (${error.message}).`;
+        console.log("Worker connection error:", error);
+        return `Kunde inte nå oraklet (Worker: ${error.message}). Kolla konsolen.`;
+    }
+}
+
+// Funktion för att anropa Gemini direkt (Fallback)
+async function callGeminiDirect(userPrompt, systemPrompt) {
+    const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+    };
+    const model = "gemini-2.5-flash-preview-09-2025";
+    
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }
+        );
+        if (!response.ok) throw new Error(`Fel ${response.status}`);
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Inget svar...";
+    } catch (error) {
+        return `Kunde inte nå oraklet (API-fel: ${error.message}).`;
     }
 }
 
