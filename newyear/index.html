@@ -23,18 +23,18 @@
     /* H1 Rubrik */
     h1 { 
         text-align: center; 
-        margin-bottom: 20px; 
-        font-size: 28px; 
+        margin-bottom: 10px; 
+        font-size: 24px; 
         font-weight: 600; 
         text-transform: uppercase; 
         letter-spacing: 1px; 
         color: #ffd700; /* Guld */
     }
 
-    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 0; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; }
+    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 0; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; height: 85vh; /* Fixerad höjd för att videon ska passa */ }
     
     /* FLIK-SYSTEM (TABS) */
-    .tab-nav { display: flex; background: #222; border-bottom: 1px solid #333; }
+    .tab-nav { display: flex; background: #222; border-bottom: 1px solid #333; flex-shrink: 0; }
     .tab-btn { 
         flex: 1; 
         padding: 15px; 
@@ -51,10 +51,13 @@
         width: auto; 
     }
     .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
-    .tab-content { padding: 15px; display: none; }
-    .tab-content.active { display: block; }
+    
+    /* Tab Content behöver fylla ut resten av kortet */
+    .tab-content { display: none; flex-grow: 1; position: relative; }
+    .tab-content.active { display: flex; flex-direction: column; }
+    #tab-map { padding: 15px; }
 
-    /* INNEHÅLLSKONTROLLER */
+    /* INNEHÅLLSKONTROLLER (Karta) */
     #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
     
     button.floor-btn { padding: 0; font-size: 24px; cursor: pointer; border: none; border-radius: 8px; background: #444; color: #fff; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
@@ -63,7 +66,7 @@
     #floorDisplay { display: flex; flex-direction: column; align-items: center; }
     #floorLabel { font-size: 10px; color: #888; text-transform: uppercase; }
     #floorNumber { font-size: 24px; font-weight: bold; color: #ffd700; }
-    .map-container { position: relative; width: 100%; height: 60vh; max-height: 500px; min-height: 300px; }
+    .map-container { position: relative; width: 100%; flex-grow: 1; min-height: 200px; }
     #map { width: 100%; height: 100%; border-radius: 12px; background: #222; z-index: 1; }
     
     /* LADDNINGSSYMBOL */
@@ -73,7 +76,7 @@
     .leaflet-bar a { background-color: #333; color: #fff; border-bottom: 1px solid #444; }
     .leaflet-container { background: #222; }
 
-    /* KOD-INPUT */
+    /* KOD-INPUT (Karta) */
     .code-section { margin-top: 20px; display: flex; gap: 10px; width: 100%; }
     #secretCode { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px; outline: none; }
     #secretCode:focus { border-color: #ffd700; }
@@ -93,120 +96,79 @@
 
     /* NOLLSTÄLLNINGSKNAPP */
     .reset-section { margin-top: 20px; text-align: center; border-top: 1px solid #333; padding-top: 15px; }
-    #resetGame { 
-        background: transparent; 
-        color: #ff4444; 
-        border: 1px solid #ff4444; 
-        font-size: 14px; 
-        padding: 8px 16px; 
-        font-weight: normal; 
-        border-radius: 8px;
-        cursor: pointer;
-    }
+    #resetGame { background: transparent; color: #ff4444; border: 1px solid #ff4444; font-size: 14px; padding: 8px 16px; font-weight: normal; border-radius: 8px; cursor: pointer; }
     #resetGame:active { background: #ff4444; color: #fff; }
 
     /* ========================================= */
-    /* ORAKEL & PRATBUBBLA STYLING */
+    /* NY VIDEO-ORAKEL STYLING */
     /* ========================================= */
-    .riddle-container { 
-        display: flex; 
-        flex-direction: column; 
-        justify-content: flex-end; /* Tryck ner innehållet */
-        height: 100%; 
-        min-height: 400px;
-        padding-bottom: 20px;
+
+    /* Huvudbehållaren för videofliken */
+    .video-oracle-container {
         position: relative;
-    }
-
-    /* Pratbubblan */
-    .speech-bubble {
-        position: relative;
-        background: #fff;
-        border-radius: 20px;
-        padding: 20px;
-        text-align: center;
-        color: #000;
-        font-family: 'Indie Flower', cursive; /* Rolig font */
-        font-size: 24px;
-        line-height: 1.3;
-        font-weight: bold;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        margin-bottom: 20px;
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid #000;
-        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes popIn {
-        from { transform: scale(0.8); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Pilen på pratbubblan */
-    .speech-bubble::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border: 15px solid transparent;
-        border-top-color: #fff;
-        border-bottom: 0;
-        border-left: 0;
-        margin-left: -7px;
-        margin-bottom: -15px;
-        transform: rotate(45deg); /* Enkel pil */
-    }
-    /* Svart kant på pilen (lite trixigt, men enklast så här) */
-    .speech-bubble::before {
-        content: '';
-        position: absolute;
-        bottom: -3px;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border: 17px solid transparent;
-        border-top-color: #000;
-        border-bottom: 0;
-        border-left: 0;
-        margin-left: -8px;
-        margin-bottom: -16px;
-        transform: rotate(45deg);
-        z-index: -1;
-    }
-
-    /* Orakel-bilden */
-    .oracle-avatar {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 20px auto;
-        border-radius: 50%;
-        border: 4px solid #ffd700;
-        overflow: hidden;
-        background: #333; /* Bakgrund om bild saknas */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .oracle-avatar img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        overflow: hidden;
+        background: #000;
     }
 
-    /* Input-gruppen */
+    /* Själva videon */
+    .bg-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Gör att videon täcker ytan utan att sträckas */
+        z-index: 0;
+        opacity: 0.8; /* Lite mörkare så texten syns */
+    }
+
+    /* --- HÄR STYR DU TEXTEN I PRATBUBBLAN --- */
+    .oracle-text-overlay {
+        position: absolute;
+        z-index: 10; 
+        
+        /* KOORDINATER (Baserat på 1080x1920 video)
+           Pixlar: Top-Left(175, 277) -> Bottom-Right(811, 587)
+           Omräknat till procent för att funka på alla skärmar:
+        */
+        left: 16.2%;     /* 175 / 1080 */
+        top: 14.4%;      /* 277 / 1920 */
+        width: 58.9%;    /* (811 - 175) / 1080 */
+        height: 16.1%;   /* (587 - 277) / 1920 */
+        
+        /* Styling av texten */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-family: 'Indie Flower', cursive; /* Din roliga font */
+        font-size: 22px;
+        font-weight: bold;
+        color: #000; /* Svart text brukar synas bäst i vita bubblor */
+        padding: 10px; /* Lite padding inuti rutan */
+        box-sizing: border-box;
+    }
+
+    /* --- HÄR STYR DU FRÅGERUTAN I NEDERKANTEN --- */
     .riddle-input-group { 
-        position: relative; 
+        position: absolute; /* Flytande position */
+        z-index: 20; /* Högst upp */
+        
+        /* JUSTERA POSITIONEN HÄR: */
+        bottom: 5%; /* Hur långt från botten */
+        width: 90%; /* Bredd på rutan */
+        left: 50%;
+        transform: translateX(-50%); /* Centrera horisontellt */
+
         display: flex; 
-        gap: 0; 
-        background: #333;
+        gap: 5px; 
+        background: rgba(0, 0, 0, 0.6); /* Halvgenomskinlig bakgrund */
         border-radius: 30px; 
         padding: 5px;
-        border: 1px solid #444;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px); /* Snygg suddig effekt bakom */
     }
     
     #riddleQuestion { 
@@ -228,6 +190,7 @@
         font-weight: bold; 
         cursor: pointer; 
         transition: transform 0.2s, background 0.2s;
+        white-space: nowrap;
     }
     #askRiddleBtn:hover { background: #e5c100; }
     #askRiddleBtn:active { transform: scale(0.95); }
@@ -276,26 +239,32 @@
             </div>
         </div>
 
-        <!-- FLIK 2: GÅTOR -->
-        <div id="tab-riddles" class="tab-content">
-            <div class="riddle-container">
-                
-                <!-- Pratbubblan -->
-                <div class="speech-bubble" id="riddleAnswer">
+        <!-- FLIK 2: GÅTOR (NU MED VIDEO) -->
+        <div id="tab-riddles" class="tab-content" style="padding:0;"> <!-- Ingen padding här för att videon ska nå kanten -->
+            
+            <div class="video-oracle-container">
+                <!-- 
+                     VIDEON
+                     Byt ut 'oracle_video.mp4' mot din fil.
+                     'muted playsinline' är viktigt för att autoplay ska funka på mobiler.
+                -->
+                <video class="bg-video" autoplay loop muted playsinline>
+                    <source src="oracle.mp4" type="video/mp4">
+                    Din webbläsare stödjer inte video.
+                </video>
+
+                <!-- TEXTEN I PRATBUBBLAN (Den osynliga lådan) -->
+                <div class="oracle-text-overlay" id="riddleAnswer">
                     Hrmph... ställ en fråga då!
                 </div>
 
-                <!-- Orakel-bilden -->
-                <div class="oracle-avatar">
-                    <!-- Lägg in din bild här, döp den till oracle.png eller ändra src -->
-                    <img src="oracle.png" alt="Oraklet" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4712/4712009.png'">
-                </div>
-
+                <!-- FRÅGERUTAN LÄNGST NER -->
                 <div class="riddle-input-group">
                     <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
                     <button id="askRiddleBtn">Fråga</button>
                 </div>
             </div>
+            
         </div>
 
     </div>
@@ -501,7 +470,7 @@ function checkCode() {
 }
 
 // ===========================
-//  GEMINI KONFIGURATION (NYTT!)
+//  GEMINI KONFIGURATION
 // ===========================
 
 // ALTERNATIV 1: Cloudflare Worker (Fyll i din riktiga URL här!)
@@ -539,7 +508,6 @@ async function callGeminiWorker(userPrompt, systemPrompt) {
         });
 
         if (!response.ok) {
-            // Försök läsa felmeddelandet om det är text/html (t.ex. Cloudflare Error Page)
             const text = await response.text();
             console.error("Worker Error Body:", text);
             throw new Error(`Serverfel ${response.status}: ${text.substring(0, 50)}...`);
