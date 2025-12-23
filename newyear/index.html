@@ -673,9 +673,12 @@ async function handleRiddleQuestion() {
     } else if (cleanResponse.length < 30) { // Kort mening
         answerDisplay.style.fontSize = "clamp(20px, 6vw, 30px)";
         answerDisplay.style.lineHeight = "1.2";
-    } else { // Lång mening (sarkasm/förklaring)
+    } else if (cleanResponse.length < 180) { // Lång mening (sarkasm/förklaring)
         answerDisplay.style.fontSize = "clamp(14px, 4vw, 20px)";
         answerDisplay.style.lineHeight = "1.1";
+    } else { // Extra lång mening (> 180 tecken) - SÄKERHET
+        answerDisplay.style.fontSize = "clamp(10px, 3vw, 14px)";
+        answerDisplay.style.lineHeight = "1.0";
     }
 
     btn.disabled = false;
