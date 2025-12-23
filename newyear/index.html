@@ -32,7 +32,20 @@
         color: #ffd700; /* Guld */
     }
 
-    .game-card { width: 100%; max-width: 500px; background: #1a1a1a; padding: 0; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; height: 85vh; /* Fixerad höjd för att videon ska passa */ }
+    /* Standard (Mobil): Smalt kort, max 500px */
+    .game-card { 
+        width: 100%; 
+        max-width: 500px; 
+        background: #1a1a1a; 
+        padding: 0; 
+        border-radius: 20px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        overflow: hidden; 
+        display: flex; 
+        flex-direction: column; 
+        height: 85vh; /* Mobilhöjd */
+        transition: max-width 0.3s ease; /* Mjuk övergång vid storleksändring */
+    }
     
     /* FLIK-SYSTEM (TABS) */
     .tab-nav { display: flex; background: #222; border-bottom: 1px solid #333; flex-shrink: 0; }
@@ -53,7 +66,7 @@
     }
     .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
     
-    /* Tab Content behöver fylla ut resten av kortet */
+    /* Tab Content */
     .tab-content { display: none; flex-grow: 1; position: relative; }
     .tab-content.active { display: flex; flex-direction: column; }
     #tab-map { padding: 15px; }
@@ -101,83 +114,98 @@
     #resetGame:active { background: #ff4444; color: #fff; }
 
     /* ========================================= */
-    /* NY VIDEO-ORAKEL STYLING */
+    /* VIDEO-ORAKEL STYLING */
     /* ========================================= */
 
-    /* Huvudbehållaren för videofliken */
     .video-oracle-container {
         position: relative;
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background: #000;
+        background: #000; /* Svarta kanter om videon inte fyller skärmen */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    /* Själva videon */
-    .bg-video {
-        position: absolute;
-        top: 0;
-        left: 0;
+    /* VIDEO WRAPPER (Denna håller proportionerna låsta!)
+       Detta gör att texten aldrig flyttar sig relativt videon.
+    */
+    .video-wrapper {
+        position: relative;
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Gör att videon täcker ytan utan att sträckas */
-        z-index: 0;
-        opacity: 0.8; /* Lite mörkare så texten syns */
+        
+        /* MOBIL STANDARD: 9:16 (Stående) */
+        aspect-ratio: 9 / 16; 
+        
+        /* Ser till att den aldrig blir större än behållaren */
+        max-width: 100%;
+        max-height: 100%;
     }
 
-    /* --- HÄR STYR DU TEXTEN I PRATBUBBLAN --- */
+    /* Standard Video (Mobil) */
+    .video-mobile {
+        display: block; 
+        width: 100%; height: 100%;
+        object-fit: cover; /* Fyller wrappern helt */
+    }
+    
+    /* PC Video (Dold som standard) */
+    .video-desktop {
+        display: none; 
+        width: 100%; height: 100%;
+        object-fit: cover;
+    }
+
+    /* Textbubblan */
     .oracle-text-overlay {
         position: absolute;
         z-index: 10; 
         
-        /* KOORDINATER (Baserat på 1080x1920 video) 
-           Breddade rutan lite och justerade vänsterkanten för att centrera ökningen.
-        */
-        left: 15%;     /* Justerat från 13.5% (Flyttat höger) */
-        top: 15%;      /* Justerat från 14.4% (Flyttat ner) */
+        /* MOBIL-KOORDINATER (Relativt till wrappern nu, så de är fasta!) */
+        left: 15%;     
+        top: 13%;      
         width: 64%;      
         height: 16.1%;   
         
-        /* Styling av texten */
         display: flex;
         justify-content: center;
         align-items: center;
         text-align: center;
-        
-        /* NY FONT HÄR */
         font-family: 'MedievalSharp', cursive; 
-        
-        /* STARTSTORLEK (Uppdateras av JS) */
         font-size: 24px; 
         
-        font-weight: bold;
+        /* --- NY STIL FÖR TYDLIGHET --- */
+        font-weight: 900; /* Extra fet */
         color: #000; /* Alltid svart text */
         text-shadow: 0px 0px 3px rgba(255,255,255,0.7); /* Liten vit "glöd" för läsbarhet */
         
-        padding: 2px; /* Minskad padding */
+        padding: 2px;
         box-sizing: border-box;
         overflow: hidden; 
-        line-height: 1.1; /* Tätare rader */
+        line-height: 1.1;
+        white-space: pre-line; /* Låter oss använda \n för radbrytningar */
     }
 
-    /* --- HÄR STYR DU FRÅGERUTAN I NEDERKANTEN --- */
+    /* Frågerutan */
     .riddle-input-group { 
-        position: absolute; /* Flytande position */
-        z-index: 20; /* Högst upp */
+        position: absolute; 
+        z-index: 20; 
         
-        /* JUSTERA POSITIONEN HÄR: */
-        bottom: 5%; /* Hur långt från botten */
-        width: 90%; /* Bredd på rutan */
+        /* MOBIL-POSITION (Inuti wrappern) */
+        bottom: 5%; 
+        width: 90%; 
         left: 50%;
-        transform: translateX(-50%); /* Centrera horisontellt */
+        transform: translateX(-50%);
 
         display: flex; 
         gap: 5px; 
-        background: rgba(0, 0, 0, 0.6); /* Halvgenomskinlig bakgrund */
+        background: rgba(0, 0, 0, 0.6); 
         border-radius: 30px; 
         padding: 5px;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(5px); /* Snygg suddig effekt bakom */
+        backdrop-filter: blur(5px);
     }
     
     #riddleQuestion { 
@@ -204,6 +232,42 @@
     #askRiddleBtn:hover { background: #e5c100; }
     #askRiddleBtn:active { transform: scale(0.95); }
     #askRiddleBtn:disabled { opacity: 0.5; cursor: not-allowed; background: #666; }
+
+
+    /* ========================================================== */
+    /* --- DATOR-VERSION (PC) ---                                 */
+    /* Här ändrar vi layouten när skärmen är bredare än 768px     */
+    /* ========================================================== */
+    @media (min-width: 768px) {
+        
+        .game-card {
+            max-width: 1000px; 
+            height: 80vh;      
+        }
+
+        /* Ändra wrapperns proportioner till 16:9 för PC */
+        .video-wrapper {
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Byt video */
+        .video-mobile { display: none; }
+        .video-desktop { display: block; }
+
+        /* Flytta textrutan för PC-videon */
+        .oracle-text-overlay {
+            left: 35%;      
+            top: 9%;       
+            width: 30%;     
+            height: 30%;    
+            font-size: clamp(16px, 2vw, 28px);
+        }
+
+        .riddle-input-group {
+            bottom: 10%; 
+            width: 60%;  
+        }
+    }
 
 </style>
 </head>
@@ -248,30 +312,35 @@
             </div>
         </div>
 
-        <!-- FLIK 2: GÅTOR (NU MED VIDEO) -->
-        <div id="tab-riddles" class="tab-content" style="padding:0;"> <!-- Ingen padding här för att videon ska nå kanten -->
+        <!-- FLIK 2: GÅTOR -->
+        <div id="tab-riddles" class="tab-content" style="padding:0;"> 
             
             <div class="video-oracle-container">
-                <!-- 
-                     VIDEON
-                     Byt ut 'oracle_video.mp4' mot din fil.
-                     'muted playsinline' är viktigt för att autoplay ska funka på mobiler.
-                -->
-                <video class="bg-video" autoplay loop muted playsinline>
-                    <source src="oracle.mp4" type="video/mp4">
-                    Din webbläsare stödjer inte video.
-                </video>
+                
+                <!-- WRAPPER: Denna box har låst aspect ratio -->
+                <div class="video-wrapper">
+                    <!-- MOBIL VIDEO (Vertikal) -->
+                    <video class="video-mobile" autoplay loop muted playsinline>
+                        <source src="oracle.mp4" type="video/mp4">
+                    </video>
 
-                <!-- TEXTEN I PRATBUBBLAN (Den osynliga lådan) -->
-                <div class="oracle-text-overlay" id="riddleAnswer">
-                    Hrmph... ställ en fråga då!
-                </div>
+                    <!-- DATOR VIDEO (Horisontell) -->
+                    <video class="video-desktop" autoplay loop muted playsinline>
+                        <source src="oraclepc.mp4" type="video/mp4">
+                    </video>
 
-                <!-- FRÅGERUTAN LÄNGST NER -->
-                <div class="riddle-input-group">
-                    <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
-                    <button id="askRiddleBtn">Fråga</button>
-                </div>
+                    <!-- TEXTEN I PRATBUBBLAN -->
+                    <div class="oracle-text-overlay" id="riddleAnswer">
+                        Hrmph... ställ en fråga då!
+                    </div>
+
+                    <!-- FRÅGERUTAN -->
+                    <div class="riddle-input-group">
+                        <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
+                        <button id="askRiddleBtn">Fråga</button>
+                    </div>
+                </div> <!-- Slut på wrapper -->
+
             </div>
             
         </div>
@@ -583,7 +652,7 @@ async function handleRiddleQuestion() {
     FAKTA OM FÖREMÅLET: "${nextLocked.aiDescription}"
 
     INSTRUKTIONER FÖR SVAREN:
-    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar! Skriv in ordet på kartan."
+    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar!\n\nSkriv in ordet på kartan."
     2. Om frågan är en relevant Ja/Nej-fråga om föremålets egenskaper, svara ENDAST "Ja" eller "Nej" baserat på faktan.
     3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga. Håll svaret lagom kort (max 3 meningar).
     `;
