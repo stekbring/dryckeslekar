@@ -128,18 +128,13 @@
         align-items: center;
     }
 
-    /* VIDEO WRAPPER (Denna håller proportionerna låsta!)
-       Detta gör att texten aldrig flyttar sig relativt videon.
-    */
+    /* VIDEO WRAPPER (Denna håller proportionerna låsta!) */
     .video-wrapper {
         position: relative;
         width: 100%;
         height: 100%;
-        
         /* MOBIL STANDARD: 9:16 (Stående) */
         aspect-ratio: 9 / 16; 
-        
-        /* Ser till att den aldrig blir större än behållaren */
         max-width: 100%;
         max-height: 100%;
     }
@@ -165,7 +160,7 @@
         
         /* MOBIL-KOORDINATER (Relativt till wrappern nu, så de är fasta!) */
         left: 15%;     
-        top: 13%;      
+        top: 13%;      /* Startar på 13% */
         width: 64%;      
         height: 16.1%;   
         
@@ -179,26 +174,27 @@
         /* --- NY STIL FÖR TYDLIGHET --- */
         font-weight: 900; /* Extra fet */
         color: #000; /* Alltid svart text */
-        text-shadow: 0px 0px 3px rgba(255,255,255,0.7); /* Liten vit "glöd" för läsbarhet */
         
         padding: 2px;
         box-sizing: border-box;
         overflow: hidden; 
         line-height: 1.1;
-        white-space: pre-line; /* Låter oss använda \n för radbrytningar */
+        white-space: pre-line; 
+    }
+
+    /* Klass för att flytta ner texten efter svar (Endast mobil) */
+    .oracle-text-overlay.has-answered {
+        top: 15%;
     }
 
     /* Frågerutan */
     .riddle-input-group { 
         position: absolute; 
         z-index: 20; 
-        
-        /* MOBIL-POSITION (Inuti wrappern) */
         bottom: 5%; 
         width: 90%; 
         left: 50%;
         transform: translateX(-50%);
-
         display: flex; 
         gap: 5px; 
         background: rgba(0, 0, 0, 0.6); 
@@ -236,7 +232,6 @@
 
     /* ========================================================== */
     /* --- DATOR-VERSION (PC) ---                                 */
-    /* Här ändrar vi layouten när skärmen är bredare än 768px     */
     /* ========================================================== */
     @media (min-width: 768px) {
         
@@ -245,22 +240,24 @@
             height: 80vh;      
         }
 
-        /* Ändra wrapperns proportioner till 16:9 för PC */
         .video-wrapper {
             aspect-ratio: 16 / 9;
         }
 
-        /* Byt video */
         .video-mobile { display: none; }
         .video-desktop { display: block; }
 
-        /* Flytta textrutan för PC-videon */
         .oracle-text-overlay {
             left: 34.5%;      
-            top: 7%;       
+            top: 7%;       /* Datorns position */
             width: 30%;     
             height: 30%;    
             font-size: clamp(16px, 2vw, 28px);
+        }
+
+        /* Se till att datorversionen INTE flyttar sig även om klassen läggs till */
+        .oracle-text-overlay.has-answered {
+            top: 7%; 
         }
 
         .riddle-input-group {
@@ -659,6 +656,9 @@ async function handleRiddleQuestion() {
 
     const response = await callGemini(question, systemPrompt);
     
+    // ÄNDRAT: Lägg till klass för att flytta ner texten
+    answerDisplay.classList.add('has-answered');
+
     let cleanResponse = response.trim();
     // Ta bort ev punkt på slutet för Ja/Nej
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
@@ -703,7 +703,12 @@ function resetGame() {
         updateMarkers();
         messageArea.textContent = "🔄 Spelet är nollställt.";
         messageArea.style.color = "#fff";
-        document.getElementById("riddleAnswer").textContent = "Kom igen då, fråga nåt!";
+        
+        const answerDisplay = document.getElementById("riddleAnswer");
+        answerDisplay.textContent = "Kom igen då, fråga nåt!";
+        // ÄNDRAT: Ta bort klassen vid reset så den hoppar upp igen
+        answerDisplay.classList.remove('has-answered');
+        
         setTimeout(() => { messageArea.textContent = ""; }, 3000);
     }
 }
