@@ -12,7 +12,8 @@
 <!-- FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+<!-- Bytte till MedievalSharp för Viking/Orakel-känsla -->
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
@@ -129,26 +130,32 @@
         position: absolute;
         z-index: 10; 
         
-        /* KOORDINATER (Baserat på 1080x1920 video)
-           Pixlar: Top-Left(175, 277) -> Bottom-Right(811, 587)
-           Omräknat till procent för att funka på alla skärmar:
-        */
-        left: 16.2%;     /* 175 / 1080 */
-        top: 14.4%;      /* 277 / 1920 */
-        width: 58.9%;    /* (811 - 175) / 1080 */
-        height: 16.1%;   /* (587 - 277) / 1920 */
+        /* KOORDINATER (Baserat på 1080x1920 video) */
+        left: 13.5%;     
+        top: 14.4%;      
+        width: 64%;      
+        height: 16.1%;   
         
         /* Styling av texten */
         display: flex;
         justify-content: center;
         align-items: center;
         text-align: center;
-        font-family: 'Indie Flower', cursive; /* Din roliga font */
-        font-size: 22px;
+        
+        /* NY FONT HÄR */
+        font-family: 'MedievalSharp', cursive; 
+        
+        /* STARTSTORLEK (Uppdateras av JS) */
+        font-size: 20px; 
+        
         font-weight: bold;
-        color: #000; /* Svart text brukar synas bäst i vita bubblor */
-        padding: 10px; /* Lite padding inuti rutan */
+        color: #000; /* Alltid svart text */
+        text-shadow: 0px 0px 3px rgba(255,255,255,0.7); /* Liten vit "glöd" för läsbarhet */
+        
+        padding: 2px; 
         box-sizing: border-box;
+        overflow: hidden; 
+        line-height: 1.1; 
     }
 
     /* --- HÄR STYR DU FRÅGERUTAN I NEDERKANTEN --- */
@@ -576,7 +583,7 @@ async function handleRiddleQuestion() {
     INSTRUKTIONER FÖR SVAREN:
     1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar! Skriv in ordet på kartan."
     2. Om frågan är en relevant Ja/Nej-fråga om föremålets egenskaper, svara ENDAST "Ja" eller "Nej" baserat på faktan.
-    3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga. Inte för långt svar, max cirka 2 eller 3 meningar.
+    3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga. Håll svaret lagom kort (max 3 meningar).
     `;
 
     const response = await callGemini(question, systemPrompt);
@@ -586,15 +593,18 @@ async function handleRiddleQuestion() {
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
 
     answerDisplay.textContent = cleanResponse;
-    
-    // Färgkoda
-    if (cleanResponse.toLowerCase().includes("rätt svar")) {
-        answerDisplay.style.color = "#4caf50"; 
-    } else if (cleanResponse.toLowerCase() === "ja" || cleanResponse.toLowerCase() === "nej") {
-        answerDisplay.style.color = "#000"; 
-    } else {
-        // Sarkastiska svar i svart (eller mörkgrått)
-        answerDisplay.style.color = "#444"; 
+    answerDisplay.style.color = "#000"; // Alltid svart text
+
+    // Dynamisk storlek på texten
+    if (cleanResponse.length < 5) { // Ja / Nej
+        answerDisplay.style.fontSize = "clamp(30px, 10vw, 45px)";
+        answerDisplay.style.lineHeight = "1.2";
+    } else if (cleanResponse.length < 30) { // Kort mening
+        answerDisplay.style.fontSize = "clamp(20px, 6vw, 30px)";
+        answerDisplay.style.lineHeight = "1.2";
+    } else { // Lång mening (sarkasm/förklaring)
+        answerDisplay.style.fontSize = "clamp(14px, 4vw, 20px)";
+        answerDisplay.style.lineHeight = "1.1";
     }
 
     btn.disabled = false;
