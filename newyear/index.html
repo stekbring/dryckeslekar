@@ -130,9 +130,11 @@
         position: absolute;
         z-index: 10; 
         
-        /* KOORDINATER (Baserat på 1080x1920 video) */
-        left: 13.5%;     
-        top: 14.4%;      
+        /* KOORDINATER (Baserat på 1080x1920 video) 
+           Breddade rutan lite och justerade vänsterkanten för att centrera ökningen.
+        */
+        left: 15%;     /* Justerat från 13.5% (Flyttat höger) */
+        top: 15%;      /* Justerat från 14.4% (Flyttat ner) */
         width: 64%;      
         height: 16.1%;   
         
@@ -146,16 +148,16 @@
         font-family: 'MedievalSharp', cursive; 
         
         /* STARTSTORLEK (Uppdateras av JS) */
-        font-size: 20px; 
+        font-size: 24px; 
         
         font-weight: bold;
         color: #000; /* Alltid svart text */
         text-shadow: 0px 0px 3px rgba(255,255,255,0.7); /* Liten vit "glöd" för läsbarhet */
         
-        padding: 2px; 
+        padding: 2px; /* Minskad padding */
         box-sizing: border-box;
         overflow: hidden; 
-        line-height: 1.1; 
+        line-height: 1.1; /* Tätare rader */
     }
 
     /* --- HÄR STYR DU FRÅGERUTAN I NEDERKANTEN --- */
