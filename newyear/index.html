@@ -158,7 +158,7 @@
         position: absolute;
         z-index: 10; 
         
-        /* MOBIL-KOORDINATER (Relativt till wrappern nu, så de är fasta!) */
+        /* MOBIL-KOORDINATER START */
         left: 15%;     
         top: 13%;      /* Startar på 13% */
         width: 64%;      
@@ -171,15 +171,18 @@
         font-family: 'MedievalSharp', cursive; 
         font-size: 24px; 
         
-        /* --- NY STIL FÖR TYDLIGHET --- */
-        font-weight: 900; /* Extra fet */
-        color: #000; /* Alltid svart text */
+        font-weight: 900; 
+        color: #000; 
+        
+        /* Mjukare glow/exposure-effekt istället för hård vit kant */
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
         
         padding: 2px;
         box-sizing: border-box;
         overflow: hidden; 
         line-height: 1.1;
         white-space: pre-line; 
+        /* transition borttagen för att slippa animation vid positionsskifte */
     }
 
     /* Klass för att flytta ner texten efter svar (Endast mobil) */
@@ -191,7 +194,10 @@
     .riddle-input-group { 
         position: absolute; 
         z-index: 20; 
-        bottom: 5%; 
+        
+        /* ÄNDRAT: Flyttat upp till 40px för att synas bättre på mobil */
+        bottom: 40px; 
+        
         width: 90%; 
         left: 50%;
         transform: translateX(-50%);
@@ -211,7 +217,9 @@
         background: transparent; 
         color: white; 
         outline: none; 
-        font-size: 16px;
+        
+        /* ÄNDRAT: 17px förhindrar automatisk inzoomning på iOS */
+        font-size: 17px; 
     }
     
     #askRiddleBtn { 
