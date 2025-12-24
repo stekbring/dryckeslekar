@@ -43,7 +43,10 @@
         overflow: hidden; 
         display: flex; 
         flex-direction: column; 
-        height: 85vh; /* Mobilhöjd */
+        
+        /* Använder dvh (Dynamic Viewport Height) för att hantera adressfält bättre */
+        height: 80dvh; 
+        
         transition: max-width 0.3s ease; /* Mjuk övergång vid storleksändring */
     }
     
@@ -55,7 +58,7 @@
         background: transparent; 
         border: none; 
         color: #888; 
-        font-size: 16px; 
+        font-size: 14px; /* Lite mindre font för att få plats med 3 knappar */
         font-weight: 600; 
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
@@ -63,6 +66,7 @@
         border-radius: 0; 
         height: auto; 
         width: auto; 
+        text-transform: uppercase;
     }
     .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
     
@@ -70,6 +74,31 @@
     .tab-content { display: none; flex-grow: 1; position: relative; }
     .tab-content.active { display: flex; flex-direction: column; }
     #tab-map { padding: 15px; }
+
+    /* STARTSIDA STYLING */
+    #tab-home {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 30px;
+        background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%);
+    }
+    
+    .welcome-title {
+        font-family: 'MedievalSharp', cursive;
+        font-size: 42px;
+        color: #ffd700;
+        margin-bottom: 20px;
+        line-height: 1.2;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .welcome-subtitle {
+        font-size: 18px;
+        color: #ddd;
+        line-height: 1.5;
+        max-width: 80%;
+    }
 
     /* INNEHÅLLSKONTROLLER (Karta) */
     #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
@@ -190,13 +219,15 @@
         top: 15%;
     }
 
-    /* Frågerutan */
+    /* Frågerutan - FIXAD: Dynamisk positionering */
     .riddle-input-group { 
         position: absolute; 
-        z-index: 20; 
+        z-index: 100; /* Högt z-index för att ligga överst */
         
-        /* ÄNDRAT: Flyttat upp till 40px för att synas bättre på mobil */
-        bottom: 40px; 
+        /* ÄNDRAT: 15% från botten av fliken. 
+           Detta gör att den flyttar sig uppåt på mindre skärmar
+           och håller sig synlig. */
+        bottom: 15%; 
         
         width: 90%; 
         left: 50%;
@@ -218,7 +249,7 @@
         color: white; 
         outline: none; 
         
-        /* ÄNDRAT: 17px förhindrar automatisk inzoomning på iOS */
+        /* 17px förhindrar automatisk inzoomning på iOS */
         font-size: 17px; 
     }
     
@@ -268,9 +299,17 @@
             top: 7%; 
         }
 
+        /* Justera input-gruppen för PC också */
         .riddle-input-group {
-            bottom: 10%; 
+            bottom: 30px; 
             width: 60%;  
+        }
+    }
+
+    /* --- EXTRA FIX FÖR RIKTIGT SMÅ SKÄRMAR (t.ex. iPhone SE) --- */
+    @media (max-height: 600px) {
+        .riddle-input-group {
+            bottom: 20%; /* Flytta upp den ännu mer på korta skärmar */
         }
     }
 
@@ -282,14 +321,21 @@
     <h1>New Year Hunt</h1>
     <div class="game-card">
         
-        <!-- FLIK-MENY -->
+        <!-- FLIK-MENY (Uppdaterad) -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('map')">KARTA</button>
-            <button class="tab-btn" onclick="switchTab('riddles')">GÅTOR</button>
+            <button class="tab-btn active" onclick="switchTab('home')">STARTSIDA</button>
+            <button class="tab-btn" onclick="switchTab('map')">KARTA</button>
+            <button class="tab-btn" onclick="switchTab('riddles')">ORAKLET</button>
         </div>
 
-        <!-- FLIK 1: KARTA -->
-        <div id="tab-map" class="tab-content active">
+        <!-- FLIK 1: STARTSIDA (Ny) -->
+        <div id="tab-home" class="tab-content active">
+            <div class="welcome-title">Välkommen till skattjakten!</div>
+            <div class="welcome-subtitle">Hitta skatten först för att vinna.</div>
+        </div>
+
+        <!-- FLIK 2: KARTA -->
+        <div id="tab-map" class="tab-content">
             <div id="controls">
                 <button id="floorDown" class="floor-btn" aria-label="Gå ner"> − </button>
                 <div id="floorDisplay">
@@ -317,7 +363,7 @@
             </div>
         </div>
 
-        <!-- FLIK 2: GÅTOR -->
+        <!-- FLIK 3: ORAKLET -->
         <div id="tab-riddles" class="tab-content" style="padding:0;"> 
             
             <div class="video-oracle-container">
@@ -338,14 +384,14 @@
                     <div class="oracle-text-overlay" id="riddleAnswer">
                         Hrmph... ställ en fråga då!
                     </div>
-
-                    <!-- FRÅGERUTAN -->
-                    <div class="riddle-input-group">
-                        <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
-                        <button id="askRiddleBtn">Fråga</button>
-                    </div>
                 </div> <!-- Slut på wrapper -->
 
+            </div> <!-- Slut på video-oracle-container -->
+
+            <!-- FRÅGERUTAN (Nu utanför wrappern och containern, direkt i fliken) -->
+            <div class="riddle-input-group">
+                <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
+                <button id="askRiddleBtn">Fråga</button>
             </div>
             
         </div>
@@ -364,8 +410,9 @@ function switchTab(tabName) {
     document.getElementById(`tab-${tabName}`).classList.add('active');
     
     const buttons = document.querySelectorAll('.tab-btn');
-    if(tabName === 'map') buttons[0].classList.add('active');
-    if(tabName === 'riddles') buttons[1].classList.add('active');
+    if(tabName === 'home') buttons[0].classList.add('active');
+    if(tabName === 'map') buttons[1].classList.add('active');
+    if(tabName === 'riddles') buttons[2].classList.add('active');
 
     if (tabName === 'map' && map) {
         setTimeout(() => {
