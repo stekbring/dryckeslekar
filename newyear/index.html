@@ -43,11 +43,13 @@
         overflow: hidden; 
         display: flex; 
         flex-direction: column; 
+        position: relative; /* Viktigt för absolut positionering inuti */
         
-        /* Använder dvh (Dynamic Viewport Height) för att hantera adressfält bättre */
+        /* Använder dvh men med en max-höjd för säkerhet */
         height: 80dvh; 
+        max-height: 800px;
         
-        transition: max-width 0.3s ease; /* Mjuk övergång vid storleksändring */
+        transition: max-width 0.3s ease; 
     }
     
     /* FLIK-SYSTEM (TABS) */
@@ -58,7 +60,7 @@
         background: transparent; 
         border: none; 
         color: #888; 
-        font-size: 14px; /* Lite mindre font för att få plats med 3 knappar */
+        font-size: 14px; 
         font-weight: 600; 
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
@@ -71,7 +73,7 @@
     .tab-btn.active { color: #ffd700; border-bottom: 3px solid #ffd700; background: #252525; }
     
     /* Tab Content */
-    .tab-content { display: none; flex-grow: 1; position: relative; }
+    .tab-content { display: none; flex-grow: 1; position: relative; height: 100%; }
     .tab-content.active { display: flex; flex-direction: column; }
     #tab-map { padding: 15px; }
 
@@ -151,18 +153,17 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background: #000; /* Svarta kanter om videon inte fyller skärmen */
+        background: #000; 
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    /* VIDEO WRAPPER (Denna håller proportionerna låsta!) */
+    /* VIDEO WRAPPER */
     .video-wrapper {
         position: relative;
         width: 100%;
         height: 100%;
-        /* MOBIL STANDARD: 9:16 (Stående) */
         aspect-ratio: 9 / 16; 
         max-width: 100%;
         max-height: 100%;
@@ -172,7 +173,7 @@
     .video-mobile {
         display: block; 
         width: 100%; height: 100%;
-        object-fit: cover; /* Fyller wrappern helt */
+        object-fit: cover; 
     }
     
     /* PC Video (Dold som standard) */
@@ -187,9 +188,8 @@
         position: absolute;
         z-index: 10; 
         
-        /* MOBIL-KOORDINATER START */
         left: 15%;     
-        top: 13%;      /* Startar på 13% */
+        top: 13%;      
         width: 64%;      
         height: 16.1%;   
         
@@ -203,7 +203,6 @@
         font-weight: 900; 
         color: #000; 
         
-        /* Mjukare glow/exposure-effekt istället för hård vit kant */
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
         
         padding: 2px;
@@ -211,23 +210,19 @@
         overflow: hidden; 
         line-height: 1.1;
         white-space: pre-line; 
-        /* transition borttagen för att slippa animation vid positionsskifte */
     }
 
-    /* Klass för att flytta ner texten efter svar (Endast mobil) */
     .oracle-text-overlay.has-answered {
         top: 15%;
     }
 
-    /* Frågerutan - FIXAD: Dynamisk positionering */
+    /* Frågerutan - OPTIMERAD FÖR ATT SYNAS */
     .riddle-input-group { 
         position: absolute; 
-        z-index: 100; /* Högt z-index för att ligga överst */
+        z-index: 100;
         
-        /* ÄNDRAT: 15% från botten av fliken. 
-           Detta gör att den flyttar sig uppåt på mindre skärmar
-           och håller sig synlig. */
-        bottom: 15%; 
+        /* 1. Höjt från 30px till 60px för att synas bättre på normala mobiler */
+        bottom: 60px; 
         
         width: 90%; 
         left: 50%;
@@ -248,8 +243,6 @@
         background: transparent; 
         color: white; 
         outline: none; 
-        
-        /* 17px förhindrar automatisk inzoomning på iOS */
         font-size: 17px; 
     }
     
@@ -270,46 +263,44 @@
 
 
     /* ========================================================== */
-    /* --- DATOR-VERSION (PC) ---                                 */
+    /* --- DATOR-VERSION (PC) & STOR SKÄRM ---                    */
     /* ========================================================== */
     @media (min-width: 768px) {
-        
         .game-card {
             max-width: 1000px; 
             height: 80vh;      
         }
-
         .video-wrapper {
             aspect-ratio: 16 / 9;
         }
-
         .video-mobile { display: none; }
         .video-desktop { display: block; }
 
         .oracle-text-overlay {
             left: 34.5%;      
-            top: 7%;       /* Datorns position */
+            top: 7%;       
             width: 30%;     
             height: 30%;    
             font-size: clamp(16px, 2vw, 28px);
         }
-
-        /* Se till att datorversionen INTE flyttar sig även om klassen läggs till */
         .oracle-text-overlay.has-answered {
             top: 7%; 
         }
-
-        /* Justera input-gruppen för PC också */
         .riddle-input-group {
-            bottom: 30px; 
+            bottom: 40px; 
             width: 60%;  
         }
     }
 
-    /* --- EXTRA FIX FÖR RIKTIGT SMÅ SKÄRMAR (t.ex. iPhone SE) --- */
-    @media (max-height: 600px) {
+    /* --- SPECIAL: LITEN MOBIL (t.ex. iPhone SE) --- */
+    @media (max-height: 700px) {
+        /* Om skärmen är låg, lyft upp rutan ännu mer så den inte krockar med bottenkanten */
         .riddle-input-group {
-            bottom: 20%; /* Flytta upp den ännu mer på korta skärmar */
+            bottom: 80px; 
+        }
+        /* Minska kortets höjd lite så hela kortet syns */
+        .game-card {
+            height: 90vh;
         }
     }
 
