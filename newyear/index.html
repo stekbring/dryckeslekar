@@ -60,7 +60,7 @@
         background: transparent; 
         border: none; 
         color: #888; 
-        font-size: 14px; 
+        font-size: 14px; /* Lite mindre font för att få plats med 3 knappar */
         font-weight: 600; 
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
@@ -416,6 +416,11 @@ function switchTab(tabName) {
 //  INSTÄLLNINGAR
 // ===========================
 
+// --- NYA START-INSTÄLLNINGAR HÄR! ---
+const startPixelX = 5579;
+const startPixelY = 9840;
+const startZoomLevel = 2; // Ändra denna siffra för att justera zoom (högre = närmare)
+
 const fileExtension = ".png"; 
 const imgWidth = 11199;
 const imgHeight = 14999;
@@ -508,11 +513,9 @@ const bounds = L.latLngBounds(southWest, northEast);
 
 map.setMaxBounds(bounds);
 
-// ÄNDRAT: Centrera på specifika koordinater (5579, 9840) vid start
-// Vi konverterar pixelkoordinater till Leaflet LatLng
-const startCoords = map.unproject([5579, 9840], map.getMaxZoom());
-// Sätt vyn: center = startCoords, zoom = 4 (justera siffran 4 om du vill ha mer/mindre zoom)
-map.setView(startCoords, 4);
+// ÄNDRAT: Använder nu variablerna högst upp
+const startCoords = map.unproject([startPixelX, startPixelY], map.getMaxZoom());
+map.setView(startCoords, startZoomLevel);
 
 let currentFloor = -1;
 let currentLayer = null;
