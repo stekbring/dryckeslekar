@@ -24,7 +24,7 @@
         display: flex; 
         flex-direction: column; 
         align-items: center; 
-        justify-content: flex-end; /* ÄNDRAT: Trycker innehållet mot botten */
+        justify-content: flex-end; /* Trycker innehållet mot botten */
         min-height: 100vh; 
         padding: 10px; 
         padding-bottom: 3vh; /* Lite luft under kortet */
@@ -40,7 +40,7 @@
         letter-spacing: 1px; 
         color: #ffd700; /* Guld */
         
-        /* ÄNDRAT: Dessa två rader centrerar rubriken i det lediga utrymmet ovanför kortet */
+        /* Dessa två rader centrerar rubriken i det lediga utrymmet ovanför kortet */
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -135,7 +135,6 @@
     .leaflet-container { background: #222; }
 
     /* KOD-INPUT (Karta) */
-    /* ÄNDRAT: Minskad margin-top från 20px till 10px */
     .code-section { margin-top: 10px; display: flex; gap: 10px; width: 100%; }
     #secretCode { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px; outline: none; }
     #secretCode:focus { border-color: #ffd700; }
@@ -152,11 +151,9 @@
     }
     #submitCode:active { background: #e5c100; }
     
-    /* ÄNDRAT: Minskad margin-top från 10px till 5px */
     #messageArea { margin-top: 5px; min-height: 20px; font-size: 14px; color: #ffd700; text-align: center; font-weight: 500; }
 
     /* NOLLSTÄLLNINGSKNAPP */
-    /* ÄNDRAT: Minskad margin-top från 20px till 5px och padding-top från 15px till 10px */
     .reset-section { margin-top: 5px; text-align: center; border-top: 1px solid #333; padding-top: 10px; }
     #resetGame { background: transparent; color: #ff4444; border: 1px solid #ff4444; font-size: 14px; padding: 8px 16px; font-weight: normal; border-radius: 8px; cursor: pointer; }
     #resetGame:active { background: #ff4444; color: #fff; }
@@ -233,14 +230,11 @@
         top: 15%;
     }
 
-    /* Frågerutan - OPTIMERAD FÖR ATT SYNAS */
+    /* Frågerutan */
     .riddle-input-group { 
         position: absolute; 
         z-index: 100;
-        
-        /* 1. Höjt från 30px till 60px för att synas bättre på normala mobiler */
-        bottom: 60px; 
-        
+        bottom: 25px; 
         width: 90%; 
         left: 50%;
         transform: translateX(-50%);
@@ -311,11 +305,9 @@
 
     /* --- SPECIAL: LITEN MOBIL (t.ex. iPhone SE) --- */
     @media (max-height: 700px) {
-        /* Om skärmen är låg, lyft upp rutan ännu mer så den inte krockar med bottenkanten */
         .riddle-input-group {
             bottom: 80px; 
         }
-        /* Minska kortets höjd lite så hela kortet syns */
         .game-card {
             height: 90vh;
         }
@@ -396,7 +388,7 @@
 
             </div> <!-- Slut på video-oracle-container -->
 
-            <!-- FRÅGERUTAN (Nu utanför wrappern och containern, direkt i fliken) -->
+            <!-- FRÅGERUTAN -->
             <div class="riddle-input-group">
                 <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
                 <button id="askRiddleBtn">Fråga</button>
@@ -433,10 +425,9 @@ function switchTab(tabName) {
 //  INSTÄLLNINGAR
 // ===========================
 
-// --- NYA START-INSTÄLLNINGAR HÄR! ---
 const startPixelX = 5579;
 const startPixelY = 9840;
-const startZoomLevel = 2; // Ändra denna siffra för att justera zoom (högre = närmare)
+const startZoomLevel = 2; 
 
 const fileExtension = ".png"; 
 const imgWidth = 11199;
@@ -455,13 +446,13 @@ const floorPaths = [
 const secretLocations = [
     { 
         id: 1, 
-        code: "NYCKEL",  
+        code: "RUBIKSKUB",  // UPPDATERAT TILL RUBIKSKUB
         floor: 0, 
         x: 2000, 
         y: 3000, 
         title: "Startpunkten", 
-        msg: "Dörren är öppen!",
-        aiDescription: "Det är ett litet föremål av metall. Den har ett huvud och 'tänder'. Man använder den för att låsa upp dörrar." 
+        msg: "Leta efter en lapp med nästa ledtråd.",
+        aiDescription: "Det är en kub med sex sidor. Den har många färger (röd, blå, grön, gul, vit, orange). Det är ett mekaniskt pussel som man vrider på." 
     },
     { 
         id: 2, 
@@ -505,7 +496,7 @@ const secretLocations = [
     }
 ];
 
-// Ladda data från minnet (Men vi struntar i sparad våning vid start nu)
+// Ladda data från minnet
 let unlockedIds = JSON.parse(localStorage.getItem('unlockedLocations') || "[]");
 
 // ===========================
@@ -530,7 +521,6 @@ const bounds = L.latLngBounds(southWest, northEast);
 
 map.setMaxBounds(bounds);
 
-// ÄNDRAT: Använder nu variablerna högst upp
 const startCoords = map.unproject([startPixelX, startPixelY], map.getMaxZoom());
 map.setView(startCoords, startZoomLevel);
 
@@ -544,9 +534,6 @@ function setLoading(loading) {
     loader.style.display = loading ? 'block' : 'none';
 }
 
-// ===========================
-//  DEFINIERA IKON (Rött Kryss)
-// ===========================
 const redCrossIcon = L.icon({
     iconUrl: 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23ff0000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
     iconSize: [40, 40],   
@@ -554,9 +541,6 @@ const redCrossIcon = L.icon({
     popupAnchor: [0, -20] 
 });
 
-// ===========================
-//  HANTERA MARKÖRER
-// ===========================
 function updateMarkers() {
     markersLayer.clearLayers(); 
 
@@ -569,14 +553,12 @@ function updateMarkers() {
     });
 }
 
-// ===========================
-//  HANTERA KODER
-// ===========================
 function checkCode() {
     const input = document.getElementById("secretCode");
     const code = input.value.trim().toUpperCase(); 
     
-    const foundLocation = secretLocations.find(loc => loc.code === code);
+    // ÄNDRAT: Jämför med toUpperCase() på båda sidor för att vara säker
+    const foundLocation = secretLocations.find(loc => loc.code.toUpperCase() === code);
 
     if (foundLocation) {
         if (!unlockedIds.includes(foundLocation.id)) {
@@ -616,46 +598,34 @@ function checkCode() {
 //  GEMINI KONFIGURATION
 // ===========================
 
-// ALTERNATIV 1: Cloudflare Worker (Fyll i din riktiga URL här!)
 const workerUrl = "https://broken-field-c503.oekbring.workers.dev/"; 
-
-// ALTERNATIV 2: Direkt API-nyckel (Enklast för testning lokalt)
 const apiKey = ""; 
 
 async function callGemini(userPrompt, systemPrompt = "") {
-    // 1. Kolla om vi har en API-nyckel (Prioriteras för testning)
     if (apiKey && apiKey.length > 10) {
         return callGeminiDirect(userPrompt, systemPrompt);
     }
-
-    // 2. Kolla om vi har en Worker URL och om den är korrekt ifylld
     if (workerUrl && workerUrl !== "DIN_CLOUDFLARE_WORKER_URL_HÄR") {
         return callGeminiWorker(userPrompt, systemPrompt);
     }
-
     return "⚠️ Konfiguration saknas! Fyll i 'workerUrl' eller 'apiKey' i koden.";
 }
 
-// Funktion för att anropa Cloudflare Worker
 async function callGeminiWorker(userPrompt, systemPrompt) {
     const payload = {
         contents: [{ parts: [{ text: userPrompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] }
     };
-
     try {
         const response = await fetch(workerUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         if (!response.ok) {
             const text = await response.text();
-            console.error("Worker Error Body:", text);
             throw new Error(`Serverfel ${response.status}: ${text.substring(0, 50)}...`);
         }
-
         const data = await response.json();
         if (data.error) throw new Error(data.error);
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "Inget svar...";
@@ -665,14 +635,12 @@ async function callGeminiWorker(userPrompt, systemPrompt) {
     }
 }
 
-// Funktion för att anropa Gemini direkt (Fallback)
 async function callGeminiDirect(userPrompt, systemPrompt) {
     const payload = {
         contents: [{ parts: [{ text: userPrompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] }
     };
     const model = "gemini-2.5-flash-preview-09-2025";
-    
     try {
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -706,9 +674,8 @@ async function handleRiddleQuestion() {
     }
 
     btn.disabled = true;
-    answerDisplay.textContent = "..."; // Visar att den laddar
+    answerDisplay.textContent = "..."; 
 
-    // PROMPT MED SARKASM
     const systemPrompt = `
     Du är ett urgammalt, lite vresigt och sarkastiskt Orakel i en skattjakt. 
     Spelaren försöker gissa vilket hemligt föremål jag tänker på.
@@ -717,34 +684,31 @@ async function handleRiddleQuestion() {
     FAKTA OM FÖREMÅLET: "${nextLocked.aiDescription}"
 
     INSTRUKTIONER FÖR SVAREN:
-    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar!\n\nSkriv in ordet på kartan."
+    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar!\n\nSkriv in "${nextLocked.code}" på kartan."
     2. Om frågan är en relevant Ja/Nej-fråga om föremålets egenskaper, svara ENDAST "Ja" eller "Nej" baserat på faktan.
     3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga. Håll svaret lagom kort (max 3 meningar).
     `;
 
     const response = await callGemini(question, systemPrompt);
     
-    // ÄNDRAT: Lägg till klass för att flytta ner texten
     answerDisplay.classList.add('has-answered');
 
     let cleanResponse = response.trim();
-    // Ta bort ev punkt på slutet för Ja/Nej
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
 
     answerDisplay.textContent = cleanResponse;
-    answerDisplay.style.color = "#000"; // Alltid svart text
+    answerDisplay.style.color = "#000"; 
 
-    // Dynamisk storlek på texten
-    if (cleanResponse.length < 5) { // Ja / Nej
+    if (cleanResponse.length < 5) { 
         answerDisplay.style.fontSize = "clamp(30px, 10vw, 45px)";
         answerDisplay.style.lineHeight = "1.2";
-    } else if (cleanResponse.length < 30) { // Kort mening
+    } else if (cleanResponse.length < 30) { 
         answerDisplay.style.fontSize = "clamp(20px, 6vw, 30px)";
         answerDisplay.style.lineHeight = "1.2";
-    } else if (cleanResponse.length < 180) { // Lång mening (sarkasm/förklaring)
+    } else if (cleanResponse.length < 180) { 
         answerDisplay.style.fontSize = "clamp(14px, 4vw, 20px)";
         answerDisplay.style.lineHeight = "1.1";
-    } else { // Extra lång mening (> 180 tecken) - SÄKERHET
+    } else { 
         answerDisplay.style.fontSize = "clamp(10px, 3vw, 14px)";
         answerDisplay.style.lineHeight = "1.0";
     }
@@ -760,10 +724,6 @@ document.getElementById("riddleQuestion").addEventListener("keypress", function(
     }
 });
 
-
-// ===========================
-//  NOLLSTÄLL SPELET
-// ===========================
 function resetGame() {
     if(confirm("Är du säker på att du vill nollställa alla framsteg?")) {
         unlockedIds = [];
@@ -774,16 +734,12 @@ function resetGame() {
         
         const answerDisplay = document.getElementById("riddleAnswer");
         answerDisplay.textContent = "Kom igen då, fråga nåt!";
-        // ÄNDRAT: Ta bort klassen vid reset så den hoppar upp igen
         answerDisplay.classList.remove('has-answered');
         
         setTimeout(() => { messageArea.textContent = ""; }, 3000);
     }
 }
 
-// ===========================
-//  BYT VÅNING
-// ===========================
 function switchFloor(newFloor) {
     if (newFloor < 0 || newFloor >= floorPaths.length) return;
     if (newFloor === currentFloor) return; 
@@ -821,9 +777,6 @@ function switchFloor(newFloor) {
     }, 150);
 }
 
-// ===========================
-//  EVENT LISTENERS
-// ===========================
 document.getElementById("floorUp").onclick = () => switchFloor(currentFloor + 1);
 document.getElementById("floorDown").onclick = () => switchFloor(currentFloor - 1);
 document.getElementById("submitCode").onclick = checkCode;
@@ -835,8 +788,6 @@ document.getElementById("secretCode").addEventListener("keypress", function(even
     }
 });
 
-// ÄNDRAT: Starta alltid på våning 3 (index 3 i arrayen, vilket är den 4:e våningen om 0 är första)
-// Om "Våning 3" är din sista våning i arrayen floorPaths, så är detta rätt.
 switchFloor(3);
 
 window.addEventListener('resize', () => {
