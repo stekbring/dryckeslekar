@@ -198,7 +198,7 @@
         align-items: center;
         text-align: center;
         font-family: 'MedievalSharp', cursive; 
-        font-size: 24px; 
+        font-size: 20px; 
         
         font-weight: 900; 
         color: #000; 
@@ -373,7 +373,7 @@
 
                     <!-- TEXTEN I PRATBUBBLAN -->
                     <div class="oracle-text-overlay" id="riddleAnswer">
-                        Hrmph... ställ en fråga då!
+                        Ställ mig Ja/Nej frågor för att lista ut 5 stycken hemliga föremål!
                     </div>
                 </div> <!-- Slut på wrapper -->
 
@@ -483,10 +483,8 @@ const secretLocations = [
     }
 ];
 
-// Ladda data från minnet
+// Ladda data från minnet (Men vi struntar i sparad våning vid start nu)
 let unlockedIds = JSON.parse(localStorage.getItem('unlockedLocations') || "[]");
-let savedFloor = parseInt(localStorage.getItem('currentFloor'));
-if (isNaN(savedFloor)) savedFloor = 3;
 
 // ===========================
 //  SKAPA KARTA
@@ -509,8 +507,12 @@ const northEast = map.unproject([imgWidth, 0], map.getMaxZoom());
 const bounds = L.latLngBounds(southWest, northEast);
 
 map.setMaxBounds(bounds);
-map.fitBounds(bounds);
-map.setZoom(map.getZoom() + 1);
+
+// ÄNDRAT: Centrera på specifika koordinater (5579, 9840) vid start
+// Vi konverterar pixelkoordinater till Leaflet LatLng
+const startCoords = map.unproject([5579, 9840], map.getMaxZoom());
+// Sätt vyn: center = startCoords, zoom = 4 (justera siffran 4 om du vill ha mer/mindre zoom)
+map.setView(startCoords, 4);
 
 let currentFloor = -1;
 let currentLayer = null;
@@ -813,8 +815,9 @@ document.getElementById("secretCode").addEventListener("keypress", function(even
     }
 });
 
-// Starta på sparad våning
-switchFloor(savedFloor);
+// ÄNDRAT: Starta alltid på våning 3 (index 3 i arrayen, vilket är den 4:e våningen om 0 är första)
+// Om "Våning 3" är din sista våning i arrayen floorPaths, så är detta rätt.
+switchFloor(3);
 
 window.addEventListener('resize', () => {
     map.invalidateSize();
