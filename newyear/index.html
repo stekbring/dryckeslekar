@@ -728,6 +728,19 @@ sendHelpBtn.onclick = async function() {
         return;
     }
 
+    // CHECK COOLDOWN (60 sekunder)
+    const lastHelpTime = localStorage.getItem('last_help_request_time');
+    const now = Date.now();
+    if (lastHelpTime) {
+        const diff = now - parseInt(lastHelpTime);
+        if (diff < 60000) { // 60 000 ms = 60 sekunder
+            const secondsLeft = Math.ceil((60000 - diff) / 1000);
+            helpStatus.textContent = `Vänta ${secondsLeft} sekunder innan du ber om hjälp igen.`;
+            helpStatus.style.color = "#ff4444";
+            return;
+        }
+    }
+
     sendHelpBtn.disabled = true;
     helpStatus.textContent = "Skickar...";
     helpStatus.style.color = "#ffd700";
@@ -736,6 +749,9 @@ sendHelpBtn.onclick = async function() {
     const success = await sendPushoverRequest(name, loc);
     
     if(success) {
+        // SPARA TIDEN OM DET LYCKADES
+        localStorage.setItem('last_help_request_time', Date.now().toString());
+        
         helpStatus.textContent = "Notis skickad! Olle är på väg.";
         helpStatus.style.color = "#4caf50";
         setTimeout(() => {
