@@ -1140,7 +1140,7 @@ async function handleRiddleQuestion() {
             const response = await callGemini(question, systemPrompt);
             
             if (response.includes("RÄTT")) {
-                answerDisplay.textContent = `Rätt! Koden till kartan är ${currentRiddle.code}.\n\nMen var är skatten? Ge mig de 10 bokstäverna från platserna (1-10) i ordning för att klura ut koordinaterna!`;
+                answerDisplay.textContent = `Rätt! Koden till kartan är ${currentRiddle.code}.\nMen var är skatten? Ge mig de 10 bokstäverna från platserna (1-10) i ordning för att klura ut koordinaterna!`;
                 finalPhase = 1; // Gå till bokstavsfasen
             } else {
                 answerDisplay.textContent = response;
@@ -1153,7 +1153,7 @@ async function handleRiddleQuestion() {
             
             if (question.toUpperCase().replace(/\s/g, '') === correctLetters) {
                 // RÄTT BOKSTÄVER! Ge PI-koordinaterna
-                answerDisplay.textContent = `KORREKT!\n\nFå koordinaterna med hjälp av dessa siffor:\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+                answerDisplay.textContent = `KORREKT!\nFå koordinaterna med hjälp av dessa siffor:\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
             } else {
                 answerDisplay.textContent = "Fel bokstavskod! Försök igen. Rätt ordning 1-10.";
             }
