@@ -224,20 +224,14 @@
     /* MENY FÖR GÅTOR (Över videon) */
     .riddle-selector {
         position: absolute;
-        
-        /* ÄNDRAT: Justerat top för att kompensera för padding */
-        top: 10px; 
-        
+        top: 10px;
         left: 0;
         width: 100%;
         z-index: 200; /* Högt Z-index */
         display: flex;
         justify-content: flex-start; 
         gap: 10px;
-        
-        /* ÄNDRAT: Ökad padding (10px) för att ge plats åt "skalning" utan att klippas */
         padding: 10px 20px; 
-        
         box-sizing: border-box;
         overflow-x: auto; 
         scrollbar-width: none; 
@@ -302,34 +296,37 @@
         z-index: 10; 
         
         left: 15%;     
-        top: 15%;      
+        top: 10.5%;      /* ÄNDRAT: Startar på 15% för mobil */
         width: 64%;      
-        height: 16.1%;   
+        height: 25%;   /* Behåller den ökade höjden */
         
         display: flex;
         justify-content: center;
         align-items: center;
         text-align: center;
         font-family: 'MedievalSharp', cursive; 
-        font-size: 20px; 
         
         font-weight: 900; 
         color: #000; 
         
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
         
-        padding: 2px;
+        padding: 2px 5px;
         box-sizing: border-box;
+        
+        /* ÄNDRAT: Döljer överflöd istället för scroll, JS sköter storleken */
         overflow: hidden; 
+        
         line-height: 1.1;
         white-space: pre-line; 
     }
+    .oracle-text-overlay::-webkit-scrollbar { display: none; }
 
     .oracle-text-overlay.has-answered {
         top: 15%;
     }
 
-    /* Frågerutan - OPTIMERAD FÖR ATT SYNAS */
+    /* Frågerutan */
     .riddle-input-group { 
         position: absolute; 
         z-index: 100;
@@ -390,13 +387,14 @@
 
         .oracle-text-overlay {
             left: 34.5%;      
+            /* ÄNDRAT: 9% för PC */
             top: 9%;       
             width: 30%;     
             height: 30%;    
             font-size: clamp(16px, 2vw, 28px);
         }
         .oracle-text-overlay.has-answered {
-            top: 7%; 
+            top: 9%; 
         }
         .riddle-input-group {
             bottom: 40px; 
@@ -404,7 +402,6 @@
         }
         
         .riddle-selector {
-            /* ÄNDRAT: Justerat top för desktop */
             top: 20px; 
             justify-content: center; 
         }
@@ -582,21 +579,17 @@ const floorPaths = [
 // ===========================
 //  HEMLIGA OBJEKT (10 ST)
 // ===========================
-// type: 'riddle' (Vanlig gåta) eller 'yesno' (Gissa objekt med Ja/Nej)
-// intro: Vad oraklet säger när man klickar på fliken
-// riddleText: Själva gåtan (om typ är 'riddle')
-// aiDescription: Fakta för AI:n (om typ är 'yesno')
 const secretLocations = [
     { 
         id: 1, 
         type: 'riddle',
         code: "RUBIKSKUB",  
         floor: 0, 
-        x: 2000, 
-        y: 3000, 
+        x: 5593, 
+        y: 9663, 
         title: "Startpunkten", 
-        msg: "Bra jobbat! Du hittade första.",
-        intro: "Välkommen till Uppdrag 1. Jag har en gåta till dig...",
+        msg: "Bra jobbat! Du hittade första platsen.",
+        intro: "Be mig om den första gåtan...",
         riddleText: "Jag har sex sidor men inga ögon. Jag är färgglad men kan inte måla. Vrid på mig så blir jag rörig. Vad är jag?"
     },
     { 
@@ -604,11 +597,11 @@ const secretLocations = [
         type: 'yesno',
         code: "BOK",  
         floor: 1, 
-        x: 5500, 
-        y: 7500, 
-        title: "Biblioteket",   
+        x: 5838, 
+        y: 10200, 
+        title: "Bokhyllan",   
         msg: "Kunskap är makt.",
-        intro: "Uppdrag 2: Ställ mig Ja/Nej-frågor för att lista ut ett hemligt föremål.",
+        intro: "Ställ mig Ja/Nej-frågor för att lista ut ett hemligt föremål.",
         aiDescription: "Det är en bok. Den är gjord av papper. Den har en rygg men inga ben. Man läser i den."
     },
     { 
@@ -616,11 +609,11 @@ const secretLocations = [
         type: 'riddle',
         code: "KARTA", 
         floor: 2, 
-        x: 8000, 
-        y: 4000, 
-        title: "Navigeringsrummet",     
-        msg: "Nu hittar du bättre!",
-        intro: "Uppdrag 3: En ny gåta väntar...",
+        x: 5591, 
+        y: 10394, 
+        title: "💃 + 🦍",     
+        msg: "",
+        intro: "Be mig om ännu en gåta.",
         riddleText: "Jag har städer, men inga hus. Jag har berg, men inga träd. Jag har vatten, men ingen fisk. Vad är jag?"
     },
     { 
@@ -630,87 +623,167 @@ const secretLocations = [
         floor: 0, 
         x: 5000, 
         y: 10060, 
-        title: "Mörka källaren",    
+        title: "Källaren",    
         msg: "Varde ljus!",
         intro: "Uppdrag 4: Lista ut föremålet med Ja/Nej-frågor.",
-        aiDescription: "Det är en ficklampa. Den lyser i mörkret. Den är cylinderformad. Den behöver batterier."
+        aiDescription: "Det är en ficklampa. Den lyser i mörkret. Den är cylinderformad. Den behöver batterier. "
     },
     { 
         id: 5, 
-        type: 'riddle',
-        code: "SKATTKISTA",  
-        floor: 2, 
-        x: 5120, 
-        y: 10245, 
-        title: "Slutmålet",       
-        msg: "Guld och gröna skogar!",
-        intro: "Uppdrag 5: Lös gåtan för att hitta skatten.",
-        riddleText: "Jag har ett lås men ingen dörr. Jag är gjord av trä men är inget träd. Jag gömmer rikedomar. Vad är jag?"
+        type: 'progressive', // Ny typ
+        code: "STRYKJÄRN",  
+        floor: 1, 
+        x: 5287, 
+        y: 9439, 
+        title: "Tvättstugan",       
+        msg: "Stryk din skrynkliga skjorta medans du ändå är här!",
+        // Fallback intro om state nollställs eller nåt fel
+        intro: "Uppdrag 5: En utmaning i 5 steg! Svara rätt på frågorna för att gå vidare.",
+        // aiDescription används här för att validera svaret (gemini jämför användarens svar mot 'a')
+        steps: [
+            { 
+                q: "Nivå 5 (Svårast): Jag är en metallisk båt på ett hav av tyg. Där jag seglar stillnar stormen, men om jag ankrar för länge bränner jag hål i havet. Vad är jag?", 
+                a: "STRYKJÄRN", 
+                cooldown: 1 // Ändra till 2 sen
+            },
+            { 
+                q: "Nivå 4: Jag raderar historien om hur saker har förvarats. Jag är tung, het och skoningslös men utan min ledare är jag kall och död. Vad är jag?", 
+                a: "STRYKJÄRN", 
+                cooldown: 2 // Ändra till 3 sen
+            },
+            { 
+                q: "Nivå 3: Jag har en sula men inga fötter. Jag andas ut vita moln och rätar ut vågor på torra hav. Vad är jag?", 
+                a: "STRYKJÄRN", 
+                cooldown: 3 
+            },
+            { 
+                q: "Nivå 2: Jag har en häl och en spets, men ingen fot. Jag gråter het ånga över fälten jag plattar till, och min långa svans sitter fast i väggen. Vad är jag?", 
+                a: "STRYKJÄRN", 
+                cooldown: 4 
+            },
+            { 
+                q: "Nivå 1 (Lättast): En apparat man fyller med vatten för att göra skrynkliga kläder släta med hjälp av värme. Vad är jag?", 
+                a: "STRYKJÄRN", 
+                cooldown: 5 // Cooldown innan avslöjande
+            }
+        ]
     },
     { 
         id: 6, 
         type: 'yesno',
         code: "PIZZA",  
         floor: 1, 
-        x: 6000, 
-        y: 6000, 
+        x: 5053, 
+        y: 9879, 
         title: "Köket",       
-        msg: "Mums!",
-        intro: "Uppdrag 6: Jag tänker på något ätbart. Fråga på!",
+        msg: "Mums filibabba! ",
+        intro: "Jag tänker på något ätbart. Fråga på!",
         aiDescription: "Det är en pizza. Den är rund men ligger i en fyrkantig kartong. Den har ost och tomatsås. Den är varm."
     },
     { 
         id: 7, 
         type: 'riddle',
-        code: "SOLGLASÖGON",  
+        code: "KATTLÅDA",  
         floor: 3, 
         x: 7000, 
         y: 7000, 
-        title: "Terrassen",       
-        msg: "Skydda ögonen!",
-        intro: "Uppdrag 7: En solig gåta.",
-        riddleText: "Jag sitter på näsan men kan inte lukta. Jag gör världen mörkare fast solen skiner. Vad är jag?"
+        title: "Kattlådan",       
+        msg: "Här var det sandigt.",
+        intro: "En helt vanlig gåta.",
+        riddleText: "Jag är en strand där ingen badar. Här grävs det djupt för att dölja det som lämnats. Jag är ett etui med något äckligt i. Vad är jag?"
     },
     { 
         id: 8, 
         type: 'yesno',
         code: "GITARR",  
         floor: 0, 
-        x: 3000, 
-        y: 8000, 
-        title: "Musikrummet",       
-        msg: "Spela en trudelutt!",
-        intro: "Uppdrag 8: Ett musikaliskt föremål. Gissa vilket!",
+        x: 5878, 
+        y: 9530, 
+        title: "Kungens rum",       
+        msg: "Spela en trudelutt vettja!",
+        intro: "Ett sexigt föremål. Gissa vilket!",
         aiDescription: "Det är en gitarr. Den har strängar. Den är gjord av trä. Man spelar på den med fingrarna."
     },
     { 
         id: 9, 
         type: 'riddle',
-        code: "PARAPLY",  
+        code: "SACCOSÄCK",  
         floor: 2, 
-        x: 4000, 
-        y: 9000, 
-        title: "Garderoben",       
-        msg: "Bra vid regn.",
-        intro: "Uppdrag 9: Gissa vad jag är.",
-        riddleText: "Jag går upp när regnet faller. Jag går ner när regnet slutar. Vad är jag?"
+        x: 5120, 
+        y: 10245,
+        title: "Myshörnan",       
+        msg: "Sätt dig och vila en stund...",
+        intro: "En formbar gåta för den trötte.",
+        riddleText: "Jag har tusentals kulor i magen men ingen kan spela med dem. Jag saknar ben och skelett, men formar mig efter dig så fort du sjunker ner."
     },
     { 
         id: 10, 
         type: 'yesno',
         code: "CYKEL",  
         floor: 0, 
-        x: 1000, 
-        y: 1000, 
-        title: "Garaget",       
+        x: 5824, 
+        y: 3281, 
+        title: "Ladugården",       
         msg: "Ut och trampa!",
-        intro: "Uppdrag 10: Sista utmaningen. Vad tänker jag på?",
+        intro: "Näst sista utmaningen. Vad tänker jag på?",
         aiDescription: "Det är en cykel. Den har två hjul. Man trampar på den. Den har ett styre och en sadel."
+    },
+    { 
+        id: 11, 
+        type: 'riddle',
+        code: "TIDEN",  
+        floor: 2, 
+        x: 5120, 
+        y: 10245,
+        title: "Tick Tack (Toe)",       
+        msg: "Kom i tid!....",
+        intro: "Den siste gåtan...",
+        riddleText: "Jag flyger utan vingar och rinner utan vatten. Jag gör kungar till damm och berg till dalar. Du kan döda mig, men aldrig ta fast mig."
     }
 ];
 
+// Helper functions for progressive state
+function getProgState(id) {
+    const key = `riddle_progress_${id}`;
+    const stored = localStorage.getItem(key);
+    if (stored) return JSON.parse(stored);
+    return { step: 0, unlockTime: 0, completed: false };
+}
+
+function saveProgState(id, state) {
+    const key = `riddle_progress_${id}`;
+    localStorage.setItem(key, JSON.stringify(state));
+}
+
+// Timer logic
+let cooldownInterval = null;
+
+function startCooldownTimer(unlockTime) {
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    
+    const updateTimer = () => {
+        const now = Date.now();
+        const diff = unlockTime - now;
+        
+        if (diff <= 0) {
+            clearInterval(cooldownInterval);
+            // Refresh view
+            selectRiddle(activeRiddleIndex);
+            return;
+        }
+        
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        document.getElementById("riddleAnswer").textContent = 
+            `Oraklet vilar. Försök igen om ${minutes}m ${seconds}s.`;
+    };
+    
+    updateTimer(); // Run immediately
+    cooldownInterval = setInterval(updateTimer, 1000);
+}
+
 // Hantera vilket uppdrag som är aktivt
-let activeRiddleIndex = 0; // Börjar på 0 (Uppdrag 1)
+let activeRiddleIndex = 0; 
 
 function initRiddleMenu() {
     const container = document.getElementById('riddleSelector');
@@ -729,6 +802,9 @@ function selectRiddle(index) {
     activeRiddleIndex = index;
     const currentLoc = secretLocations[index];
     
+    // Clear any running interval
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    
     // Uppdatera UI
     document.querySelectorAll('.riddle-btn').forEach((btn, i) => {
         if(i === index) btn.classList.add('active');
@@ -736,12 +812,60 @@ function selectRiddle(index) {
     });
 
     const answerDisplay = document.getElementById("riddleAnswer");
-    answerDisplay.textContent = currentLoc.intro;
+    
+    // Logik för textvisning vid byte av flik
+    if (currentLoc.type === 'progressive') {
+        const state = getProgState(currentLoc.id);
+        const now = Date.now();
+        
+        if (state.completed) {
+            answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
+        } else if (now < state.unlockTime) {
+            // Start timer
+            startCooldownTimer(state.unlockTime);
+        } else {
+            // Visa nuvarande stegs fråga
+            if (state.step < currentLoc.steps.length) {
+                answerDisplay.textContent = currentLoc.steps[state.step].q;
+            } else {
+                answerDisplay.textContent = `Du misslyckades men oraklet förbarmar sig. Koden är "${currentLoc.code}".`;
+            }
+        }
+    } else {
+        answerDisplay.textContent = currentLoc.intro;
+    }
+    
     // Byt klass för att återställa ev. textfärger om vi byter
     answerDisplay.classList.remove('has-answered');
     answerDisplay.style.color = "#000"; 
     // Säkerställ att positionen är den vi satt i CSS (ingen JS-override)
     answerDisplay.style.top = ""; 
+    
+    // Adjust font size dynamically for initial text too
+    adjustFontSize(answerDisplay.textContent, answerDisplay);
+}
+
+// Helper to adjust font size
+function adjustFontSize(text, element) {
+    const len = text.length;
+    if (len < 10) { 
+        element.style.fontSize = "clamp(30px, 10vw, 45px)";
+        element.style.lineHeight = "1.2";
+    } else if (len < 50) { 
+        element.style.fontSize = "clamp(18px, 6vw, 28px)";
+        element.style.lineHeight = "1.2";
+    } else if (len < 120) { 
+        element.style.fontSize = "clamp(16px, 4vw, 20px)";
+        element.style.lineHeight = "1.15";
+    } else if (len < 200) { 
+        // För texter som nivå 5 frågan
+        element.style.fontSize = "clamp(13px, 3vw, 16px)";
+        element.style.lineHeight = "1.1";
+    } else { 
+        // För extremt långa texter
+        element.style.fontSize = "clamp(9px, 2.5vw, 13px)"; 
+        element.style.lineHeight = "1.05";
+    }
 }
 
 
@@ -918,6 +1042,81 @@ async function handleRiddleQuestion() {
     // HÄMTA DET AKTIVA UPPDRAGET
     const currentRiddle = secretLocations[activeRiddleIndex];
     
+    // Hantera Progressive Riddle Logic
+    if (currentRiddle.type === 'progressive') {
+        const state = getProgState(currentRiddle.id);
+        const now = Date.now();
+
+        if (state.completed) {
+            answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentRiddle.code}".`;
+            adjustFontSize(answerDisplay.textContent, answerDisplay);
+            return;
+        }
+
+        if (now < state.unlockTime) {
+            startCooldownTimer(state.unlockTime);
+            return;
+        }
+        
+        // Hämta aktuell fråga
+        const currentStepObj = currentRiddle.steps[state.step];
+        if (!currentStepObj) {
+             answerDisplay.textContent = `Koden är "${currentRiddle.code}".`;
+             adjustFontSize(answerDisplay.textContent, answerDisplay);
+             return;
+        }
+
+        btn.disabled = true;
+        answerDisplay.textContent = "..."; 
+        
+        // Fråga Gemini om svaret är rätt
+        const systemPrompt = `
+        Du är en domare i en tävling.
+        GÅTA: "${currentStepObj.q}"
+        RÄTT SVAR: "${currentStepObj.a}"
+        ANVÄNDARENS SVAR: "${question}"
+        
+        Svara ENDAST "RÄTT" om användarens svar är korrekt (eller en synonym).
+        Svara ENDAST "FEL" om det är fel.
+        `;
+        
+        const response = await callGemini(question, systemPrompt);
+        const isCorrect = response.trim().toUpperCase().includes("RÄTT");
+        
+        if (isCorrect) {
+            // Rätt svar!
+            state.completed = true;
+            saveProgState(currentRiddle.id, state);
+            answerDisplay.textContent = `Rätt svar!\n\nKoden är "${currentRiddle.code}".`;
+            answerDisplay.style.color = "#4caf50";
+        } else {
+            // Fel svar!
+            const cooldownMs = currentStepObj.cooldown * 60000;
+            state.unlockTime = Date.now() + cooldownMs;
+            
+            // Gå till nästa steg (om det finns fler)
+            if (state.step < currentRiddle.steps.length - 1) {
+                state.step++;
+                saveProgState(currentRiddle.id, state);
+                answerDisplay.textContent = `Fel svar! Oraklet vilar...`;
+                startCooldownTimer(state.unlockTime);
+            } else {
+                // Sista frågan fel -> Cooldown sen visa svaret
+                state.step++; 
+                saveProgState(currentRiddle.id, state);
+                answerDisplay.textContent = `Fel svar på sista frågan! Vänta...`;
+                startCooldownTimer(state.unlockTime);
+            }
+            answerDisplay.style.color = "#ff4444";
+        }
+        
+        adjustFontSize(answerDisplay.textContent, answerDisplay);
+        btn.disabled = false;
+        input.value = "";
+        return;
+    }
+    
+    // --- STANDARD LOGIK FÖR RIDDLE/YESNO (Gammal kod) ---
     btn.disabled = true;
     answerDisplay.textContent = "..."; 
 
@@ -925,7 +1124,6 @@ async function handleRiddleQuestion() {
     let systemPrompt = "";
     
     if (currentRiddle.type === 'riddle') {
-        // --- VANLIG GÅTA LOGIK ---
         systemPrompt = `
         Du är en spelledare för en skattjakt.
         GÅTAN DU HAR STÄLLT ÄR: "${currentRiddle.riddleText}"
@@ -933,10 +1131,10 @@ async function handleRiddleQuestion() {
         
         INSTRUKTIONER:
         1. Om användaren gissar RÄTT (svarar "${currentRiddle.code}" eller liknande), svara EXAKT: "Rätt svar!\n\nSkriv in ${currentRiddle.code} på kartan."
-        2. Om användaren gissar FEL, svara "Nej, det är fel." följt av en kort, sarkastisk kommentar eller en liten ledtråd relaterad till gåtan. Max 2 meningar.
+        2. Om användaren gissar FEL, svara "Nej, det är fel." följt av en kort, sarkastisk kommentar och håna spelaren lite för dess svar. Max 2 meningar.
         `;
     } else {
-        // --- JA/NEJ LOGIK ---
+        // YESNO
         systemPrompt = `
         Du är ett urgammalt Orakel. Spelaren ska gissa ett föremål med Ja/Nej-frågor.
         RÄTT SVAR: "${currentRiddle.code}"
@@ -951,7 +1149,8 @@ async function handleRiddleQuestion() {
 
     const response = await callGemini(question, systemPrompt);
     
-    answerDisplay.classList.add('has-answered');
+    // ÄNDRAT: Lägg till klass för att flytta ner texten
+    // answerDisplay.classList.add('has-answered'); // Vi har tagit bort CSS för denna, men behåller logiken om vi vill ha tillbaka den
 
     let cleanResponse = response.trim();
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
@@ -959,19 +1158,8 @@ async function handleRiddleQuestion() {
     answerDisplay.textContent = cleanResponse;
     answerDisplay.style.color = "#000"; 
 
-    if (cleanResponse.length < 5) { 
-        answerDisplay.style.fontSize = "clamp(30px, 10vw, 45px)";
-        answerDisplay.style.lineHeight = "1.2";
-    } else if (cleanResponse.length < 30) { 
-        answerDisplay.style.fontSize = "clamp(20px, 6vw, 30px)";
-        answerDisplay.style.lineHeight = "1.2";
-    } else if (cleanResponse.length < 180) { 
-        answerDisplay.style.fontSize = "clamp(14px, 4vw, 20px)";
-        answerDisplay.style.lineHeight = "1.1";
-    } else { 
-        answerDisplay.style.fontSize = "clamp(10px, 3vw, 14px)";
-        answerDisplay.style.lineHeight = "1.0";
-    }
+    // Anropa hjälpfunktionen för att justera storleken
+    adjustFontSize(cleanResponse, answerDisplay);
 
     btn.disabled = false;
     input.value = "";
@@ -988,6 +1176,11 @@ function resetGame() {
     if(confirm("Är du säker på att du vill nollställa alla framsteg?")) {
         unlockedIds = [];
         localStorage.removeItem('unlockedLocations');
+        // Rensa även progressiva gåtor
+        secretLocations.forEach(loc => {
+             localStorage.removeItem(`riddle_progress_${loc.id}`);
+        });
+        
         updateMarkers();
         messageArea.textContent = "🔄 Spelet är nollställt.";
         messageArea.style.color = "#fff";
