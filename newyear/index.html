@@ -853,7 +853,7 @@ function selectRiddle(index) {
     // 1. Kolla om det är en vanlig gåta som är löst
     if (isOracleSolved(currentLoc.id)) {
         if(currentLoc.type === 'final') {
-             answerDisplay.textContent = `Få fram koordinaterna!\n [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+             answerDisplay.textContent = `Lös koden!\n [N 4 13 . 1 13 5 32 9 6 E 1 4 . 9 9 4 4 5 6]`;
         } else {
              answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
         }
@@ -1179,7 +1179,7 @@ async function handleRiddleQuestion() {
     // --- SPECIAL LOGIK FÖR FINALEN (11) ---
     if (currentRiddle.type === 'final') {
         if (isOracleSolved(currentRiddle.id)) {
-            answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+            answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [N 4 13 . 1 13 5 32 9 6 E 1 4 . 9 9 4 4 5 6]`;
             return;
         }
 
