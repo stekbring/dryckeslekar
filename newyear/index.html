@@ -337,34 +337,41 @@
         left: 50%;
         transform: translateX(-50%);
         display: flex; 
+        align-items: center; /* Centrera vertikalt */
+        justify-content: space-between;
         gap: 5px; 
         background: rgba(0, 0, 0, 0.6); 
         border-radius: 30px; 
         padding: 5px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(5px);
+        box-sizing: border-box;
     }
     
     #riddleQuestion { 
         flex: 1; 
-        padding: 12px 20px; 
+        padding: 12px 15px; 
         border: none; 
         background: transparent; 
         color: white; 
         outline: none; 
-        font-size: 17px; 
+        font-size: 16px; 
+        min-width: 0; /* VIKTIGT: Gör så att input kan krympa */
     }
     
     #askRiddleBtn { 
         background: #ffd700;
         color: #000; 
         border: none; 
-        padding: 10px 25px; 
-        border-radius: 25px; 
+        padding: 0 18px; /* Mindre padding */
+        height: 40px;    /* Fast höjd */
+        border-radius: 20px; 
         font-weight: bold; 
         cursor: pointer; 
         transition: transform 0.2s, background 0.2s;
         white-space: nowrap;
+        flex-shrink: 0; /* Förhindrar att knappen krymper */
+        font-size: 14px; /* Lite mindre text */
     }
     #askRiddleBtn:hover { background: #e5c100; }
     #askRiddleBtn:active { transform: scale(0.95); }
@@ -404,6 +411,11 @@
         .riddle-selector {
             top: 20px; 
             justify-content: center; 
+        }
+        
+        #askRiddleBtn {
+            padding: 0 25px;
+            font-size: 16px;
         }
     }
 
@@ -762,6 +774,15 @@ function saveProgState(id, state) {
     localStorage.setItem(key, JSON.stringify(state));
 }
 
+// NY FUNKTION: Kolla om standard-gåta är löst
+function isOracleSolved(id) {
+    return localStorage.getItem(`oracle_solved_${id}`) === 'true';
+}
+
+function setOracleSolved(id) {
+    localStorage.setItem(`oracle_solved_${id}`, 'true');
+}
+
 // Timer logic
 let cooldownInterval = null;
 
@@ -822,7 +843,36 @@ function selectRiddle(index) {
 
     const answerDisplay = document.getElementById("riddleAnswer");
     
-    // Logik för textvisning vid byte av flik
+    // LOGIK FÖR ATT VISA SPARADE FRAMSTEG
+    
+    // 1. Kolla om det är en vanlig gåta som är löst
+    if (isOracleSolved(currentLoc.id)) {
+        if(currentLoc.type === 'final') {
+             answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+        } else {
+             answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
+        }
+        // answerDisplay.style.color = "#4caf50";  <-- BORTTAGET (Ingen grön text)
+        adjustFontSize(answerDisplay.textContent, answerDisplay);
+        return;
+    }
+    
+    // --- SPECIAL LOGIK FÖR FINALEN (HALVVÄGS) ---
+    if (currentLoc.type === 'final') {
+        // Kolla om vi redan har klarat fas 1 (TIDEN) men inte hela
+        const phaseOneDone = localStorage.getItem('final_phase_one_done') === 'true';
+        if (phaseOneDone) {
+            finalPhase = 1;
+            answerDisplay.textContent = `Rätt! Koden till kartan är TIDEN.\nMen var är skatten? Ge mig de 10 bokstäverna från platserna (1-10) i ordning för att klura ut koordinaterna!`;
+            adjustFontSize(answerDisplay.textContent, answerDisplay);
+            // answerDisplay.style.color = "#4caf50"; <-- BORTTAGET
+            answerDisplay.classList.remove('has-answered');
+            answerDisplay.style.top = "";
+            return;
+        }
+    }
+
+    // 2. Logik för progressiva gåtor (befintlig logik)
     if (currentLoc.type === 'progressive') {
         const state = getProgState(currentLoc.id);
         const now = Date.now();
@@ -830,10 +880,8 @@ function selectRiddle(index) {
         if (state.completed) {
             answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
         } else if (now < state.unlockTime) {
-            // Start timer
             startCooldownTimer(state.unlockTime);
         } else {
-            // Visa nuvarande stegs fråga
             if (state.step < currentLoc.steps.length) {
                 answerDisplay.textContent = currentLoc.steps[state.step].q;
             } else {
@@ -841,16 +889,14 @@ function selectRiddle(index) {
             }
         }
     } else {
+        // Standard starttext
         answerDisplay.textContent = currentLoc.intro;
     }
     
-    // Byt klass för att återställa ev. textfärger om vi byter
     answerDisplay.classList.remove('has-answered');
     answerDisplay.style.color = "#000"; 
-    // Säkerställ att positionen är den vi satt i CSS (ingen JS-override)
     answerDisplay.style.top = ""; 
     
-    // Adjust font size dynamically for initial text too
     adjustFontSize(answerDisplay.textContent, answerDisplay);
 }
 
@@ -864,15 +910,15 @@ function adjustFontSize(text, element) {
         element.style.fontSize = "clamp(18px, 6vw, 28px)";
         element.style.lineHeight = "1.2";
     } else if (len < 120) { 
-        element.style.fontSize = "clamp(16px, 4vw, 20px)";
+        element.style.fontSize = "clamp(17px, 4vw, 20px)";
         element.style.lineHeight = "1.15";
     } else if (len < 200) { 
         // För texter som nivå 5 frågan
-        element.style.fontSize = "clamp(13px, 3vw, 16px)";
+        element.style.fontSize = "clamp(15px, 3vw, 16px)";
         element.style.lineHeight = "1.1";
     } else { 
         // För extremt långa texter
-        element.style.fontSize = "clamp(9px, 2.5vw, 13px)"; 
+        element.style.fontSize = "clamp(11px, 2.5vw, 13px)"; 
         element.style.lineHeight = "1.05";
     }
 }
@@ -948,7 +994,7 @@ function checkCode() {
             localStorage.setItem('unlockedLocations', JSON.stringify(unlockedIds));
             
             messageArea.textContent = `✅ Plats upplåst: ${foundLocation.title} (Våning ${foundLocation.floor})`;
-            messageArea.style.color = "#4caf50"; 
+            messageArea.style.color = "#ffd700";  /* ÄNDRAT från grön till guld */
             
             if (currentFloor !== foundLocation.floor) {
                 switchFloor(foundLocation.floor);
@@ -1096,8 +1142,8 @@ async function handleRiddleQuestion() {
             // Rätt svar!
             state.completed = true;
             saveProgState(currentRiddle.id, state);
-            answerDisplay.textContent = `Rätt svar!\n\nKoden är "${currentRiddle.code}".`;
-            answerDisplay.style.color = "#4caf50";
+            answerDisplay.textContent = `Rätt svar!\nKoden är "${currentRiddle.code}".`;
+            answerDisplay.style.color = "#000"; /* ÄNDRAT: Svart (ej grön) */
         } else {
             // Fel svar!
             const cooldownMs = currentStepObj.cooldown * 60000;
@@ -1127,6 +1173,11 @@ async function handleRiddleQuestion() {
     
     // --- SPECIAL LOGIK FÖR FINALEN (11) ---
     if (currentRiddle.type === 'final') {
+        if (isOracleSolved(currentRiddle.id)) {
+            answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+            return;
+        }
+
         btn.disabled = true;
         answerDisplay.textContent = "...";
         
@@ -1142,6 +1193,7 @@ async function handleRiddleQuestion() {
             if (response.includes("RÄTT")) {
                 answerDisplay.textContent = `Rätt! Koden till kartan är ${currentRiddle.code}.\nMen var är skatten? Ge mig de 10 bokstäverna från platserna (1-10) i ordning för att klura ut koordinaterna!`;
                 finalPhase = 1; // Gå till bokstavsfasen
+                localStorage.setItem('final_phase_one_done', 'true'); // SPARA ATT VI KLARAT DEL 1
             } else {
                 answerDisplay.textContent = response;
             }
@@ -1154,6 +1206,7 @@ async function handleRiddleQuestion() {
             if (question.toUpperCase().replace(/\s/g, '') === correctLetters) {
                 // RÄTT BOKSTÄVER! Ge PI-koordinaterna
                 answerDisplay.textContent = `KORREKT!\nFå koordinaterna med hjälp av dessa siffor:\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+                setOracleSolved(currentRiddle.id); // Spara att finalen är klar
             } else {
                 answerDisplay.textContent = "Fel bokstavskod! Försök igen.";
             }
@@ -1167,6 +1220,12 @@ async function handleRiddleQuestion() {
 
 
     // --- STANDARD LOGIK FÖR RIDDLE/YESNO (Gammal kod) ---
+    if (isOracleSolved(currentRiddle.id)) {
+        answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentRiddle.code}".`;
+        adjustFontSize(answerDisplay.textContent, answerDisplay);
+        return;
+    }
+
     btn.disabled = true;
     answerDisplay.textContent = "..."; 
 
@@ -1180,7 +1239,7 @@ async function handleRiddleQuestion() {
         RÄTT SVAR ÄR: "${currentRiddle.code}"
         
         INSTRUKTIONER:
-        1. Om användaren gissar RÄTT (svarar "${currentRiddle.code}" eller liknande), svara EXAKT: "Rätt svar!\n\nSkriv in ${currentRiddle.code} på kartan."
+        1. Om användaren gissar RÄTT (svarar "${currentRiddle.code}" eller liknande), svara EXAKT: "Rätt svar!\nSkriv in ${currentRiddle.code} på kartan."
         2. Om användaren gissar FEL, svara "Nej, det är fel." följt av en kort, sarkastisk kommentar och håna spelaren lite för dess svar. Max 2 meningar.
         `;
     } else {
@@ -1191,7 +1250,7 @@ async function handleRiddleQuestion() {
         FAKTA: "${currentRiddle.aiDescription}"
 
         INSTRUKTIONER:
-        1. Om spelaren gissar RÄTT (t.ex. "Är det en ${currentRiddle.code}?"), svara EXAKT: "Rätt svar!\n\nSkriv in ${currentRiddle.code} på kartan."
+        1. Om spelaren gissar RÄTT (t.ex. "Är det en ${currentRiddle.code}?"), svara EXAKT: "Rätt svar!\nSkriv in ${currentRiddle.code} på kartan."
         2. För egenskapsfrågor, svara ENDAST "Ja" eller "Nej" baserat på faktan.
         3. Om frågan är dum/irrelevant: Ge ett kort sarkastiskt svar.
         `;
@@ -1199,16 +1258,17 @@ async function handleRiddleQuestion() {
 
     const response = await callGemini(question, systemPrompt);
     
-    // ÄNDRAT: Lägg till klass för att flytta ner texten
-    // answerDisplay.classList.add('has-answered'); // Vi har tagit bort CSS för denna, men behåller logiken om vi vill ha tillbaka den
-
     let cleanResponse = response.trim();
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
+
+    // KOLLA OM SVARET VAR RÄTT FÖR ATT SPARA PROGRESS
+    if (cleanResponse.toLowerCase().includes("rätt svar")) {
+        setOracleSolved(currentRiddle.id);
+    }
 
     answerDisplay.textContent = cleanResponse;
     answerDisplay.style.color = "#000"; 
 
-    // Anropa hjälpfunktionen för att justera storleken
     adjustFontSize(cleanResponse, answerDisplay);
 
     btn.disabled = false;
@@ -1226,9 +1286,12 @@ function resetGame() {
     if(confirm("Är du säker på att du vill nollställa alla framsteg?")) {
         unlockedIds = [];
         localStorage.removeItem('unlockedLocations');
-        // Rensa även progressiva gåtor
+        localStorage.removeItem('final_phase_one_done'); // RENSA FINAL-STEGET
+        
+        // Rensa även progressiva gåtor och standardgåtor
         secretLocations.forEach(loc => {
              localStorage.removeItem(`riddle_progress_${loc.id}`);
+             localStorage.removeItem(`oracle_solved_${loc.id}`);
         });
         
         updateMarkers();
