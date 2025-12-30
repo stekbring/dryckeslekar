@@ -14,6 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Bytte till MedievalSharp för Viking/Orakel-känsla -->
 <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+<!-- NY FONT: Pinyon Script för rubriken -->
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
 
 <link rel="icon" type="image/x-icon" href="newyearico.ico">
 
@@ -34,15 +36,18 @@
     /* H1 Rubrik */
     h1 { 
         text-align: center; 
-        font-size: 24px; 
-        font-weight: 600; 
-        text-transform: uppercase; 
+        font-family: 'Pinyon Script', cursive; /* ÄNDRAT: Ny skrivstils-font */
+        font-size: 48px; /* ÄNDRAT: Lite större för att synas bättre */
+        font-weight: 400; /* Script behöver oftast inte bold */
+        /* text-transform: uppercase;  <-- BORTTAGET: Skrivstil ser oftast bäst ut i vanlig case */
         letter-spacing: 1px; 
         color: #ffd700; /* Guld */
+        text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* ÄNDRAT: Lite skugga för snyggare effekt */
         
         /* Dessa två rader centrerar rubriken i det lediga utrymmet ovanför kortet */
         margin-top: auto;
         margin-bottom: auto;
+        line-height: 1.2;
     }
 
     /* Standard (Mobil): Smalt kort, max 500px */
@@ -459,9 +464,9 @@
                 <div class="welcome-title" style="font-size: 32px;">Instruktioner</div>
                 <div class="instructions-text">
                     <p><strong>1.</strong> Gå till fliken <strong>ORAKLET</strong> och välj ett uppdrag i toppen.</p>
-                    <p><strong>2.</strong> Lös gåtorna eller ställ Ja/Nej-frågor för att hitta lösenord.</p>
-                    <p><strong>3.</strong> Skriv in lösenordet på fliken <strong>KARTA</strong> för att se var du ska.</p>
-                    <p><strong>4.</strong> Samla alla 10 bokstäver för att lösa finalen!</p>
+                    <p><strong>2.</strong> Lös gåtorna eller ställ Ja/Nej-frågor för att hitta koder.</p>
+                    <p><strong>3.</strong> Skriv in koden på fliken <strong>KARTA</strong> för att se var du ska gå.</p>
+                    <p><strong>4.</strong> Besök alla 10 platser för att lösa sista gåtan!</p>
                 </div>
             </div>
 
@@ -597,7 +602,7 @@ const secretLocations = [
         type: 'riddle',
         code: "RUBIKSKUB",  
         letter: "R",
-        floor: 0, 
+        floor: 1, 
         x: 5593, 
         y: 9663, 
         title: "Startpunkten", 
@@ -610,7 +615,7 @@ const secretLocations = [
         type: 'yesno',
         code: "BOK",
         letter: "X",
-        floor: 1, 
+        floor: 2, 
         x: 5838, 
         y: 10200, 
         title: "Bokhyllan",      
@@ -700,9 +705,9 @@ const secretLocations = [
         type: 'riddle',
         code: "KATTLÅDA",  
         letter: "L",
-        floor: 3, 
-        x: 7000, 
-        y: 7000, 
+        floor: 1, 
+        x: 5166, 
+        y: 9656, 
         title: "Kattlådan",       
         msg: "Här var det sandigt.",
         intro: "En helt vanlig gåta.",
@@ -713,7 +718,7 @@ const secretLocations = [
         type: 'yesno',
         code: "GITARR",
         letter: "K",
-        floor: 0, 
+        floor: 2, 
         x: 5878, 
         y: 9530, 
         title: "Kungens rum",       
@@ -727,8 +732,8 @@ const secretLocations = [
         code: "SACCOSÄCK",  
         letter: "W",
         floor: 2, 
-        x: 5120, 
-        y: 10245,
+        x: 4227, 
+        y: 7050,
         title: "Myshörnan",       
         msg: "Sätt dig och vila en stund...",
         intro: "En formbar gåta för den trötte.",
@@ -739,9 +744,9 @@ const secretLocations = [
         type: 'yesno',
         code: "CYKEL",
         letter: "J",
-        floor: 0, 
-        x: 5824, 
-        y: 3281, 
+        floor: 1, 
+        x: 5819, 
+        y: 3277, 
         title: "Ladugården",        
         msg: "Ut och trampa!",
         intro: "Näst sista utmaningen. Vad tänker jag på?",
@@ -754,7 +759,7 @@ const secretLocations = [
         floor: 2, 
         x: 5120, 
         y: 10245,
-        title: "Tick Tack (Toe)",       
+        title: "Tick Tack",       
         msg: "Kom i tid!....",
         intro: "Den siste gåtan...",
         riddleText: "Jag flyger utan vingar och rinner utan vatten. Jag gör kungar till damm och berg till dalar. Du kan döda mig, men aldrig ta fast mig."
@@ -848,7 +853,7 @@ function selectRiddle(index) {
     // 1. Kolla om det är en vanlig gåta som är löst
     if (isOracleSolved(currentLoc.id)) {
         if(currentLoc.type === 'final') {
-             answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+             answerDisplay.textContent = `Få fram koordinaterna!\n [4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
         } else {
              answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
         }
@@ -1205,7 +1210,7 @@ async function handleRiddleQuestion() {
             
             if (question.toUpperCase().replace(/\s/g, '') === correctLetters) {
                 // RÄTT BOKSTÄVER! Ge PI-koordinaterna
-                answerDisplay.textContent = `KORREKT!\nFå koordinaterna med hjälp av dessa siffor:\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+                answerDisplay.textContent = `KORREKT!\ninom rättan tid så löses alla problem;\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
                 setOracleSolved(currentRiddle.id); // Spara att finalen är klar
             } else {
                 answerDisplay.textContent = "Fel bokstavskod! Försök igen.";
