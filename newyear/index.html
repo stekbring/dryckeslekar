@@ -39,6 +39,8 @@
         text-transform: uppercase; 
         letter-spacing: 1px; 
         color: #ffd700; /* Guld */
+        
+        /* Dessa två rader centrerar rubriken i det lediga utrymmet ovanför kortet */
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -54,9 +56,12 @@
         overflow: hidden; 
         display: flex; 
         flex-direction: column; 
-        position: relative; 
+        position: relative; /* Viktigt för absolut positionering inuti */
+        
+        /* Använder dvh men med en max-höjd för säkerhet */
         height: 80dvh; 
         max-height: 800px;
+        
         transition: max-width 0.3s ease; 
     }
     
@@ -77,11 +82,11 @@
 
     .tab-btn { 
         flex: 1; 
-        padding: 15px; 
+        padding: 10px; 
         background: transparent; 
         border: none; 
         color: #888; 
-        font-size: 14px; 
+        font-size: 13px; 
         font-weight: 600; 
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
@@ -222,39 +227,41 @@
         top: 20px;
         left: 0;
         width: 100%;
-        z-index: 100;
+        z-index: 200; /* Högt Z-index */
         display: flex;
-        justify-content: flex-start; /* Börja från vänster för scroll */
+        justify-content: flex-start; 
         gap: 10px;
         padding: 0 20px;
         box-sizing: border-box;
-        overflow-x: auto; /* Tillåt scroll i sidled */
-        scrollbar-width: none; /* Dölj scrollbar Firefox */
-        -ms-overflow-style: none; /* Dölj scrollbar IE */
+        overflow-x: auto; 
+        scrollbar-width: none; 
+        -ms-overflow-style: none; 
     }
-    .riddle-selector::-webkit-scrollbar { display: none; } /* Dölj scrollbar Chrome */
+    .riddle-selector::-webkit-scrollbar { display: none; } 
 
     .riddle-btn {
         flex-shrink: 0;
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background: rgba(0, 0, 0, 0.6);
         border: 2px solid #888;
         color: #fff;
         font-weight: bold;
         font-family: 'MedievalSharp', cursive;
+        font-size: 14px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s;
+        pointer-events: auto; /* Tar emot klick */
     }
     .riddle-btn.active {
         background: #ffd700;
         color: #000;
         border-color: #fff;
-        transform: scale(1.1);
+        transform: scale(1.2); 
         box-shadow: 0 0 10px #ffd700;
     }
 
@@ -288,10 +295,12 @@
         position: absolute;
         z-index: 10; 
         
+        /* --- ÄNDRA POSITION FÖR MOBIL HÄR --- */
         left: 15%;     
-        top: 13%;      
+        top: 15%;      /* Ställ in top % här */
         width: 64%;      
         height: 16.1%;   
+        /* ------------------------------------ */
         
         display: flex;
         justify-content: center;
@@ -311,10 +320,8 @@
         line-height: 1.1;
         white-space: pre-line; 
     }
-
-    .oracle-text-overlay.has-answered {
-        top: 15%;
-    }
+    
+    /* OBS: Har tagit bort .has-answered regeln så texten flyttar sig inte efter svar */
 
     /* Frågerutan */
     .riddle-input-group { 
@@ -374,23 +381,22 @@
         .video-desktop { display: block; }
 
         .oracle-text-overlay {
+            /* --- ÄNDRA POSITION FÖR DATOR HÄR --- */
             left: 34.5%;      
-            top: 7%;       
+            top: 9%;       /* Ställ in top % här */
             width: 30%;     
             height: 30%;    
+            /* ------------------------------------ */
             font-size: clamp(16px, 2vw, 28px);
         }
-        .oracle-text-overlay.has-answered {
-            top: 7%; 
-        }
+
         .riddle-input-group {
             bottom: 40px; 
             width: 60%;  
         }
-        /* Flytta ner menyn lite på datorn så den inte ligger klistrad i taket */
         .riddle-selector {
             top: 30px;
-            justify-content: center; /* Centrera knapparna på stor skärm */
+            justify-content: center; 
         }
     }
 
@@ -721,8 +727,11 @@ function selectRiddle(index) {
 
     const answerDisplay = document.getElementById("riddleAnswer");
     answerDisplay.textContent = currentLoc.intro;
+    // Byt klass för att återställa ev. textfärger om vi byter
     answerDisplay.classList.remove('has-answered');
-    answerDisplay.style.top = "13%";
+    answerDisplay.style.color = "#000"; 
+    // Säkerställ att positionen är den vi satt i CSS (ingen JS-override)
+    answerDisplay.style.top = ""; 
 }
 
 
@@ -932,7 +941,8 @@ async function handleRiddleQuestion() {
 
     const response = await callGemini(question, systemPrompt);
     
-    answerDisplay.classList.add('has-answered');
+    // Vi lägger INTE till has-answered här eftersom CSS-regeln är borttagen.
+    // Positionen är alltid den som är satt i .oracle-text-overlay
 
     let cleanResponse = response.trim();
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
