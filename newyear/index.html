@@ -224,14 +224,20 @@
     /* MENY FÖR GÅTOR (Över videon) */
     .riddle-selector {
         position: absolute;
-        top: 20px;
+        
+        /* ÄNDRAT: Justerat top för att kompensera för padding */
+        top: 10px; 
+        
         left: 0;
         width: 100%;
         z-index: 200; /* Högt Z-index */
         display: flex;
         justify-content: flex-start; 
         gap: 10px;
-        padding: 0 20px;
+        
+        /* ÄNDRAT: Ökad padding (10px) för att ge plats åt "skalning" utan att klippas */
+        padding: 10px 20px; 
+        
         box-sizing: border-box;
         overflow-x: auto; 
         scrollbar-width: none; 
@@ -295,12 +301,10 @@
         position: absolute;
         z-index: 10; 
         
-        /* --- ÄNDRA POSITION FÖR MOBIL HÄR --- */
         left: 15%;     
-        top: 15%;      /* Ställ in top % här */
+        top: 15%;      
         width: 64%;      
         height: 16.1%;   
-        /* ------------------------------------ */
         
         display: flex;
         justify-content: center;
@@ -320,14 +324,18 @@
         line-height: 1.1;
         white-space: pre-line; 
     }
-    
-    /* OBS: Har tagit bort .has-answered regeln så texten flyttar sig inte efter svar */
 
-    /* Frågerutan */
+    .oracle-text-overlay.has-answered {
+        top: 15%;
+    }
+
+    /* Frågerutan - OPTIMERAD FÖR ATT SYNAS */
     .riddle-input-group { 
         position: absolute; 
         z-index: 100;
+        
         bottom: 25px; 
+        
         width: 90%; 
         left: 50%;
         transform: translateX(-50%);
@@ -381,21 +389,23 @@
         .video-desktop { display: block; }
 
         .oracle-text-overlay {
-            /* --- ÄNDRA POSITION FÖR DATOR HÄR --- */
             left: 34.5%;      
-            top: 9%;       /* Ställ in top % här */
+            top: 9%;       
             width: 30%;     
             height: 30%;    
-            /* ------------------------------------ */
             font-size: clamp(16px, 2vw, 28px);
         }
-
+        .oracle-text-overlay.has-answered {
+            top: 7%; 
+        }
         .riddle-input-group {
             bottom: 40px; 
             width: 60%;  
         }
+        
         .riddle-selector {
-            top: 30px;
+            /* ÄNDRAT: Justerat top för desktop */
+            top: 20px; 
             justify-content: center; 
         }
     }
@@ -941,8 +951,7 @@ async function handleRiddleQuestion() {
 
     const response = await callGemini(question, systemPrompt);
     
-    // Vi lägger INTE till has-answered här eftersom CSS-regeln är borttagen.
-    // Positionen är alltid den som är satt i .oracle-text-overlay
+    answerDisplay.classList.add('has-answered');
 
     let cleanResponse = response.trim();
     if (cleanResponse.length < 5 && cleanResponse.endsWith('.')) cleanResponse = cleanResponse.slice(0, -1);
