@@ -39,8 +39,6 @@
         text-transform: uppercase; 
         letter-spacing: 1px; 
         color: #ffd700; /* Guld */
-        
-        /* Dessa två rader centrerar rubriken i det lediga utrymmet ovanför kortet */
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -56,24 +54,34 @@
         overflow: hidden; 
         display: flex; 
         flex-direction: column; 
-        position: relative; /* Viktigt för absolut positionering inuti */
-        
-        /* Använder dvh men med en max-höjd för säkerhet */
+        position: relative; 
         height: 80dvh; 
         max-height: 800px;
-        
         transition: max-width 0.3s ease; 
     }
     
     /* FLIK-SYSTEM (TABS) */
     .tab-nav { display: flex; background: #222; border-bottom: 1px solid #333; flex-shrink: 0; }
+    
+    .tab-nav.hidden { display: none; }
+    
+    .tab-nav.animate-in {
+        display: flex;
+        animation: slideDownFade 0.6s ease-out forwards;
+    }
+    
+    @keyframes slideDownFade {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .tab-btn { 
         flex: 1; 
         padding: 15px; 
         background: transparent; 
         border: none; 
         color: #888; 
-        font-size: 14px; /* Lite mindre font för att få plats med 3 knappar */
+        font-size: 14px; 
         font-weight: 600; 
         cursor: pointer; 
         border-bottom: 3px solid transparent; 
@@ -113,7 +121,42 @@
         color: #ddd;
         line-height: 1.5;
         max-width: 80%;
+        margin: 0 auto;
     }
+
+    /* Start-knapp */
+    .start-btn {
+        margin-top: 40px;
+        background: #ffd700;
+        color: #000;
+        border: none;
+        padding: 15px 40px;
+        font-size: 22px;
+        font-family: 'MedievalSharp', cursive;
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    .start-btn:hover { transform: scale(1.05); background: #e5c100; }
+    .start-btn:active { transform: scale(0.95); }
+
+    /* Instruktioner */
+    .instructions-text {
+        text-align: left;
+        color: #ccc;
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 100%;
+        background: rgba(0,0,0,0.3);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid #333;
+        margin-top: 20px;
+    }
+    .instructions-text p { margin-bottom: 12px; }
+    .instructions-text strong { color: #ffd700; }
 
     /* INNEHÅLLSKONTROLLER (Karta) */
     #controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #252525; padding: 10px 20px; border-radius: 12px; }
@@ -172,6 +215,49 @@
         justify-content: center;
         align-items: center;
     }
+
+    /* MENY FÖR GÅTOR (Över videon) */
+    .riddle-selector {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        display: flex;
+        justify-content: flex-start; /* Börja från vänster för scroll */
+        gap: 10px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        overflow-x: auto; /* Tillåt scroll i sidled */
+        scrollbar-width: none; /* Dölj scrollbar Firefox */
+        -ms-overflow-style: none; /* Dölj scrollbar IE */
+    }
+    .riddle-selector::-webkit-scrollbar { display: none; } /* Dölj scrollbar Chrome */
+
+    .riddle-btn {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid #888;
+        color: #fff;
+        font-weight: bold;
+        font-family: 'MedievalSharp', cursive;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .riddle-btn.active {
+        background: #ffd700;
+        color: #000;
+        border-color: #fff;
+        transform: scale(1.1);
+        box-shadow: 0 0 10px #ffd700;
+    }
+
 
     /* VIDEO WRAPPER */
     .video-wrapper {
@@ -301,6 +387,11 @@
             bottom: 40px; 
             width: 60%;  
         }
+        /* Flytta ner menyn lite på datorn så den inte ligger klistrad i taket */
+        .riddle-selector {
+            top: 30px;
+            justify-content: center; /* Centrera knapparna på stor skärm */
+        }
     }
 
     /* --- SPECIAL: LITEN MOBIL (t.ex. iPhone SE) --- */
@@ -321,17 +412,34 @@
     <h1>New Year Hunt</h1>
     <div class="game-card">
         
-        <!-- FLIK-MENY (Uppdaterad) -->
-        <div class="tab-nav">
+        <!-- FLIK-MENY (GÖMD FRÅN BÖRJAN) -->
+        <div id="tabNav" class="tab-nav hidden">
             <button class="tab-btn active" onclick="switchTab('home')">STARTSIDA</button>
             <button class="tab-btn" onclick="switchTab('map')">KARTA</button>
             <button class="tab-btn" onclick="switchTab('riddles')">ORAKLET</button>
         </div>
 
-        <!-- FLIK 1: STARTSIDA (Ny) -->
+        <!-- FLIK 1: STARTSIDA -->
         <div id="tab-home" class="tab-content active">
-            <div class="welcome-title">Välkommen till skattjakten!</div>
-            <div class="welcome-subtitle">Hitta skatten först för att vinna.</div>
+            
+            <!-- VÄLKOMSTVY -->
+            <div id="intro-content">
+                <div class="welcome-title">Välkommen till skattjakten!</div>
+                <div class="welcome-subtitle">Hitta skatten först för att vinna.</div>
+                <button id="startGameBtn" class="start-btn">Starta spelet</button>
+            </div>
+
+            <!-- INSTRUKTIONSVY -->
+            <div id="instructions-content" style="display:none;">
+                <div class="welcome-title" style="font-size: 32px;">Instruktioner</div>
+                <div class="instructions-text">
+                    <p><strong>1.</strong> Gå till fliken <strong>ORAKLET</strong> och välj ett uppdrag i toppen.</p>
+                    <p><strong>2.</strong> Lös gåtorna eller ställ Ja/Nej-frågor för att hitta lösenord.</p>
+                    <p><strong>3.</strong> Skriv in lösenordet på fliken <strong>KARTA</strong> för att se var du ska.</p>
+                    <p><strong>4.</strong> Samla alla 10 skatter!</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- FLIK 2: KARTA -->
@@ -368,29 +476,34 @@
             
             <div class="video-oracle-container">
                 
-                <!-- WRAPPER: Denna box har låst aspect ratio -->
+                <!-- UPPDRAGSMENY (1-10) -->
+                <div class="riddle-selector" id="riddleSelector">
+                    <!-- Knappar genereras av JS -->
+                </div>
+
+                <!-- WRAPPER -->
                 <div class="video-wrapper">
-                    <!-- MOBIL VIDEO (Vertikal) -->
+                    <!-- MOBIL VIDEO -->
                     <video class="video-mobile" autoplay loop muted playsinline>
                         <source src="oracle.mp4" type="video/mp4">
                     </video>
 
-                    <!-- DATOR VIDEO (Horisontell) -->
+                    <!-- DATOR VIDEO -->
                     <video class="video-desktop" autoplay loop muted playsinline>
                         <source src="oraclepc.mp4" type="video/mp4">
                     </video>
 
                     <!-- TEXTEN I PRATBUBBLAN -->
                     <div class="oracle-text-overlay" id="riddleAnswer">
-                        Ställ mig Ja/Nej frågor för att lista ut 5 stycken hemliga föremål!
+                        Välj ett uppdrag i menyn ovan för att börja!
                     </div>
-                </div> <!-- Slut på wrapper -->
+                </div> 
 
-            </div> <!-- Slut på video-oracle-container -->
+            </div> 
 
             <!-- FRÅGERUTAN -->
             <div class="riddle-input-group">
-                <input type="text" id="riddleQuestion" placeholder="Är det gjort av metall?" autocomplete="off">
+                <input type="text" id="riddleQuestion" placeholder="Skriv här..." autocomplete="off">
                 <button id="askRiddleBtn">Fråga</button>
             </div>
             
@@ -401,8 +514,18 @@
 
 <script>
 // ===========================
-//  FLIK-HANTERING
+//  START & NAVIGERING
 // ===========================
+
+document.getElementById('startGameBtn').onclick = function() {
+    document.getElementById('intro-content').style.display = 'none';
+    document.getElementById('instructions-content').style.display = 'block';
+    
+    const nav = document.getElementById('tabNav');
+    nav.classList.remove('hidden');
+    nav.classList.add('animate-in');
+};
+
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -441,60 +564,167 @@ const floorPaths = [
 ];
 
 // ===========================
-//  HEMLIGA OBJEKT
+//  HEMLIGA OBJEKT (10 ST)
 // ===========================
+// type: 'riddle' (Vanlig gåta) eller 'yesno' (Gissa objekt med Ja/Nej)
+// intro: Vad oraklet säger när man klickar på fliken
+// riddleText: Själva gåtan (om typ är 'riddle')
+// aiDescription: Fakta för AI:n (om typ är 'yesno')
 const secretLocations = [
     { 
         id: 1, 
-        code: "RUBIKSKUB",  // UPPDATERAT TILL RUBIKSKUB
+        type: 'riddle',
+        code: "RUBIKSKUB",  
         floor: 0, 
         x: 2000, 
         y: 3000, 
         title: "Startpunkten", 
-        msg: "Leta efter en lapp med nästa ledtråd.",
-        aiDescription: "Det är en kub med sex sidor. Den har många färger (röd, blå, grön, gul, vit, orange). Det är ett mekaniskt pussel som man vrider på." 
+        msg: "Bra jobbat! Du hittade första.",
+        intro: "Välkommen till Uppdrag 1. Jag har en gåta till dig...",
+        riddleText: "Jag har sex sidor men inga ögon. Jag är färgglad men kan inte måla. Vrid på mig så blir jag rörig. Vad är jag?"
     },
     { 
         id: 2, 
+        type: 'yesno',
         code: "BOK",  
         floor: 1, 
         x: 5500, 
         y: 7500, 
         title: "Biblioteket",   
         msg: "Kunskap är makt.",
-        aiDescription: "Den är gjord av papper. Den har en rygg men inga ben. Man läser i den. Den har sidor och ett omslag."
+        intro: "Uppdrag 2: Ställ mig Ja/Nej-frågor för att lista ut ett hemligt föremål.",
+        aiDescription: "Det är en bok. Den är gjord av papper. Den har en rygg men inga ben. Man läser i den."
     },
     { 
         id: 3, 
+        type: 'riddle',
         code: "KARTA", 
         floor: 2, 
         x: 8000, 
         y: 4000, 
         title: "Navigeringsrummet",     
         msg: "Nu hittar du bättre!",
-        aiDescription: "Det är en ritning över ett område. Den visar vägar och landskap. Man använder den för att hitta rätt. Pirater har ofta en sådan med ett kryss på."
+        intro: "Uppdrag 3: En ny gåta väntar...",
+        riddleText: "Jag har städer, men inga hus. Jag har berg, men inga träd. Jag har vatten, men ingen fisk. Vad är jag?"
     },
     { 
         id: 4, 
+        type: 'yesno',
         code: "FICKLAMPA",  
         floor: 0, 
         x: 5000, 
         y: 10060, 
         title: "Mörka källaren",    
         msg: "Varde ljus!",
-        aiDescription: "Den är cylinderformad och man håller den i handen. Den lyser i mörkret. Den behöver batterier."
+        intro: "Uppdrag 4: Lista ut föremålet med Ja/Nej-frågor.",
+        aiDescription: "Det är en ficklampa. Den lyser i mörkret. Den är cylinderformad. Den behöver batterier."
     },
     { 
         id: 5, 
+        type: 'riddle',
         code: "SKATTKISTA",  
         floor: 2, 
         x: 5120, 
         y: 10245, 
         title: "Slutmålet",       
-        msg: "Du hittade den stora skatten!",
-        aiDescription: "Det är en stor låda, ofta av trä med metallbeslag. Den har ett lock som är välvt. Den innehåller guld och juveler."
+        msg: "Guld och gröna skogar!",
+        intro: "Uppdrag 5: Lös gåtan för att hitta skatten.",
+        riddleText: "Jag har ett lås men ingen dörr. Jag är gjord av trä men är inget träd. Jag gömmer rikedomar. Vad är jag?"
+    },
+    { 
+        id: 6, 
+        type: 'yesno',
+        code: "PIZZA",  
+        floor: 1, 
+        x: 6000, 
+        y: 6000, 
+        title: "Köket",       
+        msg: "Mums!",
+        intro: "Uppdrag 6: Jag tänker på något ätbart. Fråga på!",
+        aiDescription: "Det är en pizza. Den är rund men ligger i en fyrkantig kartong. Den har ost och tomatsås. Den är varm."
+    },
+    { 
+        id: 7, 
+        type: 'riddle',
+        code: "SOLGLASÖGON",  
+        floor: 3, 
+        x: 7000, 
+        y: 7000, 
+        title: "Terrassen",       
+        msg: "Skydda ögonen!",
+        intro: "Uppdrag 7: En solig gåta.",
+        riddleText: "Jag sitter på näsan men kan inte lukta. Jag gör världen mörkare fast solen skiner. Vad är jag?"
+    },
+    { 
+        id: 8, 
+        type: 'yesno',
+        code: "GITARR",  
+        floor: 0, 
+        x: 3000, 
+        y: 8000, 
+        title: "Musikrummet",       
+        msg: "Spela en trudelutt!",
+        intro: "Uppdrag 8: Ett musikaliskt föremål. Gissa vilket!",
+        aiDescription: "Det är en gitarr. Den har strängar. Den är gjord av trä. Man spelar på den med fingrarna."
+    },
+    { 
+        id: 9, 
+        type: 'riddle',
+        code: "PARAPLY",  
+        floor: 2, 
+        x: 4000, 
+        y: 9000, 
+        title: "Garderoben",       
+        msg: "Bra vid regn.",
+        intro: "Uppdrag 9: Gissa vad jag är.",
+        riddleText: "Jag går upp när regnet faller. Jag går ner när regnet slutar. Vad är jag?"
+    },
+    { 
+        id: 10, 
+        type: 'yesno',
+        code: "CYKEL",  
+        floor: 0, 
+        x: 1000, 
+        y: 1000, 
+        title: "Garaget",       
+        msg: "Ut och trampa!",
+        intro: "Uppdrag 10: Sista utmaningen. Vad tänker jag på?",
+        aiDescription: "Det är en cykel. Den har två hjul. Man trampar på den. Den har ett styre och en sadel."
     }
 ];
+
+// Hantera vilket uppdrag som är aktivt
+let activeRiddleIndex = 0; // Börjar på 0 (Uppdrag 1)
+
+function initRiddleMenu() {
+    const container = document.getElementById('riddleSelector');
+    secretLocations.forEach((loc, index) => {
+        const btn = document.createElement('div');
+        btn.className = `riddle-btn ${index === 0 ? 'active' : ''}`;
+        btn.textContent = index + 1;
+        btn.onclick = () => selectRiddle(index);
+        container.appendChild(btn);
+    });
+    // Sätt starttext
+    selectRiddle(0);
+}
+
+function selectRiddle(index) {
+    activeRiddleIndex = index;
+    const currentLoc = secretLocations[index];
+    
+    // Uppdatera UI
+    document.querySelectorAll('.riddle-btn').forEach((btn, i) => {
+        if(i === index) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    const answerDisplay = document.getElementById("riddleAnswer");
+    answerDisplay.textContent = currentLoc.intro;
+    answerDisplay.classList.remove('has-answered');
+    answerDisplay.style.top = "13%";
+}
+
 
 // Ladda data från minnet
 let unlockedIds = JSON.parse(localStorage.getItem('unlockedLocations') || "[]");
@@ -666,28 +896,39 @@ async function handleRiddleQuestion() {
     const question = input.value.trim();
     if (!question) return;
 
-    const nextLocked = secretLocations.find(loc => !unlockedIds.includes(loc.id));
+    // HÄMTA DET AKTIVA UPPDRAGET
+    const currentRiddle = secretLocations[activeRiddleIndex];
     
-    if (!nextLocked) {
-        answerDisplay.textContent = "Du är redan klar, gå och lägg dig.";
-        return;
-    }
-
     btn.disabled = true;
     answerDisplay.textContent = "..."; 
 
-    const systemPrompt = `
-    Du är ett urgammalt, lite vresigt och sarkastiskt Orakel i en skattjakt. 
-    Spelaren försöker gissa vilket hemligt föremål jag tänker på.
+    // SKAPA PROMPT BASERAT PÅ TYP
+    let systemPrompt = "";
     
-    RÄTT SVAR (DET HEMLIGA FÖREMÅLET): "${nextLocked.code}"
-    FAKTA OM FÖREMÅLET: "${nextLocked.aiDescription}"
+    if (currentRiddle.type === 'riddle') {
+        // --- VANLIG GÅTA LOGIK ---
+        systemPrompt = `
+        Du är en spelledare för en skattjakt.
+        GÅTAN DU HAR STÄLLT ÄR: "${currentRiddle.riddleText}"
+        RÄTT SVAR ÄR: "${currentRiddle.code}"
+        
+        INSTRUKTIONER:
+        1. Om användaren gissar RÄTT (svarar "${currentRiddle.code}" eller liknande), svara EXAKT: "Rätt svar!\n\nSkriv in ${currentRiddle.code} på kartan."
+        2. Om användaren gissar FEL, svara "Nej, det är fel." följt av en kort, sarkastisk kommentar eller en liten ledtråd relaterad till gåtan. Max 2 meningar.
+        `;
+    } else {
+        // --- JA/NEJ LOGIK ---
+        systemPrompt = `
+        Du är ett urgammalt Orakel. Spelaren ska gissa ett föremål med Ja/Nej-frågor.
+        RÄTT SVAR: "${currentRiddle.code}"
+        FAKTA: "${currentRiddle.aiDescription}"
 
-    INSTRUKTIONER FÖR SVAREN:
-    1. Om spelaren gissar RÄTT på föremålet (t.ex. "Är det en ${nextLocked.code}?" eller bara "${nextLocked.code}"), svara EXAKT: "Rätt svar!\n\nSkriv in "${nextLocked.code}" på kartan."
-    2. Om frågan är en relevant Ja/Nej-fråga om föremålets egenskaper, svara ENDAST "Ja" eller "Nej" baserat på faktan.
-    3. FÖR ALLT ANNAT (om du inte vet, om frågan är dum, irrelevant, inte en ja/nej-fråga): Ge ett sarkastiskt, hånfullt eller roligt svar på svenska. Håna spelaren lite för deras dåliga fråga. Håll svaret lagom kort (max 3 meningar).
-    `;
+        INSTRUKTIONER:
+        1. Om spelaren gissar RÄTT (t.ex. "Är det en ${currentRiddle.code}?"), svara EXAKT: "Rätt svar!\n\nSkriv in ${currentRiddle.code} på kartan."
+        2. För egenskapsfrågor, svara ENDAST "Ja" eller "Nej" baserat på faktan.
+        3. Om frågan är dum/irrelevant: Ge ett kort sarkastiskt svar.
+        `;
+    }
 
     const response = await callGemini(question, systemPrompt);
     
@@ -732,9 +973,8 @@ function resetGame() {
         messageArea.textContent = "🔄 Spelet är nollställt.";
         messageArea.style.color = "#fff";
         
-        const answerDisplay = document.getElementById("riddleAnswer");
-        answerDisplay.textContent = "Kom igen då, fråga nåt!";
-        answerDisplay.classList.remove('has-answered');
+        // Återställ till första gåtan
+        selectRiddle(0);
         
         setTimeout(() => { messageArea.textContent = ""; }, 3000);
     }
@@ -789,6 +1029,7 @@ document.getElementById("secretCode").addEventListener("keypress", function(even
 });
 
 switchFloor(3);
+initRiddleMenu(); // Initiera menyn
 
 window.addEventListener('resize', () => {
     map.invalidateSize();
