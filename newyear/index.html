@@ -152,6 +152,30 @@
     .start-btn:hover { transform: scale(1.05); background: #e5c100; }
     .start-btn:active { transform: scale(0.95); }
 
+    /* HJÄLP-KNAPP (Uppdaterad design) */
+    .help-trigger-btn {
+        margin-top: 40px;
+        background: #333; /* Mörk grå bakgrund */
+        color: #ffd700;   /* Gul text */
+        border: 2px solid #ffd700; /* Gul kant */
+        padding: 12px 25px;
+        font-size: 14px;
+        font-family: 'MedievalSharp', cursive; /* Matchar temat */
+        font-weight: bold;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .help-trigger-btn:hover {
+        background: #444;
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(255, 215, 0, 0.2);
+    }
+    .help-trigger-btn:active {
+        transform: scale(0.95);
+    }
+
     /* Instruktioner */
     .instructions-text {
         text-align: left;
@@ -382,6 +406,81 @@
     #askRiddleBtn:active { transform: scale(0.95); }
     #askRiddleBtn:disabled { opacity: 0.5; cursor: not-allowed; background: #666; }
 
+    /* ========================================================== */
+    /* MODAL (Hjälp-popup) */
+    /* ========================================================== */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 9999; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        background-color: rgba(0,0,0,0.8); 
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background-color: #252525;
+        border: 1px solid #444;
+        border-radius: 15px;
+        padding: 20px;
+        width: 90%;
+        max-width: 350px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        position: relative;
+    }
+    
+    .modal-close {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    
+    .modal-h2 {
+        color: #ffd700;
+        font-family: 'MedievalSharp', cursive;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    
+    .help-input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border: 1px solid #444;
+        background: #333;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+    .help-input:focus { border-color: #ffd700; outline: none; }
+    
+    .send-help-btn {
+        background: #ffd700;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+        width: 100%;
+        font-size: 16px;
+    }
+    .send-help-btn:active { transform: scale(0.98); background: #e5c100; }
+    
+    #helpStatus { margin-top: 10px; font-size: 14px; color: #ccc; }
+
 
     /* ========================================================== */
     /* --- DATOR-VERSION (PC) & STOR SKÄRM ---                    */
@@ -468,6 +567,11 @@
                     <p><strong>3.</strong> Skriv in koden på fliken <strong>KARTA</strong> för att se var du ska gå.</p>
                     <p><strong>4.</strong> Besök alla 10 platser för att lösa sista gåtan!</p>
                 </div>
+                
+                <!-- NY HJÄLPKNAPP (Flyttad hit) -->
+                <div style="text-align: center;">
+                    <button id="openHelpBtn" class="help-trigger-btn">Be Olle om hjälp</button>
+                </div>
             </div>
 
         </div>
@@ -542,6 +646,21 @@
     </div>
 </div>
 
+<!-- HJÄLP MODAL POPUP -->
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="closeHelpModal">&times;</span>
+        <h2 class="modal-h2">Be Olle om hjälp</h2>
+        <p style="color:#aaa; font-size:14px; margin-bottom:15px;">Skicka en notis direkt till Olle.</p>
+        
+        <input type="text" id="helpName" class="help-input" placeholder="Ditt Namn" autocomplete="off">
+        <input type="text" id="helpLocation" class="help-input" placeholder="Vart är du? (t.ex. Köket)" autocomplete="off">
+        
+        <button id="sendHelpBtn" class="send-help-btn">Skicka notis</button>
+        <div id="helpStatus"></div>
+    </div>
+</div>
+
 <script>
 // ===========================
 //  START & NAVIGERING
@@ -573,6 +692,94 @@ function switchTab(tabName) {
         }, 100); 
     }
 }
+
+// ===========================
+//  HJÄLP-FUNKTIONALITET (MODAL)
+// ===========================
+const helpModal = document.getElementById("helpModal");
+const openHelpBtn = document.getElementById("openHelpBtn");
+const closeHelpModal = document.getElementById("closeHelpModal");
+const sendHelpBtn = document.getElementById("sendHelpBtn");
+const helpStatus = document.getElementById("helpStatus");
+
+openHelpBtn.onclick = function() {
+    helpModal.style.display = "flex";
+}
+
+closeHelpModal.onclick = function() {
+    helpModal.style.display = "none";
+    helpStatus.textContent = "";
+}
+
+window.onclick = function(event) {
+    if (event.target == helpModal) {
+        helpModal.style.display = "none";
+        helpStatus.textContent = "";
+    }
+}
+
+sendHelpBtn.onclick = async function() {
+    const name = document.getElementById("helpName").value.trim();
+    const loc = document.getElementById("helpLocation").value.trim();
+    
+    if(!name || !loc) {
+        helpStatus.textContent = "Fyll i både namn och plats!";
+        helpStatus.style.color = "#ff4444";
+        return;
+    }
+
+    sendHelpBtn.disabled = true;
+    helpStatus.textContent = "Skickar...";
+    helpStatus.style.color = "#ffd700";
+
+    // Skicka till Worker
+    const success = await sendPushoverRequest(name, loc);
+    
+    if(success) {
+        helpStatus.textContent = "Notis skickad! Olle är på väg.";
+        helpStatus.style.color = "#4caf50";
+        setTimeout(() => {
+            helpModal.style.display = "none";
+            sendHelpBtn.disabled = false;
+            document.getElementById("helpName").value = "";
+            document.getElementById("helpLocation").value = "";
+            helpStatus.textContent = "";
+        }, 3000);
+    } else {
+        helpStatus.textContent = "Kunde inte skicka. Försök igen.";
+        helpStatus.style.color = "#ff4444";
+        sendHelpBtn.disabled = false;
+    }
+};
+
+async function sendPushoverRequest(name, location) {
+    // Samma Worker URL som för Gemini
+    if (!workerUrl || workerUrl.length < 10) {
+        console.error("Worker URL saknas");
+        return false;
+    }
+
+    const payload = {
+        action: "pushover_help",  // VIKTIGT: Detta talar om för din worker att det är Pushover
+        name: name,
+        location: location
+    };
+
+    try {
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) return true;
+        return false;
+    } catch (error) {
+        console.error("Pushover error:", error);
+        return false;
+    }
+}
+
 
 // ===========================
 //  INSTÄLLNINGAR
