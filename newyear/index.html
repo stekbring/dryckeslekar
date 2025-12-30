@@ -314,7 +314,7 @@
         padding: 2px 5px;
         box-sizing: border-box;
         
-        /* ÄNDRAT: Döljer överflöd istället för scroll, JS sköter storleken */
+        /* Döljer överflöd istället för scroll, JS sköter storleken */
         overflow: hidden; 
         
         line-height: 1.1;
@@ -326,7 +326,7 @@
         top: 15%;
     }
 
-    /* Frågerutan */
+    /* Frågerutan - OPTIMERAD FÖR ATT SYNAS */
     .riddle-input-group { 
         position: absolute; 
         z-index: 100;
@@ -449,7 +449,7 @@
                     <p><strong>1.</strong> Gå till fliken <strong>ORAKLET</strong> och välj ett uppdrag i toppen.</p>
                     <p><strong>2.</strong> Lös gåtorna eller ställ Ja/Nej-frågor för att hitta lösenord.</p>
                     <p><strong>3.</strong> Skriv in lösenordet på fliken <strong>KARTA</strong> för att se var du ska.</p>
-                    <p><strong>4.</strong> Samla alla 10 skatter!</p>
+                    <p><strong>4.</strong> Samla alla 10 bokstäver för att lösa finalen!</p>
                 </div>
             </div>
 
@@ -489,7 +489,7 @@
             
             <div class="video-oracle-container">
                 
-                <!-- UPPDRAGSMENY (1-10) -->
+                <!-- UPPDRAGSMENY (1-11) -->
                 <div class="riddle-selector" id="riddleSelector">
                     <!-- Knappar genereras av JS -->
                 </div>
@@ -577,13 +577,14 @@ const floorPaths = [
 ];
 
 // ===========================
-//  HEMLIGA OBJEKT (10 ST)
+//  HEMLIGA OBJEKT (11 ST)
 // ===========================
 const secretLocations = [
     { 
         id: 1, 
         type: 'riddle',
         code: "RUBIKSKUB",  
+        letter: "R",
         floor: 0, 
         x: 5593, 
         y: 9663, 
@@ -595,11 +596,12 @@ const secretLocations = [
     { 
         id: 2, 
         type: 'yesno',
-        code: "BOK",  
+        code: "BOK",
+        letter: "X",
         floor: 1, 
         x: 5838, 
         y: 10200, 
-        title: "Bokhyllan",   
+        title: "Bokhyllan",      
         msg: "Kunskap är makt.",
         intro: "Ställ mig Ja/Nej-frågor för att lista ut ett hemligt föremål.",
         aiDescription: "Det är en bok. Den är gjord av papper. Den har en rygg men inga ben. Man läser i den."
@@ -608,6 +610,7 @@ const secretLocations = [
         id: 3, 
         type: 'riddle',
         code: "KARTA", 
+        letter: "Q",
         floor: 2, 
         x: 5591, 
         y: 10394, 
@@ -619,37 +622,36 @@ const secretLocations = [
     { 
         id: 4, 
         type: 'yesno',
-        code: "FICKLAMPA",  
+        code: "FICKLAMPA",
+        letter: "Z",
         floor: 0, 
         x: 5000, 
         y: 10060, 
         title: "Källaren",    
         msg: "Varde ljus!",
         intro: "Uppdrag 4: Lista ut föremålet med Ja/Nej-frågor.",
-        aiDescription: "Det är en ficklampa. Den lyser i mörkret. Den är cylinderformad. Den behöver batterier. "
+        aiDescription: "Det är en ficklampa. Den lyser i mörkret. Den är cylinderformad. Den behöver batterier."
     },
     { 
         id: 5, 
         type: 'progressive', // Ny typ
-        code: "STRYKJÄRN",  
+       code: "STRYKJÄRN",  
         floor: 1, 
         x: 5287, 
         y: 9439, 
         title: "Tvättstugan",       
         msg: "Stryk din skrynkliga skjorta medans du ändå är här!",
-        // Fallback intro om state nollställs eller nåt fel
-        intro: "Uppdrag 5: En utmaning i 5 steg! Svara rätt på frågorna för att gå vidare.",
-        // aiDescription används här för att validera svaret (gemini jämför användarens svar mot 'a')
+        intro: "En utmaning i 5 steg! Svara rätt på frågorna för att gå vidare.",
         steps: [
             { 
                 q: "Nivå 5 (Svårast): Jag är en metallisk båt på ett hav av tyg. Där jag seglar stillnar stormen, men om jag ankrar för länge bränner jag hål i havet. Vad är jag?", 
                 a: "STRYKJÄRN", 
-                cooldown: 1 // Ändra till 2 sen
+                cooldown: 1 
             },
             { 
                 q: "Nivå 4: Jag raderar historien om hur saker har förvarats. Jag är tung, het och skoningslös men utan min ledare är jag kall och död. Vad är jag?", 
                 a: "STRYKJÄRN", 
-                cooldown: 2 // Ändra till 3 sen
+                cooldown: 2 
             },
             { 
                 q: "Nivå 3: Jag har en sula men inga fötter. Jag andas ut vita moln och rätar ut vågor på torra hav. Vad är jag?", 
@@ -664,14 +666,15 @@ const secretLocations = [
             { 
                 q: "Nivå 1 (Lättast): En apparat man fyller med vatten för att göra skrynkliga kläder släta med hjälp av värme. Vad är jag?", 
                 a: "STRYKJÄRN", 
-                cooldown: 5 // Cooldown innan avslöjande
+                cooldown: 5 
             }
         ]
     },
     { 
         id: 6, 
         type: 'yesno',
-        code: "PIZZA",  
+        code: "PIZZA",
+        letter: "P",
         floor: 1, 
         x: 5053, 
         y: 9879, 
@@ -684,6 +687,7 @@ const secretLocations = [
         id: 7, 
         type: 'riddle',
         code: "KATTLÅDA",  
+        letter: "L",
         floor: 3, 
         x: 7000, 
         y: 7000, 
@@ -695,7 +699,8 @@ const secretLocations = [
     { 
         id: 8, 
         type: 'yesno',
-        code: "GITARR",  
+        code: "GITARR",
+        letter: "K",
         floor: 0, 
         x: 5878, 
         y: 9530, 
@@ -708,6 +713,7 @@ const secretLocations = [
         id: 9, 
         type: 'riddle',
         code: "SACCOSÄCK",  
+        letter: "W",
         floor: 2, 
         x: 5120, 
         y: 10245,
@@ -719,19 +725,20 @@ const secretLocations = [
     { 
         id: 10, 
         type: 'yesno',
-        code: "CYKEL",  
+        code: "CYKEL",
+        letter: "J",
         floor: 0, 
         x: 5824, 
         y: 3281, 
-        title: "Ladugården",       
+        title: "Ladugården",        
         msg: "Ut och trampa!",
         intro: "Näst sista utmaningen. Vad tänker jag på?",
         aiDescription: "Det är en cykel. Den har två hjul. Man trampar på den. Den har ett styre och en sadel."
     },
     { 
         id: 11, 
-        type: 'riddle',
-        code: "TIDEN",  
+        type: 'final', // NY TYPE
+        code: "TIDEN",
         floor: 2, 
         x: 5120, 
         y: 10245,
@@ -784,6 +791,7 @@ function startCooldownTimer(unlockTime) {
 
 // Hantera vilket uppdrag som är aktivt
 let activeRiddleIndex = 0; 
+let finalPhase = 0; // 0 = Riddle, 1 = Letters
 
 function initRiddleMenu() {
     const container = document.getElementById('riddleSelector');
@@ -801,6 +809,7 @@ function initRiddleMenu() {
 function selectRiddle(index) {
     activeRiddleIndex = index;
     const currentLoc = secretLocations[index];
+    finalPhase = 0; // Reset final phase on tab switch
     
     // Clear any running interval
     if (cooldownInterval) clearInterval(cooldownInterval);
@@ -1116,6 +1125,47 @@ async function handleRiddleQuestion() {
         return;
     }
     
+    // --- SPECIAL LOGIK FÖR FINALEN (11) ---
+    if (currentRiddle.type === 'final') {
+        btn.disabled = true;
+        answerDisplay.textContent = "...";
+        
+        // Fas 0: Lös gåtan "TIDEN"
+        if (finalPhase === 0) {
+            const systemPrompt = `
+            GÅTA: "${currentRiddle.riddleText}"
+            RÄTT SVAR: "${currentRiddle.code}"
+            Svara "RÄTT" om användaren svarar rätt. Annars ge en ledtråd.
+            `;
+            const response = await callGemini(question, systemPrompt);
+            
+            if (response.includes("RÄTT")) {
+                answerDisplay.textContent = `Rätt! Koden till kartan är ${currentRiddle.code}.\n\nMen var är skatten? Ge mig de 10 bokstäverna från platserna (1-10) i ordning för att klura ut koordinaterna!`;
+                finalPhase = 1; // Gå till bokstavsfasen
+            } else {
+                answerDisplay.textContent = response;
+            }
+        } 
+        // Fas 1: Lös bokstavskoden (RXQZMPLKWJ)
+        else if (finalPhase === 1) {
+            // Rätt svar är hårdkodat här baserat på dina 10 platser
+            const correctLetters = "RXQZMPLKWJ"; 
+            
+            if (question.toUpperCase().replace(/\s/g, '') === correctLetters) {
+                // RÄTT BOKSTÄVER! Ge PI-koordinaterna
+                answerDisplay.textContent = `KORREKT!\n\nFå koordinaterna med hjälp av dessa siffor:\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+            } else {
+                answerDisplay.textContent = "Fel bokstavskod! Försök igen. Rätt ordning 1-10.";
+            }
+        }
+        
+        adjustFontSize(answerDisplay.textContent, answerDisplay);
+        btn.disabled = false;
+        input.value = "";
+        return;
+    }
+
+
     // --- STANDARD LOGIK FÖR RIDDLE/YESNO (Gammal kod) ---
     btn.disabled = true;
     answerDisplay.textContent = "..."; 
