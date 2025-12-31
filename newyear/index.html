@@ -1088,7 +1088,7 @@ function selectRiddle(index) {
     // 1. Kolla om det är en vanlig gåta som är löst
     if (isOracleSolved(currentLoc.id)) {
         if(currentLoc.type === 'final') {
-             answerDisplay.textContent = `Lös koden!\n [N 4 13 . 1 13 5 32 9 6 E 1 4 . 9 9 4 4 5 6]`;
+             answerDisplay.textContent = `Gå hit!\n [N 57.179032, E 15.335592]`;
         } else {
              answerDisplay.textContent = `Du har redan klarat detta! Koden är "${currentLoc.code}".`;
         }
@@ -1414,7 +1414,7 @@ async function handleRiddleQuestion() {
     // --- SPECIAL LOGIK FÖR FINALEN (11) ---
     if (currentRiddle.type === 'final') {
         if (isOracleSolved(currentRiddle.id)) {
-            answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [N 4 13 . 1 13 5 32 9 6 E 1 4 . 9 9 4 4 5 6]`;
+            answerDisplay.textContent = `Du har redan klarat finalen!\nKoordinater: [N 57.179032, E 15.335592]`;
             return;
         }
 
@@ -1445,7 +1445,7 @@ async function handleRiddleQuestion() {
             
             if (question.toUpperCase().replace(/\s/g, '') === correctLetters) {
                 // RÄTT BOKSTÄVER! Ge PI-koordinaterna
-                answerDisplay.textContent = `KORREKT!\ninom rättan tid så löses alla problem;\n[4, 13 . 1, 13, 5, 1, 1, 2,  1, 4 . 9, 9, 4, 2, 1, 13]`;
+                answerDisplay.textContent = `KORREKT!\ninom rättan tid så löses alla problem;\n[N 57.179032, E 15.335592]`;
                 setOracleSolved(currentRiddle.id); // Spara att finalen är klar
             } else {
                 answerDisplay.textContent = "Fel bokstavskod! Försök igen.";
