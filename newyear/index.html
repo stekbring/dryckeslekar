@@ -152,25 +152,25 @@
     .start-btn:hover { transform: scale(1.05); background: #e5c100; }
     .start-btn:active { transform: scale(0.95); }
 
-    /* HJÄLP-KNAPP (Uppdaterad design) */
+    /* HJÄLP-KNAPP (Uppdaterad design - MINDRE) */
     .help-trigger-btn {
-        margin-top: 40px;
+        margin-top: 25px; /* Lite mindre marginal */
         background: #333; /* Mörk grå bakgrund */
         color: #ffd700;   /* Gul text */
-        border: 2px solid #ffd700; /* Gul kant */
-        padding: 12px 25px;
-        font-size: 14px;
+        border: 1px solid #ffd700; /* Tunnare gul kant */
+        padding: 8px 16px; /* Mindre padding */
+        font-size: 12px; /* Mindre text */
         font-family: 'MedievalSharp', cursive; /* Matchar temat */
         font-weight: bold;
-        border-radius: 25px;
+        border-radius: 20px;
         cursor: pointer;
         transition: all 0.2s;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .help-trigger-btn:hover {
         background: #444;
         transform: scale(1.05);
-        box-shadow: 0 6px 15px rgba(255, 215, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
     }
     .help-trigger-btn:active {
         transform: scale(0.95);
@@ -230,9 +230,20 @@
     
     #messageArea { margin-top: 5px; min-height: 20px; font-size: 14px; color: #ffd700; text-align: center; font-weight: 500; }
 
-    /* NOLLSTÄLLNINGSKNAPP */
+    /* NOLLSTÄLLNINGSKNAPP - MINDRE */
     .reset-section { margin-top: 5px; text-align: center; border-top: 1px solid #333; padding-top: 10px; }
-    #resetGame { background: transparent; color: #ff4444; border: 1px solid #ff4444; font-size: 14px; padding: 8px 16px; font-weight: normal; border-radius: 8px; cursor: pointer; }
+    #resetGame { 
+        background: transparent; 
+        color: #ff4444; 
+        border: 1px solid #ff4444; 
+        font-size: 11px; /* Mindre text */
+        padding: 5px 10px; /* Mindre padding */
+        font-weight: normal; 
+        border-radius: 6px; 
+        cursor: pointer;
+        opacity: 0.7;
+    }
+    #resetGame:hover { opacity: 1; }
     #resetGame:active { background: #ff4444; color: #fff; }
 
     /* ========================================= */
@@ -741,6 +752,9 @@ sendHelpBtn.onclick = async function() {
         }
     }
 
+    // SPARA TIDEN DIREKT (Förhindrar spam även om det misslyckas)
+    localStorage.setItem('last_help_request_time', Date.now().toString());
+
     sendHelpBtn.disabled = true;
     helpStatus.textContent = "Skickar...";
     helpStatus.style.color = "#ffd700";
@@ -749,9 +763,6 @@ sendHelpBtn.onclick = async function() {
     const success = await sendPushoverRequest(name, loc);
     
     if(success) {
-        // SPARA TIDEN OM DET LYCKADES
-        localStorage.setItem('last_help_request_time', Date.now().toString());
-        
         helpStatus.textContent = "Notis skickad! Olle är på väg.";
         helpStatus.style.color = "#4caf50";
         setTimeout(() => {
@@ -762,9 +773,10 @@ sendHelpBtn.onclick = async function() {
             helpStatus.textContent = "";
         }, 3000);
     } else {
-        helpStatus.textContent = "Kunde inte skicka. Försök igen.";
+        helpStatus.textContent = "Kunde inte skicka (fel inställningar?), men jag har noterat det.";
         helpStatus.style.color = "#ff4444";
-        sendHelpBtn.disabled = false;
+        // Lås upp knappen efter 3 sekunder även vid fel, men cooldown gäller
+        setTimeout(() => { sendHelpBtn.disabled = false; }, 3000);
     }
 };
 
