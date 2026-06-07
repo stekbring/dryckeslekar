@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skattjakt Kompass</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --accent-color: #ff3b30;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #app-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        #compass-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 40px 0;
+        }
+        #arrow {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease-out;
+        }
+        .data-text {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .label {
+            font-size: 1rem;
+            color: #888;
+        }
+        #status {
+            font-size: 0.9rem;
+            color: #ffcc00;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1>Skattjakt</h1>
+        <p>Denna webbapp kräver tillgång till din plats och kompass.</p>
+        <button id="start-btn">Starta Navigering</button>
+        <p id="status">Klar att starta.</p>
+    </div>
+
+    <div id="app-screen">
+        <div class="label">Avstånd till mål</div>
+        <div id="distance" class="data-text">Söker GPS...</div>
+        
+        <div id="compass-container">
+            <!-- SVG Pil för kompassen -->
+            <svg id="arrow" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="#333" stroke-width="4"/>
+                <polygon points="50,10 70,90 50,75 30,90" fill="#ff3b30" />
+            </svg>
+        </div>
+
+        <div class="label">Din riktning (Debug)</div>
+        <div id="heading" class="data-text">--°</div>
+    </div>
+
+    <script>
+        // --- INSTÄLLNINGAR ---
+        // Byt ut dessa till koordinater nära dig för att testa
+        const TARGET_LAT = 59.3293; 
+        const TARGET_LNG = 18.0686; 
+
+        // --- VARIABLER ---
+        let currentLat = null;
+        let currentLng = null;
+        let currentHeading = 0;
+        let bearingToTarget = 0;
+
+        const startScreen = document.getElementById('start-screen');
+        const appScreen = document.getElementById('app-screen');
+        const startBtn = document.getElementById('start-btn');
+        const distanceEl = document.getElementById('distance');
+        const arrowEl = document.getElementById('arrow');
+        const headingEl = document.getElementById('heading');
+        const statusEl = document.getElementById('status');
+
+        // --- MATEMATIK (Haversine & Bäring) ---
+        function toRad(deg) { return deg * Math.PI / 180; }
+        function toDeg(rad) { return rad * 180 / Math.PI; }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Jordens radie i meter
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return Math.round(R * c);
+        }
+
+        function calculateBearing(lat1, lng1, lat2, lng2) {
+            const dLon = toRad(lng2 - lng1);
+            const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+            const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+            let brng = toDeg(Math.atan2(y, x));
+            return (brng + 360) % 360;
+        }
+
+        // --- UPPDATERA GRÄNSSNITT ---
+        function updateUI() {
+            if (currentLat === null || currentLng === null) return;
+
+            const dist = calculateDistance(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
+            bearingToTarget = calculateBearing(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
+
+            distanceEl.innerText = dist + " m";
+
+            // Beräkna hur mycket pilen ska roteras
+            // Om bäringen till målet är 90 grader och du tittar åt 45 grader, ska pilen peka 45 grader åt höger (+45)
+            let rotation = bearingToTarget - currentHeading;
+            arrowEl.style.transform = `rotate(${rotation}deg)`;
+            
+            headingEl.innerText = Math.round(currentHeading) + "°";
+
+            if (dist <= 5) {
+                distanceEl.innerText = "MÅL NÅTT!";
+                distanceEl.style.color = "#4cd964";
+            } else {
+                distanceEl.style.color = "white";
+            }
+        }
+
+        // --- BEHÖRIGHETER & SENSORER ---
+        async function startApp() {
+            // 1. Fråga om kompass-behörighet (Krävs för iOS 13+)
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission !== 'granted') {
+                        statusEl.innerText = "Kompass nekad. Måste godkännas i inställningar.";
+                        return;
+                    }
+                } catch (error) {
+                    statusEl.innerText = "Kunde inte begära kompass-rättigheter.";
+                    return;
+                }
+            }
+
+            // Byta skärm
+            startScreen.style.display = 'none';
+            appScreen.style.display = 'flex';
+
+            // 2. Starta GPS Tracking
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        currentLat = position.coords.latitude;
+                        currentLng = position.coords.longitude;
+                        updateUI();
+                    },
+                    (error) => {
+                        distanceEl.innerText = "GPS Fel";
+                        console.error(error);
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0 }
+                );
+            } else {
+                distanceEl.innerText = "GPS ej stödd";
+            }
+
+            // 3. Starta Kompass Tracking
+            window.addEventListener('deviceorientation', (event) => {
+                // iOS använder webkitCompassHeading, Android använder ofta alpha (eller absolute orientation)
+                if (event.webkitCompassHeading) {
+                    currentHeading = event.webkitCompassHeading;
+                } else if (event.alpha !== null) {
+                    // Fallback för Android. Notera: alpha kan ibland vara relativ istället för absolut.
+                    // För produktionskod på Android bör 'deviceorientationabsolute' event övervägas.
+                    currentHeading = 360 - event.alpha;
+                }
+                updateUI();
+            });
+        }
+
+        startBtn.addEventListener('click', startApp);
+
+        // --- PWA & OFFLINE CACHE (Dynamisk Service Worker) ---
+        // Skapar en service worker direkt från koden för att hålla allt i en fil vid testning.
+        const swCode = `
+            const CACHE_NAME = 'skattjakt-cache-v1';
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME).then(cache => {
+                        // Cachar den aktuella URL:en (index.html)
+                        return cache.addAll([location.href]); 
+                    })
+                );
+            });
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request).then(response => {
+                        return response || fetch(event.request);
+                    })
+                );
+            });
+        `;
+        
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(swUrl).then(() => {
+                console.log('Service Worker registrerad för offline-bruk.');
+            }).catch(err => {
+                console.error('Service Worker fel:', err);
+            });
+        }
+    </script>
+</body>
+</html>
