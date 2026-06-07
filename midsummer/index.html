@@ -57,8 +57,7 @@
         #arrow {
             width: 100%;
             height: 100%;
-            /* Ändrad till linear för mjukare kontinuerlig uppdatering från snabba sensordata */
-            transition: transform 0.15s linear; 
+            transition: transform 0.05s ease-out; 
         }
         .data-text {
             font-size: 2rem;
@@ -241,7 +240,7 @@
         // --- PWA & OFFLINE CACHE (Dynamisk Service Worker) ---
         // Uppdaterad till Network First-strategi för enklare utveckling
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v2';
+            const CACHE_NAME = 'skattjakt-cache-v3';
             
             self.addEventListener('install', event => {
                 event.waitUntil(
