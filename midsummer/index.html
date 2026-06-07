@@ -105,7 +105,7 @@
         // --- INSTÄLLNINGAR ---
         // Byt ut dessa till koordinater nära dig för att testa
         const TARGET_LAT = 56.996242; 
-        const TARGET_LNG = 15.275598; 
+        const TARGET_LNG = 15.275598;
 
         // --- VARIABLER ---
         let currentLat = null;
@@ -239,8 +239,10 @@
         startBtn.addEventListener('click', startApp);
 
         // --- PWA & OFFLINE CACHE (Dynamisk Service Worker) ---
+        // Uppdaterad till Network First-strategi för enklare utveckling
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v1';
+            const CACHE_NAME = 'skattjakt-cache-v2';
+            
             self.addEventListener('install', event => {
                 event.waitUntil(
                     caches.open(CACHE_NAME).then(cache => {
@@ -248,10 +250,19 @@
                     })
                 );
             });
+
             self.addEventListener('fetch', event => {
                 event.respondWith(
-                    caches.match(event.request).then(response => {
-                        return response || fetch(event.request);
+                    // 1. Försök hämta senaste versionen från nätverket först
+                    fetch(event.request).then(networkResponse => {
+                        return caches.open(CACHE_NAME).then(cache => {
+                            // Spara den nya versionen i cachen för framtida offline-bruk
+                            cache.put(event.request, networkResponse.clone());
+                            return networkResponse;
+                        });
+                    }).catch(() => {
+                        // 2. Om nätverket misslyckas (offline), använd cachen
+                        return caches.match(event.request);
                     })
                 );
             });
