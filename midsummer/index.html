@@ -57,7 +57,8 @@
         #arrow {
             width: 100%;
             height: 100%;
-            transition: transform 0.1s ease-out;
+            /* Ändrad till linear för mjukare kontinuerlig uppdatering från snabba sensordata */
+            transition: transform 0.15s linear; 
         }
         .data-text {
             font-size: 2rem;
@@ -104,12 +105,16 @@
         // --- INSTÄLLNINGAR ---
         // Byt ut dessa till koordinater nära dig för att testa
         const TARGET_LAT = 56.996242; 
-        const TARGET_LNG = 15.275598;
+        const TARGET_LNG = 15.275598; 
+
         // --- VARIABLER ---
         let currentLat = null;
         let currentLng = null;
         let currentHeading = 0;
         let bearingToTarget = 0;
+        
+        // Håller koll på den totala rotationen för att undvika 360-till-0-hopp
+        let accumulatedRotation = 0; 
 
         const startScreen = document.getElementById('start-screen');
         const appScreen = document.getElementById('app-screen');
@@ -152,11 +157,25 @@
 
             distanceEl.innerText = dist + " m";
 
-            // Beräkna hur mycket pilen ska roteras
-            // Om bäringen till målet är 90 grader och du tittar åt 45 grader, ska pilen peka 45 grader åt höger (+45)
-            let rotation = bearingToTarget - currentHeading;
-            arrowEl.style.transform = `rotate(${rotation}deg)`;
+            // Beräkna råmålvinkel baserat på bäring och enhetens riktning
+            let targetRotation = bearingToTarget - currentHeading;
+            targetRotation = (targetRotation % 360 + 360) % 360; // Normalisera till 0-360
+
+            // Normalisera nuvarande ackumulerad rotation till 0-360 för jämförelse
+            let currentNormalized = (accumulatedRotation % 360 + 360) % 360;
             
+            // Räkna ut kortaste vägen (skillnaden)
+            let diff = targetRotation - currentNormalized;
+            if (diff > 180) {
+                diff -= 360;
+            } else if (diff < -180) {
+                diff += 360;
+            }
+
+            // Lägg till den kortaste skillnaden på den ackumulerade rotationen
+            accumulatedRotation += diff;
+
+            arrowEl.style.transform = `rotate(${accumulatedRotation}deg)`;
             headingEl.innerText = Math.round(currentHeading) + "°";
 
             if (dist <= 5) {
@@ -207,12 +226,10 @@
 
             // 3. Starta Kompass Tracking
             window.addEventListener('deviceorientation', (event) => {
-                // iOS använder webkitCompassHeading, Android använder ofta alpha (eller absolute orientation)
+                // iOS använder webkitCompassHeading, Android använder ofta alpha
                 if (event.webkitCompassHeading) {
                     currentHeading = event.webkitCompassHeading;
                 } else if (event.alpha !== null) {
-                    // Fallback för Android. Notera: alpha kan ibland vara relativ istället för absolut.
-                    // För produktionskod på Android bör 'deviceorientationabsolute' event övervägas.
                     currentHeading = 360 - event.alpha;
                 }
                 updateUI();
@@ -222,13 +239,11 @@
         startBtn.addEventListener('click', startApp);
 
         // --- PWA & OFFLINE CACHE (Dynamisk Service Worker) ---
-        // Skapar en service worker direkt från koden för att hålla allt i en fil vid testning.
         const swCode = `
             const CACHE_NAME = 'skattjakt-cache-v1';
             self.addEventListener('install', event => {
                 event.waitUntil(
                     caches.open(CACHE_NAME).then(cache => {
-                        // Cachar den aktuella URL:en (index.html)
                         return cache.addAll([location.href]); 
                     })
                 );
