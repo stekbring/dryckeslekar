@@ -57,7 +57,7 @@
         #arrow {
             width: 100%;
             height: 100%;
-            transition: transform 0.05s ease-out; 
+            /* CSS transition borttagen för att istället animera i 60fps via JavaScript */
         }
         .data-text {
             font-size: 2rem;
@@ -102,9 +102,9 @@
 
     <script>
         // --- INSTÄLLNINGAR ---
-        // Byt ut dessa till koordinater nära dig för att testa
         const TARGET_LAT = 56.996242; 
         const TARGET_LNG = 15.275598;
+ 
 
         // --- VARIABLER ---
         let currentLat = null;
@@ -112,8 +112,9 @@
         let currentHeading = 0;
         let bearingToTarget = 0;
         
-        // Håller koll på den totala rotationen för att undvika 360-till-0-hopp
-        let accumulatedRotation = 0; 
+        // Variabler för mjuk 60fps animering
+        let targetVisualRotation = 0;
+        let currentVisualRotation = 0;
 
         const startScreen = document.getElementById('start-screen');
         const appScreen = document.getElementById('app-screen');
@@ -123,12 +124,12 @@
         const headingEl = document.getElementById('heading');
         const statusEl = document.getElementById('status');
 
-        // --- MATEMATIK (Haversine & Bäring) ---
+        // --- MATEMATIK ---
         function toRad(deg) { return deg * Math.PI / 180; }
         function toDeg(rad) { return rad * 180 / Math.PI; }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Jordens radie i meter
+            const R = 6371e3;
             const dLat = toRad(lat2 - lat1);
             const dLon = toRad(lon2 - lon1);
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -147,47 +148,49 @@
             return (brng + 360) % 360;
         }
 
-        // --- UPPDATERA GRÄNSSNITT ---
-        function updateUI() {
+        // --- LOGIK-UPPDATERING (Sätter målvärden) ---
+        function updateLogic() {
             if (currentLat === null || currentLng === null) return;
 
             const dist = calculateDistance(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
             bearingToTarget = calculateBearing(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
 
-            distanceEl.innerText = dist + " m";
-
-            // Beräkna råmålvinkel baserat på bäring och enhetens riktning
-            let targetRotation = bearingToTarget - currentHeading;
-            targetRotation = (targetRotation % 360 + 360) % 360; // Normalisera till 0-360
-
-            // Normalisera nuvarande ackumulerad rotation till 0-360 för jämförelse
-            let currentNormalized = (accumulatedRotation % 360 + 360) % 360;
-            
-            // Räkna ut kortaste vägen (skillnaden)
-            let diff = targetRotation - currentNormalized;
-            if (diff > 180) {
-                diff -= 360;
-            } else if (diff < -180) {
-                diff += 360;
-            }
-
-            // Lägg till den kortaste skillnaden på den ackumulerade rotationen
-            accumulatedRotation += diff;
-
-            arrowEl.style.transform = `rotate(${accumulatedRotation}deg)`;
-            headingEl.innerText = Math.round(currentHeading) + "°";
-
+            // Uppdatera text
             if (dist <= 5) {
                 distanceEl.innerText = "MÅL NÅTT!";
                 distanceEl.style.color = "#4cd964";
             } else {
+                distanceEl.innerText = dist + " m";
                 distanceEl.style.color = "white";
             }
+            headingEl.innerText = Math.round(currentHeading) + "°";
+
+            // Räkna ut önskad rotation på pilen
+            let rawTarget = bearingToTarget - currentHeading;
+            
+            // Hitta kortaste vägen för rotationen för att undvika spinn (snabb matematik för -180 till +180)
+            let diff = rawTarget - targetVisualRotation;
+            diff = ((diff + 540) % 360) - 180;
+            targetVisualRotation += diff;
+        }
+
+        // --- VISUELL RENDER-LOOP (60fps) ---
+        function renderFrame() {
+            // Lerp (Linear Interpolation) mjukar upp rörelsen
+            // Ett värde mellan 0.0 och 1.0. (0.15 = snabb & mjuk, 0.05 = långsam & trög)
+            const smoothingFactor = 0.2; 
+            
+            currentVisualRotation += (targetVisualRotation - currentVisualRotation) * smoothingFactor;
+            
+            // Uppdatera DOM exakt synkat med skärmuppdateringen
+            arrowEl.style.transform = `rotate(${currentVisualRotation}deg)`;
+            
+            // Begär nästa bildruta
+            requestAnimationFrame(renderFrame);
         }
 
         // --- BEHÖRIGHETER & SENSORER ---
         async function startApp() {
-            // 1. Fråga om kompass-behörighet (Krävs för iOS 13+)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
                     const permission = await DeviceOrientationEvent.requestPermission();
@@ -201,17 +204,18 @@
                 }
             }
 
-            // Byta skärm
             startScreen.style.display = 'none';
             appScreen.style.display = 'flex';
 
-            // 2. Starta GPS Tracking
+            // Starta den mjuka renderingsloopen
+            requestAnimationFrame(renderFrame);
+
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
                     (position) => {
                         currentLat = position.coords.latitude;
                         currentLng = position.coords.longitude;
-                        updateUI();
+                        updateLogic();
                     },
                     (error) => {
                         distanceEl.innerText = "GPS Fel";
@@ -223,24 +227,21 @@
                 distanceEl.innerText = "GPS ej stödd";
             }
 
-            // 3. Starta Kompass Tracking
             window.addEventListener('deviceorientation', (event) => {
-                // iOS använder webkitCompassHeading, Android använder ofta alpha
                 if (event.webkitCompassHeading) {
                     currentHeading = event.webkitCompassHeading;
                 } else if (event.alpha !== null) {
                     currentHeading = 360 - event.alpha;
                 }
-                updateUI();
+                updateLogic();
             });
         }
 
         startBtn.addEventListener('click', startApp);
 
-        // --- PWA & OFFLINE CACHE (Dynamisk Service Worker) ---
-        // Uppdaterad till Network First-strategi för enklare utveckling
+        // --- PWA & OFFLINE CACHE ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v3';
+            const CACHE_NAME = 'skattjakt-cache-v4';
             
             self.addEventListener('install', event => {
                 event.waitUntil(
@@ -252,15 +253,12 @@
 
             self.addEventListener('fetch', event => {
                 event.respondWith(
-                    // 1. Försök hämta senaste versionen från nätverket först
                     fetch(event.request).then(networkResponse => {
                         return caches.open(CACHE_NAME).then(cache => {
-                            // Spara den nya versionen i cachen för framtida offline-bruk
                             cache.put(event.request, networkResponse.clone());
                             return networkResponse;
                         });
                     }).catch(() => {
-                        // 2. Om nätverket misslyckas (offline), använd cachen
                         return caches.match(event.request);
                     })
                 );
@@ -273,9 +271,7 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register(swUrl).then(() => {
                 console.log('Service Worker registrerad för offline-bruk.');
-            }).catch(err => {
-                console.error('Service Worker fel:', err);
-            });
+            }).catch(err => console.error(err));
         }
     </script>
 </body>
