@@ -6,10 +6,18 @@
     <title>Skattjakt Kompass</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --text-color: #ffffff;
-            --accent-color: #ff3b30;
+            /* Färgpalett från bilden */
+            --col-1: #EDE5BE; /* Ljusast (Bakgrund) */
+            --col-2: #C9C3A1;
+            --col-3: #A19B81;
+            --col-4: #787460;
+            --col-5: #4F4C3F; /* Mörkast (Text/Kontrast) */
+            
+            --bg-color: var(--col-1);
+            --text-color: var(--col-5);
+            --accent-color: var(--col-4);
         }
+        
         body {
             margin: 0;
             padding: 0;
@@ -24,54 +32,96 @@
             overflow: hidden;
             text-align: center;
         }
+        
         #start-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
+            max-width: 400px;
         }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--col-5);
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--col-4);
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
         #app-screen {
             display: none;
             flex-direction: column;
             align-items: center;
             width: 100%;
         }
+
         button {
-            background-color: var(--accent-color);
-            color: white;
+            background-color: var(--col-5);
+            color: var(--col-1);
             border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 20px;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
+            box-shadow: 0 4px 14px rgba(79, 76, 63, 0.2);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(79, 76, 63, 0.2);
+        }
+
         #compass-container {
             position: relative;
-            width: 250px;
-            height: 250px;
-            margin: 40px 0;
+            width: 280px;
+            height: 280px;
+            margin: 50px 0;
+            border-radius: 50%;
+            background-color: var(--col-1);
+            box-shadow: 
+                8px 8px 16px rgba(120, 116, 96, 0.2), 
+                -8px -8px 16px rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         #arrow {
-            width: 100%;
-            height: 100%;
-            /* CSS transition borttagen för att istället animera i 60fps via JavaScript */
+            width: 90%;
+            height: 90%;
+            /* JavaScript sköter animationen */
         }
+
         .data-text {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 10px 0;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 5px 0 20px 0;
+            color: var(--col-5);
+            letter-spacing: -1px;
         }
+
         .label {
-            font-size: 1rem;
-            color: #888;
+            font-size: 0.8rem;
+            color: var(--col-4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
+
         #status {
-            font-size: 0.9rem;
-            color: #ffcc00;
+            font-size: 0.85rem;
+            color: var(--col-4);
             margin-top: 20px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -79,7 +129,7 @@
 
     <div id="start-screen">
         <h1>Skattjakt</h1>
-        <p>Denna webbapp kräver tillgång till din plats och kompass.</p>
+        <p>Denna webbapp kräver tillgång till din plats och kompass för att guida dig rätt.</p>
         <button id="start-btn">Starta Navigering</button>
         <p id="status">Klar att starta.</p>
     </div>
@@ -89,14 +139,26 @@
         <div id="distance" class="data-text">Söker GPS...</div>
         
         <div id="compass-container">
-            <!-- SVG Pil för kompassen -->
+            <!-- Uppdaterad SVG Pil för kompassen baserat på paletten -->
             <svg id="arrow" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="none" stroke="#333" stroke-width="4"/>
-                <polygon points="50,10 70,90 50,75 30,90" fill="#ff3b30" />
+                <!-- Yttre dekorativ ring -->
+                <circle cx="50" cy="50" r="48" fill="none" stroke="var(--col-2)" stroke-width="2"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--col-3)" stroke-width="1" stroke-dasharray="4 4"/>
+                
+                <!-- Kompassnål Norr (mörk) -->
+                <polygon points="50,12 58,50 50,50" fill="var(--col-5)" />
+                <polygon points="50,12 42,50 50,50" fill="var(--col-4)" />
+                
+                <!-- Kompassnål Söder (ljusare) -->
+                <polygon points="50,88 58,50 50,50" fill="var(--col-3)" />
+                <polygon points="50,88 42,50 50,50" fill="var(--col-2)" />
+                
+                <!-- Centrum -->
+                <circle cx="50" cy="50" r="4" fill="var(--col-1)" stroke="var(--col-5)" stroke-width="2"/>
             </svg>
         </div>
 
-        <div class="label">Din riktning (Debug)</div>
+        <div class="label">Riktning</div>
         <div id="heading" class="data-text">--°</div>
     </div>
 
@@ -104,7 +166,7 @@
         // --- INSTÄLLNINGAR ---
         const TARGET_LAT = 56.996242; 
         const TARGET_LNG = 15.275598;
- 
+
 
         // --- VARIABLER ---
         let currentLat = null;
@@ -155,13 +217,13 @@
             const dist = calculateDistance(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
             bearingToTarget = calculateBearing(currentLat, currentLng, TARGET_LAT, TARGET_LNG);
 
-            // Uppdatera text
+            // Uppdatera text med palettens färger
             if (dist <= 5) {
                 distanceEl.innerText = "MÅL NÅTT!";
-                distanceEl.style.color = "#4cd964";
+                distanceEl.style.color = "var(--col-5)";
             } else {
                 distanceEl.innerText = dist + " m";
-                distanceEl.style.color = "white";
+                distanceEl.style.color = "var(--col-5)";
             }
             headingEl.innerText = Math.round(currentHeading) + "°";
 
@@ -177,7 +239,6 @@
         // --- VISUELL RENDER-LOOP (60fps) ---
         function renderFrame() {
             // Lerp (Linear Interpolation) mjukar upp rörelsen
-            // Ett värde mellan 0.0 och 1.0. (0.15 = snabb & mjuk, 0.05 = långsam & trög)
             const smoothingFactor = 0.2; 
             
             currentVisualRotation += (targetVisualRotation - currentVisualRotation) * smoothingFactor;
@@ -241,7 +302,7 @@
 
         // --- PWA & OFFLINE CACHE ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v4';
+            const CACHE_NAME = 'skattjakt-cache-v5'; // Uppdaterad version
             
             self.addEventListener('install', event => {
                 event.waitUntil(
