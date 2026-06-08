@@ -22,15 +22,26 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
             background-color: var(--col-1);
             color: var(--col-5);
             font-family: antiquarian, sans-serif;
             font-variant-numeric: lining-nums;
-            overflow: hidden;
-            height: 100vh;
+            margin: 0;
+            padding: 0;
             width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: pan-x pan-y; /* Tillåter scroll men blockerar pinch-zoom */
+        }
+
+        /* Ny wrapper som tvingar Safari att hålla sig inom skärmens gränser */
+        #app-wrapper {
             position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         /* 3D KARTBAKGRUND */
@@ -63,9 +74,9 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding: 40px 20px;
-            overflow-y: auto;
+            justify-content: center; 
+            padding: 2vh 15px; /* Minskad padding */
+            overflow: hidden;
         }
 
         .screen.active {
@@ -75,22 +86,22 @@
         /* TYPOGRAFI OCH UI - STARTSKÄRM */
         .header-container {
             text-align: center;
-            margin-top: 2vh;
-            margin-bottom: 4vh;
+            margin-bottom: 1.5vh; /* Minskad margin */
             background: rgba(237, 229, 190, 0.7);
-            padding: 15px 30px;
-            border-radius: 20px;
+            padding: 1.5vh 20px; /* Minskad padding */
+            border-radius: 16px;
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
+            flex-shrink: 0;
         }
 
         h1 {
-            font-size: 2.2rem;
+            font-size: clamp(1.6rem, 5vw, 2rem); /* Något mindre max-storlek */
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 700;
             color: var(--col-5);
             letter-spacing: -1px;
-            margin-bottom: 5px;
+            margin-bottom: 2px; /* Minskad margin */
             text-transform: uppercase;
         }
 
@@ -99,7 +110,7 @@
         }
 
         .subtitle {
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 3vw, 1rem);
             color: var(--col-4);
             font-weight: 600;
             letter-spacing: 1px;
@@ -110,7 +121,7 @@
         .team-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 1vh; /* Minskat avstånd mellan knapparna */
             width: 100%;
             max-width: 400px;
         }
@@ -118,11 +129,11 @@
         .team-btn {
             background-color: var(--col-1);
             border: 2px solid var(--col-3);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 1.5vh 15px; /* Minskad padding inuti knappen */
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 8px 16px rgba(79, 76, 63, 0.1);
+            box-shadow: 0 4px 10px rgba(79, 76, 63, 0.1);
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
@@ -147,32 +158,30 @@
 
         .team-name {
             display: block;
-            font-size: 1.8rem;
+            font-size: 1.6rem; /* Minskad margin margin */
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 700;
             color: var(--col-5);
-            margin-bottom: 8px;
+            margin-bottom: 4px; /* Minskad margin */
         }
 
         .team-members {
             display: block;
-            font-size: 1.1rem;
+            font-size: clamp(0.85rem, 3vw, 1rem);
             font-family: antiquarian, sans-serif;
             color: var(--col-4);
-            line-height: 1.4;
+            line-height: 1.3;
             font-weight: 500;
         }
         
         /* KOMPASS STYLING */
-        #app-screen {
-            justify-content: flex-start;
-        }
-
         #compass-container {
             position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 40px 0;
+            width: 40vmin; /* Mindre kompass för att spara höjd */
+            height: 40vmin;
+            max-width: 250px; 
+            max-height: 250px;
+            margin: 2vh 0; /* Minskad margin */
             flex-shrink: 0;
             border-radius: 50%;
             background-color: var(--col-1);
@@ -191,62 +200,68 @@
         }
 
         .data-text {
-            font-size: 2.8rem;
+            font-size: clamp(1.8rem, 7vw, 2.4rem);
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 800;
-            margin: 0px 0 15px 0;
+            margin: 0px 0 0.5vh 0; /* Minskad margin */
             color: var(--col-5);
             letter-spacing: -1px;
         }
 
         .label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--col-4);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 700;
+            margin-top: 0.5vh;
         }
 
         #status {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #d9534f;
-            margin-top: 15px;
+            margin-top: 1vh;
             font-weight: 600;
+            height: 1.2em; /* Fast höjd för att förhindra hopp när text visas */
         }
 
         .btn-controls {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 1.5vh; /* Minskad margin */
+            flex-shrink: 0;
         }
 
         .btn-back {
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: var(--col-4);
             color: var(--col-1);
             border: none;
             border-radius: 8px;
             font-weight: bold;
             font-family: antiquarian, sans-serif;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
         }
 
         .btn-secondary {
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: transparent;
             color: var(--col-5);
             border: 2px solid var(--col-4);
             border-radius: 8px;
             font-weight: bold;
             font-family: antiquarian, sans-serif;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
         }
 
     </style>
 </head>
 <body>
+
+<!-- Start på nya wrappern -->
+<div id="app-wrapper">
 
     <!-- 3D BAKGRUND -->
     <div class="map-background">
@@ -329,6 +344,11 @@
     </div>
 
     <script>
+        // --- FÖRHINDRA PINCH-TO-ZOOM PÅ IOS ---
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
         // --- DATASTRUKTUR FÖR LAGENS MÅL (ETAPP 1) ---
         const teamCoordinates = {
             'Lag Röd':  { lat: 56.996242, lng: 15.275598 },
@@ -503,9 +523,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v9) ---
+        // --- PWA Service Worker (v11) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v9';
+            const CACHE_NAME = 'skattjakt-cache-v11';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
@@ -525,5 +545,9 @@
             navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
         }
     </script>
+
+<!-- Slut på wrappern -->
+</div>
+
 </body>
 </html>
