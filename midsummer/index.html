@@ -177,8 +177,8 @@
         /* KOMPASS STYLING */
         #compass-container {
             position: relative;
-            width: 45vmin; /* Mindre kompass för att spara höjd */
-            height: 45vmin;
+            width: 50vmin; /* Mindre kompass för att spara höjd */
+            height: 50vmin;
             max-width: 250px; 
             max-height: 250px;
             margin: 2vh 0; /* Minskad margin */
@@ -525,7 +525,7 @@
 
         // --- PWA Service Worker (v11) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v11';
+            const CACHE_NAME = 'skattjakt-cache-v12';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
