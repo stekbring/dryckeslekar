@@ -177,11 +177,11 @@
         /* KOMPASS STYLING */
         #compass-container {
             position: relative;
-            width: 60vmin; /* Mindre kompass för att spara höjd */
+            width: 60vmin; /* Ökat till 60vmin enligt önskemål */
             height: 60vmin;
             max-width: 250px; 
             max-height: 250px;
-            margin: 2vh 0; /* Minskad margin */
+            margin: 2vh 0; 
             flex-shrink: 0;
             border-radius: 50%;
             background-color: var(--col-1);
@@ -197,7 +197,49 @@
             width: 90%;
             height: 90%;
             will-change: transform;
+            position: absolute;
         }
+        
+        /* Lutningskors (Tilt Crosshairs) - Subtilare design */
+        .crosshair {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            pointer-events: none; /* Klick går igenom */
+            z-index: 2;
+        }
+
+        /* Döljer korsen när telefonen är plan */
+        .is-level .crosshair {
+            opacity: 0 !important;
+        }
+        
+        /* Det fasta korset i mitten */
+        .crosshair-fixed {
+            transition: opacity 0.3s ease;
+        }
+        .crosshair-fixed::before, .crosshair-fixed::after {
+            content: '';
+            position: absolute;
+            background-color: var(--col-4);
+            opacity: 0.4; /* Mer transparent för att vara diskret */
+        }
+        .crosshair-fixed::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
+        .crosshair-fixed::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
+
+        /* Det flytande korset (rör sig med lutningen) */
+        .crosshair-dynamic {
+            transition: transform 0.1s linear, opacity 0.3s ease;
+            will-change: transform;
+        }
+        .crosshair-dynamic::before, .crosshair-dynamic::after {
+            content: '';
+            position: absolute;
+            background-color: var(--col-5);
+            opacity: 0.6; /* Något mörkare än det fasta korset, men fortfarande subtilt */
+        }
+        .crosshair-dynamic::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
+        .crosshair-dynamic::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
 
         .data-text {
             font-size: clamp(1.8rem, 7vw, 2.4rem);
@@ -328,8 +370,10 @@
                 <polygon points="50,12 42,50 50,50" fill="var(--col-4)" />
                 <polygon points="50,88 58,50 50,50" fill="var(--col-3)" />
                 <polygon points="50,88 42,50 50,50" fill="var(--col-2)" />
-                <circle cx="50" cy="50" r="4" fill="var(--col-1)" stroke="var(--col-5)" stroke-width="2"/>
             </svg>
+            <!-- Lutningskors -->
+            <div class="crosshair crosshair-fixed"></div>
+            <div class="crosshair crosshair-dynamic" id="tilt-cross"></div>
         </div>
 
         <div class="label">Riktning</div>
@@ -364,12 +408,19 @@
         const arrowEl = document.getElementById('arrow');
         const headingEl = document.getElementById('heading');
         const statusEl = document.getElementById('status');
+        const tiltCrossEl = document.getElementById('tilt-cross'); // Ny referens
+        const compassContainer = document.getElementById('compass-container');
 
         let currentTargetLat = null;
         let currentTargetLng = null;
         let currentLat = null;
         let currentLng = null;
         let currentHeading = 0;
+        
+        // Tilt variabler
+        let currentBeta = 0;
+        let currentGamma = 0;
+        
         let bearingToTarget = 0;
         let targetVisualRotation = 0;
         let currentVisualRotation = 0;
@@ -416,13 +467,28 @@
             }
             headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
 
-            // Stabilare uträkning för att undvika JS-modulo buggar vid negativa tal
             let rawTarget = bearingToTarget - currentHeading;
             let diff = (rawTarget - targetVisualRotation) % 360;
             if (diff < -180) diff += 360;
             if (diff > 180) diff -= 360;
             
             targetVisualRotation += diff;
+            
+            // Uppdatera lutningskorset
+            // Begränsa förskjutningen så korset inte åker utanför kompassen
+            let maxOffset = 40; 
+            let offsetX = Math.max(-maxOffset, Math.min(maxOffset, currentGamma));
+            let offsetY = Math.max(-maxOffset, Math.min(maxOffset, currentBeta));
+            
+            // Vid porträttläge på iOS: beta är lutning fram/bak (Y), gamma är lutning vänster/höger (X)
+            tiltCrossEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
+            // Tona ut korset om telefonen ligger plant (mindre än 2 graders lutning)
+            if (Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2) {
+                compassContainer.classList.add('is-level');
+            } else {
+                compassContainer.classList.remove('is-level');
+            }
         }
 
         function renderFrame() {
@@ -441,19 +507,25 @@
             } else if (event.alpha !== null) {
                 currentHeading = 360 - event.alpha;
             }
+            
+            // Spara lutningsvärden (fungerar bäst om telefonen ligger hyfsat plant)
+            if (event.beta !== null && event.gamma !== null) {
+                currentBeta = event.beta;
+                currentGamma = event.gamma;
+            }
+            
             updateLogic();
         }
 
         function resetCompass() {
             window.removeEventListener('deviceorientation', handleOrientation);
             
-            // Nollställ visualiseringen snabbt
             currentHeading = 0;
             targetVisualRotation = 0;
             currentVisualRotation = 0;
             arrowEl.style.transform = `rotate(0deg)`;
+            tiltCrossEl.style.transform = `translate(0px, 0px)`;
             
-            // Lägg tillbaka lyssnaren med fördröjning
             setTimeout(() => {
                 window.addEventListener('deviceorientation', handleOrientation);
             }, 100);
@@ -523,9 +595,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v11) ---
+        // --- PWA Service Worker (v14) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v13';
+            const CACHE_NAME = 'skattjakt-cache-v14';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
