@@ -26,8 +26,8 @@
             background-color: var(--col-1);
             color: var(--col-5);
             font-family: antiquarian, sans-serif;
-            font-variant-numeric: lining-nums; /* Tvingar fram fullstora siffror om typsnittet stödjer det */
-            overflow: hidden; /* Förhindrar scroll på bakgrunden */
+            font-variant-numeric: lining-nums;
+            overflow: hidden;
             height: 100vh;
             width: 100vw;
             position: relative;
@@ -43,7 +43,6 @@
             z-index: 0;
             opacity: 0.35;
             pointer-events: none;
-            /* Skapar 3D-vinkeln från sidan */
             transform: perspective(1000px) rotateX(55deg) rotateZ(-20deg);
             transform-origin: center center;
         }
@@ -78,7 +77,7 @@
             text-align: center;
             margin-top: 2vh;
             margin-bottom: 4vh;
-            background: rgba(237, 229, 190, 0.7); /* Lätt transparens för läsbarhet */
+            background: rgba(237, 229, 190, 0.7);
             padding: 15px 30px;
             border-radius: 20px;
             backdrop-filter: blur(5px);
@@ -95,7 +94,6 @@
             text-transform: uppercase;
         }
 
-        /* Manuell storleksökning för siffror */
         .num {
             font-size: 1.2em;
         }
@@ -122,16 +120,15 @@
             border: 2px solid var(--col-3);
             border-radius: 16px;
             padding: 20px;
-            text-align: center; /* Centrerad text */
+            text-align: center;
             cursor: pointer;
             box-shadow: 0 8px 16px rgba(79, 76, 63, 0.1);
             transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            font-family: antiquarian, sans-serif; /* Tvingar ärvning till knappen */
+            font-family: antiquarian, sans-serif;
         }
 
-        /* Liten dekorativ detalj på knappen */
         .team-btn::before {
             content: '';
             position: absolute;
@@ -150,7 +147,7 @@
 
         .team-name {
             display: block;
-            font-size: 1.8rem; /* Ökad storlek */
+            font-size: 1.8rem;
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 700;
             color: var(--col-5);
@@ -159,8 +156,8 @@
 
         .team-members {
             display: block;
-            font-size: 1.1rem; /* Ökad storlek */
-            font-family: antiquarian, sans-serif; /* Explicit typsnitt */
+            font-size: 1.1rem;
+            font-family: antiquarian, sans-serif;
             color: var(--col-4);
             line-height: 1.4;
             font-weight: 500;
@@ -176,7 +173,7 @@
             width: 280px;
             height: 280px;
             margin: 40px 0;
-            flex-shrink: 0; /* Tvingar behållaren att inte klämmas ihop vertikalt */
+            flex-shrink: 0;
             border-radius: 50%;
             background-color: var(--col-1);
             box-shadow: 
@@ -190,6 +187,7 @@
         #arrow {
             width: 90%;
             height: 90%;
+            will-change: transform;
         }
 
         .data-text {
@@ -216,8 +214,13 @@
             font-weight: 600;
         }
 
-        .btn-back {
+        .btn-controls {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
+        }
+
+        .btn-back {
             padding: 10px 20px;
             background: var(--col-4);
             color: var(--col-1);
@@ -229,18 +232,29 @@
             cursor: pointer;
         }
 
+        .btn-secondary {
+            padding: 10px 20px;
+            background: transparent;
+            color: var(--col-5);
+            border: 2px solid var(--col-4);
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: antiquarian, sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- 3D BAKGRUND (Topografiska linjer) -->
+    <!-- 3D BAKGRUND -->
     <div class="map-background">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
             <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
                 <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--col-2)" stroke-width="1"/>
             </pattern>
             <rect width="100%" height="100%" fill="url(#grid)" />
-            
             <g fill="none" stroke="var(--col-4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M-100,200 C150,150 250,300 500,250 C700,210 800,400 1100,350" />
                 <path d="M-100,300 C200,250 300,400 550,350 C750,310 850,500 1100,450" />
@@ -266,17 +280,14 @@
                 <span class="team-name">Lag Röd</span>
                 <span class="team-members">Anna, Björn, Cecilia, David</span>
             </button>
-
             <button class="team-btn" onclick="selectTeam('Lag Blå')">
                 <span class="team-name">Lag Blå</span>
                 <span class="team-members">Erik, Frida, Gustav, Hanna</span>
             </button>
-
             <button class="team-btn" onclick="selectTeam('Lag Grön')">
                 <span class="team-name">Lag Grön</span>
                 <span class="team-members">Ida, Johan, Karin, Lars</span>
             </button>
-
             <button class="team-btn" onclick="selectTeam('Lag Gul')">
                 <span class="team-name">Lag Gul</span>
                 <span class="team-members">Maria, Niklas, Olof, Petra</span>
@@ -310,21 +321,22 @@
         <div id="heading" class="data-text">--°</div>
         
         <div id="status"></div>
-        <button class="btn-back" onclick="goBack()">Avbryt</button>
+        
+        <div class="btn-controls">
+            <button class="btn-back" onclick="goBack()">Avbryt</button>
+            <button class="btn-secondary" onclick="resetCompass()">Återställ kompass</button>
+        </div>
     </div>
 
     <script>
         // --- DATASTRUKTUR FÖR LAGENS MÅL (ETAPP 1) ---
-        // Byt ut dessa koordinater för att testa på din plats
         const teamCoordinates = {
             'Lag Röd':  { lat: 56.996242, lng: 15.275598 }, // Exempel: Stockholm
-            'Lag Blå':  { lat: 59.3300, lng: 18.0700 }, // Exempel: Något annat
-            'Lag Grön': { lat: 59.3280, lng: 18.0650 }, 
-            'Lag Gul':  { lat: 59.3310, lng: 18.0670 }
-
+            'Lag Blå':  { lat: 57.179031, lng: 15.335587 }, // Exempel: Något annat
+            'Lag Grön': { lat: 57.177323, lng: 15.334038 }, 
+            'Lag Gul':  { lat: 56.995893, lng: 15.275916 }  
         };
 
-        // --- DOM Element ---
         const startScreen = document.getElementById('start-screen');
         const appScreen = document.getElementById('app-screen');
         const activeTeamDisplay = document.getElementById('active-team-display');
@@ -333,15 +345,12 @@
         const headingEl = document.getElementById('heading');
         const statusEl = document.getElementById('status');
 
-        // --- SENSOR VARIABLER ---
         let currentTargetLat = null;
         let currentTargetLng = null;
-        
         let currentLat = null;
         let currentLng = null;
         let currentHeading = 0;
         let bearingToTarget = 0;
-        
         let targetVisualRotation = 0;
         let currentVisualRotation = 0;
         
@@ -349,7 +358,6 @@
         let isTracking = false;
         let animationFrameId = null;
 
-        // --- MATEMATIK ---
         function toRad(deg) { return deg * Math.PI / 180; }
         function toDeg(rad) { return rad * 180 / Math.PI; }
 
@@ -373,7 +381,6 @@
             return (brng + 360) % 360;
         }
 
-        // --- UPPDATERA LOGIK ---
         function updateLogic() {
             if (currentLat === null || currentLng === null || currentTargetLat === null) return;
 
@@ -389,13 +396,15 @@
             }
             headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
 
+            // Stabilare uträkning för att undvika JS-modulo buggar vid negativa tal
             let rawTarget = bearingToTarget - currentHeading;
-            let diff = rawTarget - targetVisualRotation;
-            diff = ((diff + 540) % 360) - 180;
+            let diff = (rawTarget - targetVisualRotation) % 360;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+            
             targetVisualRotation += diff;
         }
 
-        // --- RENDER LOOP ---
         function renderFrame() {
             const smoothingFactor = 0.2; 
             currentVisualRotation += (targetVisualRotation - currentVisualRotation) * smoothingFactor;
@@ -406,7 +415,6 @@
             }
         }
 
-        // --- SENSOR HANDLER ---
         function handleOrientation(event) {
             if (event.webkitCompassHeading) {
                 currentHeading = event.webkitCompassHeading;
@@ -416,16 +424,27 @@
             updateLogic();
         }
 
-        // --- STARTA LAG & SENSORER ---
+        function resetCompass() {
+            window.removeEventListener('deviceorientation', handleOrientation);
+            
+            // Nollställ visualiseringen snabbt
+            currentHeading = 0;
+            targetVisualRotation = 0;
+            currentVisualRotation = 0;
+            arrowEl.style.transform = `rotate(0deg)`;
+            
+            // Lägg tillbaka lyssnaren med fördröjning
+            setTimeout(() => {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }, 100);
+        }
+
         async function selectTeam(teamName) {
             statusEl.innerText = "";
-            
-            // 1. Sätt målet för laget
             currentTargetLat = teamCoordinates[teamName].lat;
             currentTargetLng = teamCoordinates[teamName].lng;
             activeTeamDisplay.innerText = teamName;
             
-            // 2. Fråga om kompass-behörighet (Måste anropas av click-event)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
                     const permission = await DeviceOrientationEvent.requestPermission();
@@ -439,11 +458,9 @@
                 }
             }
 
-            // Byt vy
             startScreen.classList.remove('active');
             appScreen.classList.add('active');
 
-            // 3. Starta spårning
             isTracking = true;
             animationFrameId = requestAnimationFrame(renderFrame);
 
@@ -468,9 +485,7 @@
             window.addEventListener('deviceorientation', handleOrientation);
         }
 
-        // --- AVSLUTA/GÅ TILLBAKA ---
         function goBack() {
-            // Stoppa sensorer
             isTracking = false;
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener('deviceorientation', handleOrientation);
@@ -479,7 +494,6 @@
                 watchId = null;
             }
             
-            // Återställ vy
             distanceEl.innerText = "-- m";
             headingEl.innerText = "--°";
             currentLat = null;
@@ -489,9 +503,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker ---
+        // --- PWA Service Worker (v9) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v8';
+            const CACHE_NAME = 'skattjakt-cache-v9';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
