@@ -141,7 +141,7 @@
         }
 
         #title-w {
-            font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+            font-size: clamp(1.6rem, 5.5vw, 2.2rem);
             line-height: 1.2;
             opacity: 1;
             transform: translateY(0);
@@ -401,7 +401,7 @@
         <!-- Välkomstknapp (öppen från start) -->
         <div class="anim-height open" id="welcome-btn-wrapper">
             <div class="inner">
-                <button class="team-btn" onclick="beginHunt()" style="margin-top: 3vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.6rem); padding: 2vh 40px; border-width: 3px;">
+                <button class="team-btn" onclick="beginHunt()" style="margin-top: 3vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.8rem, 6vw, 2.2rem); padding: 1.5vh 30px; border-width: 3px;">
                     Börja leta
                 </button>
             </div>
@@ -413,20 +413,23 @@
                 <div class="team-grid">
                     <button class="team-btn" onclick="selectTeam('Lag Röd')">
                         <span class="team-name">Lag Röd</span>
-                        <span class="team-members">Anna, Björn, Cecilia, David</span>
+                        <span class="team-members">Lukas, Adam, Mira/Malou, Emma</span>
                     </button>
                     <button class="team-btn" onclick="selectTeam('Lag Blå')">
                         <span class="team-name">Lag Blå</span>
-                        <span class="team-members">Erik, Frida, Gustav, Hanna</span>
+                        <span class="team-members">Olle, Malte, Wanja, Signe</span>
                     </button>
                     <button class="team-btn" onclick="selectTeam('Lag Grön')">
                         <span class="team-name">Lag Grön</span>
-                        <span class="team-members">Ida, Johan, Karin, Lars</span>
+                        <span class="team-members">Thelma, Nathalie, Malou/Mira</span>
                     </button>
+                    
+                    <!-- FÖR ATT ANVÄNDA 4 LAG: Ta bort kommenteringstaggarna nedan 
                     <button class="team-btn" onclick="selectTeam('Lag Gul')">
                         <span class="team-name">Lag Gul</span>
-                        <span class="team-members">Maria, Niklas, Olof, Petra</span>
+                        <span class="team-members">Lars, Maria, Niklas</span>
                     </button>
+                    -->
                 </div>
             </div>
         </div>
@@ -473,6 +476,38 @@
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
+
+        // --- LOCAL STORAGE: SPARA LAGVAL ---
+        function checkSavedTeam() {
+            const savedTeam = localStorage.getItem('midsommarTeam');
+            if (savedTeam) {
+                // Ta bort välkomstvyn och dölj grid
+                document.getElementById('start-screen').classList.remove('view-welcome');
+                document.getElementById('subtitle-wrapper').style.display = 'none';
+                document.getElementById('team-grid-wrapper').style.display = 'none';
+                
+                // Bygg om startknappen till en fortsätt-knapp
+                const welcomeBtnWrapper = document.getElementById('welcome-btn-wrapper');
+                welcomeBtnWrapper.classList.add('open');
+                welcomeBtnWrapper.innerHTML = `
+                    <div class="inner">
+                        <div class="subtitle" style="margin-bottom: 1vh; margin-top: 2vh;">Ditt lag: ${savedTeam}</div>
+                        <button class="team-btn" onclick="selectTeam('${savedTeam}')" style="margin-top: 1vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.8rem); padding: 1.5vh 30px; border-width: 3px;">
+                            Återuppta jakten
+                        </button>
+                        <button class="btn-secondary" onclick="devResetTeam()" style="margin-top: 4vh; border: none; opacity: 0.5; font-size: 0.8rem;">Dev: Byt lag</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function devResetTeam() {
+            localStorage.removeItem('midsommarTeam');
+            location.reload();
+        }
+
+        // Kör direkt vid start
+        checkSavedTeam();
 
         // --- UI ANIMATION: BÖRJA LETA ---
         function beginHunt() {
@@ -616,6 +651,10 @@
         }
 
         async function selectTeam(teamName) {
+            // Spara lagvalet och uppdatera startskärmen i bakgrunden
+            localStorage.setItem('midsommarTeam', teamName);
+            checkSavedTeam();
+
             statusEl.innerText = "";
             currentTargetLat = teamCoordinates[teamName].lat;
             currentTargetLng = teamCoordinates[teamName].lng;
@@ -679,9 +718,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v16) ---
+        // --- PWA Service Worker (v19) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v16';
+            const CACHE_NAME = 'skattjakt-cache-v19';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
