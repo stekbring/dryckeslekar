@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Midsommarjakten 2026</title>
+    <link rel="icon" href="midsummer.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://use.typekit.net/gql3yae.css">
     <style>
         :root {
@@ -75,7 +76,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center; 
-            padding: 2vh 15px; /* Minskad padding */
+            padding: 2vh 15px;
             overflow: hidden;
         }
 
@@ -83,26 +84,83 @@
             display: flex;
         }
 
+        /* ANIMERADE HÖJD-BEHÅLLARE (För glid-effekten) */
+        .anim-height {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 100%;
+            justify-items: center;
+        }
+        .anim-height.open {
+            grid-template-rows: 1fr;
+        }
+        .anim-height > .inner {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
         /* TYPOGRAFI OCH UI - STARTSKÄRM */
         .header-container {
             text-align: center;
-            margin-bottom: 1.5vh; /* Minskad margin */
+            margin-bottom: 1.5vh; 
             background: rgba(237, 229, 190, 0.7);
-            padding: 1.5vh 20px; /* Minskad padding */
+            padding: 1.5vh 20px; 
             border-radius: 16px;
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             flex-shrink: 0;
+            transition: all 0.8s ease; /* Jämn övergång när innehållet ändras */
         }
 
         h1 {
-            font-size: clamp(1.6rem, 5vw, 2rem); /* Något mindre max-storlek */
+            font-size: clamp(1.6rem, 5vw, 2rem); 
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 700;
             color: var(--col-5);
             letter-spacing: -1px;
-            margin-bottom: 2px; /* Minskad margin */
+            margin-bottom: 2px; 
             text-transform: uppercase;
+        }
+
+        /* Crossfade-rubrikerna */
+        .title-crossfade {
+            display: grid;
+            grid-template-areas: "title";
+            justify-items: center;
+            align-items: center;
+        }
+        
+        .title-crossfade span {
+            grid-area: title;
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            text-align: center;
+        }
+
+        #title-w {
+            font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+            line-height: 1.2;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #title-s {
+            font-size: inherit;
+            opacity: 0;
+            transform: translateY(15px); /* Startar lite längre ner */
+        }
+
+        /* När .view-welcome tas bort (efter knapptryck) */
+        #start-screen:not(.view-welcome) #title-w {
+            opacity: 0;
+            transform: translateY(-15px); /* Glider upp och försvinner */
+        }
+        #start-screen:not(.view-welcome) #title-s {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .num {
@@ -115,22 +173,24 @@
             font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
+            margin-top: 1vh;
         }
 
         /* LAG-KNAPPAR */
         .team-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1vh; /* Minskat avstånd mellan knapparna */
+            gap: 1vh; 
             width: 100%;
             max-width: 400px;
+            padding-top: 1.5vh;
         }
 
         .team-btn {
             background-color: var(--col-1);
             border: 2px solid var(--col-3);
             border-radius: 14px;
-            padding: 1.5vh 15px; /* Minskad padding inuti knappen */
+            padding: 1.5vh 15px; 
             text-align: center;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(79, 76, 63, 0.1);
@@ -158,11 +218,11 @@
 
         .team-name {
             display: block;
-            font-size: 1.6rem; /* Minskad margin margin */
+            font-size: 1.6rem; 
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 700;
             color: var(--col-5);
-            margin-bottom: 4px; /* Minskad margin */
+            margin-bottom: 4px; 
         }
 
         .team-members {
@@ -177,7 +237,7 @@
         /* KOMPASS STYLING */
         #compass-container {
             position: relative;
-            width: 60vmin; /* Ökat till 60vmin enligt önskemål */
+            width: 60vmin; 
             height: 60vmin;
             max-width: 250px; 
             max-height: 250px;
@@ -200,21 +260,19 @@
             position: absolute;
         }
         
-        /* Lutningskors (Tilt Crosshairs) - Subtilare design */
+        /* Lutningskors (Tilt Crosshairs) */
         .crosshair {
             position: absolute;
             width: 16px;
             height: 16px;
-            pointer-events: none; /* Klick går igenom */
+            pointer-events: none; 
             z-index: 2;
         }
 
-        /* Döljer korsen när telefonen är plan */
         .is-level .crosshair {
             opacity: 0 !important;
         }
         
-        /* Det fasta korset i mitten */
         .crosshair-fixed {
             transition: opacity 0.3s ease;
         }
@@ -222,12 +280,11 @@
             content: '';
             position: absolute;
             background-color: var(--col-4);
-            opacity: 0.4; /* Mer transparent för att vara diskret */
+            opacity: 0.4; 
         }
         .crosshair-fixed::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
         .crosshair-fixed::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
 
-        /* Det flytande korset (rör sig med lutningen) */
         .crosshair-dynamic {
             transition: transform 0.1s linear, opacity 0.3s ease;
             will-change: transform;
@@ -236,7 +293,7 @@
             content: '';
             position: absolute;
             background-color: var(--col-5);
-            opacity: 0.6; /* Något mörkare än det fasta korset, men fortfarande subtilt */
+            opacity: 0.6; 
         }
         .crosshair-dynamic::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
         .crosshair-dynamic::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
@@ -245,7 +302,7 @@
             font-size: clamp(1.8rem, 7vw, 2.4rem);
             font-family: antiquarian-scribe, sans-serif;
             font-weight: 800;
-            margin: 0px 0 0.5vh 0; /* Minskad margin */
+            margin: 0px 0 0.5vh 0; 
             color: var(--col-5);
             letter-spacing: -1px;
         }
@@ -264,13 +321,13 @@
             color: #d9534f;
             margin-top: 1vh;
             font-weight: 600;
-            height: 1.2em; /* Fast höjd för att förhindra hopp när text visas */
+            height: 1.2em; 
         }
 
         .btn-controls {
             display: flex;
             gap: 10px;
-            margin-top: 1.5vh; /* Minskad margin */
+            margin-top: 1.5vh; 
             flex-shrink: 0;
         }
 
@@ -302,7 +359,6 @@
 </head>
 <body>
 
-<!-- Start på nya wrappern -->
 <div id="app-wrapper">
 
     <!-- 3D BAKGRUND -->
@@ -325,31 +381,56 @@
         </svg>
     </div>
 
-    <!-- STARTSKÄRM -->
-    <div id="start-screen" class="screen active">
+    <!-- STARTSKÄRM (Nu med view-welcome klassen för animation) -->
+    <div id="start-screen" class="screen active view-welcome">
+        
         <div class="header-container">
-            <h1>Midsommarjakten <span class="num">2026</span></h1>
-            <div class="subtitle">Välj ditt lag</div>
+            <h1 class="title-crossfade">
+                <span id="title-w">Välkommen till den årliga<br>midsommarjakten</span>
+                <span id="title-s">Midsommarjakten <span class="num">2026</span></span>
+            </h1>
+            
+            <!-- Underrubriken är dold inuti anim-height från början -->
+            <div class="anim-height" id="subtitle-wrapper">
+                <div class="inner">
+                    <div class="subtitle">Välj ditt lag</div>
+                </div>
+            </div>
         </div>
 
-        <div class="team-grid">
-            <button class="team-btn" onclick="selectTeam('Lag Röd')">
-                <span class="team-name">Lag Röd</span>
-                <span class="team-members">Anna, Björn, Cecilia, David</span>
-            </button>
-            <button class="team-btn" onclick="selectTeam('Lag Blå')">
-                <span class="team-name">Lag Blå</span>
-                <span class="team-members">Erik, Frida, Gustav, Hanna</span>
-            </button>
-            <button class="team-btn" onclick="selectTeam('Lag Grön')">
-                <span class="team-name">Lag Grön</span>
-                <span class="team-members">Ida, Johan, Karin, Lars</span>
-            </button>
-            <button class="team-btn" onclick="selectTeam('Lag Gul')">
-                <span class="team-name">Lag Gul</span>
-                <span class="team-members">Maria, Niklas, Olof, Petra</span>
-            </button>
+        <!-- Välkomstknapp (öppen från start) -->
+        <div class="anim-height open" id="welcome-btn-wrapper">
+            <div class="inner">
+                <button class="team-btn" onclick="beginHunt()" style="margin-top: 3vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.6rem); padding: 2vh 40px; border-width: 3px;">
+                    Börja leta
+                </button>
+            </div>
         </div>
+
+        <!-- Lag-grid (dold från start) -->
+        <div class="anim-height" id="team-grid-wrapper">
+            <div class="inner">
+                <div class="team-grid">
+                    <button class="team-btn" onclick="selectTeam('Lag Röd')">
+                        <span class="team-name">Lag Röd</span>
+                        <span class="team-members">Anna, Björn, Cecilia, David</span>
+                    </button>
+                    <button class="team-btn" onclick="selectTeam('Lag Blå')">
+                        <span class="team-name">Lag Blå</span>
+                        <span class="team-members">Erik, Frida, Gustav, Hanna</span>
+                    </button>
+                    <button class="team-btn" onclick="selectTeam('Lag Grön')">
+                        <span class="team-name">Lag Grön</span>
+                        <span class="team-members">Ida, Johan, Karin, Lars</span>
+                    </button>
+                    <button class="team-btn" onclick="selectTeam('Lag Gul')">
+                        <span class="team-name">Lag Gul</span>
+                        <span class="team-members">Maria, Niklas, Olof, Petra</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- SPELSKÄRM (Kompass) -->
@@ -393,12 +474,20 @@
             e.preventDefault();
         });
 
+        // --- UI ANIMATION: BÖRJA LETA ---
+        function beginHunt() {
+            document.getElementById('start-screen').classList.remove('view-welcome');
+            document.getElementById('welcome-btn-wrapper').classList.remove('open');
+            document.getElementById('subtitle-wrapper').classList.add('open');
+            document.getElementById('team-grid-wrapper').classList.add('open');
+        }
+
         // --- DATASTRUKTUR FÖR LAGENS MÅL (ETAPP 1) ---
         const teamCoordinates = {
-            'Lag Röd':  { lat: 56.996242, lng: 15.275598 },
-            'Lag Blå':  { lat: 57.179031, lng: 15.335587 }, 
-            'Lag Grön': { lat: 57.177323, lng: 15.334038 }, 
-            'Lag Gul':  { lat: 56.995893, lng: 15.275916 }  
+            'Lag Röd':  { lat: 59.3293, lng: 18.0686 },
+            'Lag Blå':  { lat: 59.3300, lng: 18.0700 },
+            'Lag Grön': { lat: 59.3280, lng: 18.0650 }, 
+            'Lag Gul':  { lat: 59.3310, lng: 18.0670 }  
         };
 
         const startScreen = document.getElementById('start-screen');
@@ -408,7 +497,7 @@
         const arrowEl = document.getElementById('arrow');
         const headingEl = document.getElementById('heading');
         const statusEl = document.getElementById('status');
-        const tiltCrossEl = document.getElementById('tilt-cross'); // Ny referens
+        const tiltCrossEl = document.getElementById('tilt-cross');
         const compassContainer = document.getElementById('compass-container');
 
         let currentTargetLat = null;
@@ -474,16 +563,12 @@
             
             targetVisualRotation += diff;
             
-            // Uppdatera lutningskorset
-            // Begränsa förskjutningen så korset inte åker utanför kompassen
             let maxOffset = 40; 
             let offsetX = Math.max(-maxOffset, Math.min(maxOffset, currentGamma));
             let offsetY = Math.max(-maxOffset, Math.min(maxOffset, currentBeta));
             
-            // Vid porträttläge på iOS: beta är lutning fram/bak (Y), gamma är lutning vänster/höger (X)
             tiltCrossEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
 
-            // Tona ut korset om telefonen ligger plant (mindre än 2 graders lutning)
             if (Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2) {
                 compassContainer.classList.add('is-level');
             } else {
@@ -508,7 +593,6 @@
                 currentHeading = 360 - event.alpha;
             }
             
-            // Spara lutningsvärden (fungerar bäst om telefonen ligger hyfsat plant)
             if (event.beta !== null && event.gamma !== null) {
                 currentBeta = event.beta;
                 currentGamma = event.gamma;
@@ -595,9 +679,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v14) ---
+        // --- PWA Service Worker (v16) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v14';
+            const CACHE_NAME = 'skattjakt-cache-v16';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
@@ -618,7 +702,6 @@
         }
     </script>
 
-<!-- Slut på wrappern -->
 </div>
 
 </body>
