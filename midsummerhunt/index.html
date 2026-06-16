@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Midsommarjakten 2026</title>
+    <link rel="stylesheet" href="https://use.typekit.net/gql3yae.css">
+    <style>
+        :root {
+            /* Färgpalett */
+            --col-1: #EDE5BE; /* Bakgrund */
+            --col-2: #C9C3A1;
+            --col-3: #A19B81;
+            --col-4: #787460;
+            --col-5: #4F4C3F; /* Text och accenter */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            background-color: var(--col-1);
+            color: var(--col-5);
+            font-family: antiquarian, sans-serif;
+            font-variant-numeric: lining-nums;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: pan-x pan-y; /* Tillåter scroll men blockerar pinch-zoom */
+        }
+
+        /* Ny wrapper som tvingar Safari att hålla sig inom skärmens gränser */
+        #app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 3D KARTBAKGRUND */
+        .map-background {
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
+            z-index: 0;
+            opacity: 0.35;
+            pointer-events: none;
+            transform: perspective(1000px) rotateX(55deg) rotateZ(-20deg);
+            transform-origin: center center;
+        }
+
+        .map-background svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* SKÄRM-HANTERING (SPA) */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            padding: 2vh 15px; /* Minskad padding */
+            overflow: hidden;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* TYPOGRAFI OCH UI - STARTSKÄRM */
+        .header-container {
+            text-align: center;
+            margin-bottom: 1.5vh; /* Minskad margin */
+            background: rgba(237, 229, 190, 0.7);
+            padding: 1.5vh 20px; /* Minskad padding */
+            border-radius: 16px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: clamp(1.6rem, 5vw, 2rem); /* Något mindre max-storlek */
+            font-family: antiquarian-scribe, sans-serif;
+            font-weight: 700;
+            color: var(--col-5);
+            letter-spacing: -1px;
+            margin-bottom: 2px; /* Minskad margin */
+            text-transform: uppercase;
+        }
+
+        .num {
+            font-size: 1.2em;
+        }
+
+        .subtitle {
+            font-size: clamp(0.85rem, 3vw, 1rem);
+            color: var(--col-4);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* LAG-KNAPPAR */
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1vh; /* Minskat avstånd mellan knapparna */
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .team-btn {
+            background-color: var(--col-1);
+            border: 2px solid var(--col-3);
+            border-radius: 14px;
+            padding: 1.5vh 15px; /* Minskad padding inuti knappen */
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(79, 76, 63, 0.1);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            font-family: antiquarian, sans-serif;
+        }
+
+        .team-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: var(--col-5);
+        }
+
+        .team-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 8px rgba(79, 76, 63, 0.1);
+            background-color: var(--col-2);
+        }
+
+        .team-name {
+            display: block;
+            font-size: 1.6rem; /* Minskad margin margin */
+            font-family: antiquarian-scribe, sans-serif;
+            font-weight: 700;
+            color: var(--col-5);
+            margin-bottom: 4px; /* Minskad margin */
+        }
+
+        .team-members {
+            display: block;
+            font-size: clamp(0.85rem, 3vw, 1rem);
+            font-family: antiquarian, sans-serif;
+            color: var(--col-4);
+            line-height: 1.3;
+            font-weight: 500;
+        }
+        
+        /* KOMPASS STYLING */
+        #compass-container {
+            position: relative;
+            width: 60vmin; /* Ökat till 60vmin enligt önskemål */
+            height: 60vmin;
+            max-width: 250px; 
+            max-height: 250px;
+            margin: 2vh 0; 
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--col-1);
+            box-shadow: 
+                8px 8px 16px rgba(120, 116, 96, 0.2), 
+                -8px -8px 16px rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #arrow {
+            width: 90%;
+            height: 90%;
+            will-change: transform;
+            position: absolute;
+        }
+        
+        /* Lutningskors (Tilt Crosshairs) - Subtilare design */
+        .crosshair {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            pointer-events: none; /* Klick går igenom */
+            z-index: 2;
+        }
+
+        /* Döljer korsen när telefonen är plan */
+        .is-level .crosshair {
+            opacity: 0 !important;
+        }
+        
+        /* Det fasta korset i mitten */
+        .crosshair-fixed {
+            transition: opacity 0.3s ease;
+        }
+        .crosshair-fixed::before, .crosshair-fixed::after {
+            content: '';
+            position: absolute;
+            background-color: var(--col-4);
+            opacity: 0.4; /* Mer transparent för att vara diskret */
+        }
+        .crosshair-fixed::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
+        .crosshair-fixed::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
+
+        /* Det flytande korset (rör sig med lutningen) */
+        .crosshair-dynamic {
+            transition: transform 0.1s linear, opacity 0.3s ease;
+            will-change: transform;
+        }
+        .crosshair-dynamic::before, .crosshair-dynamic::after {
+            content: '';
+            position: absolute;
+            background-color: var(--col-5);
+            opacity: 0.6; /* Något mörkare än det fasta korset, men fortfarande subtilt */
+        }
+        .crosshair-dynamic::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
+        .crosshair-dynamic::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
+
+        .data-text {
+            font-size: clamp(1.8rem, 7vw, 2.4rem);
+            font-family: antiquarian-scribe, sans-serif;
+            font-weight: 800;
+            margin: 0px 0 0.5vh 0; /* Minskad margin */
+            color: var(--col-5);
+            letter-spacing: -1px;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            color: var(--col-4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-top: 0.5vh;
+        }
+
+        #status {
+            font-size: 0.8rem;
+            color: #d9534f;
+            margin-top: 1vh;
+            font-weight: 600;
+            height: 1.2em; /* Fast höjd för att förhindra hopp när text visas */
+        }
+
+        .btn-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5vh; /* Minskad margin */
+            flex-shrink: 0;
+        }
+
+        .btn-back {
+            padding: 8px 16px;
+            background: var(--col-4);
+            color: var(--col-1);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: antiquarian, sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--col-5);
+            border: 2px solid var(--col-4);
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: antiquarian, sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Start på nya wrappern -->
+<div id="app-wrapper">
+
+    <!-- 3D BAKGRUND -->
+    <div class="map-background">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+            <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--col-2)" stroke-width="1"/>
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            <g fill="none" stroke="var(--col-4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M-100,200 C150,150 250,300 500,250 C700,210 800,400 1100,350" />
+                <path d="M-100,300 C200,250 300,400 550,350 C750,310 850,500 1100,450" />
+                <path d="M100,100 C300,50 400,200 650,150 C850,110 950,300 1200,250" opacity="0.5"/>
+                <path d="M-50,600 C200,500 400,700 700,550 C900,450 950,700 1100,600" />
+                <path d="M-50,700 C250,600 450,800 750,650 C950,550 1000,800 1100,700" />
+                <path d="M700,800 C650,820 620,870 650,920 C680,970 750,950 780,900 C810,850 750,780 700,800 Z" />
+                <path d="M710,830 C680,840 660,870 680,900 C700,930 740,920 750,890 C760,860 740,820 710,830 Z" opacity="0.6"/>
+                <path d="M705,860 L725,880 M725,860 L705,880" stroke="var(--col-5)" stroke-width="4" />
+            </g>
+        </svg>
+    </div>
+
+    <!-- STARTSKÄRM -->
+    <div id="start-screen" class="screen active">
+        <div class="header-container">
+            <h1>Midsommarjakten <span class="num">2026</span></h1>
+            <div class="subtitle">Välj ditt lag</div>
+        </div>
+
+        <div class="team-grid">
+            <button class="team-btn" onclick="selectTeam('Lag Röd')">
+                <span class="team-name">Lag Röd</span>
+                <span class="team-members">Anna, Björn, Cecilia, David</span>
+            </button>
+            <button class="team-btn" onclick="selectTeam('Lag Blå')">
+                <span class="team-name">Lag Blå</span>
+                <span class="team-members">Erik, Frida, Gustav, Hanna</span>
+            </button>
+            <button class="team-btn" onclick="selectTeam('Lag Grön')">
+                <span class="team-name">Lag Grön</span>
+                <span class="team-members">Ida, Johan, Karin, Lars</span>
+            </button>
+            <button class="team-btn" onclick="selectTeam('Lag Gul')">
+                <span class="team-name">Lag Gul</span>
+                <span class="team-members">Maria, Niklas, Olof, Petra</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SPELSKÄRM (Kompass) -->
+    <div id="app-screen" class="screen">
+        <div class="header-container">
+            <h1 id="active-team-display">Inget lag valt</h1>
+            <div class="subtitle">Etapp <span class="num">1</span></div>
+        </div>
+
+        <div class="label">Avstånd till mål</div>
+        <div id="distance" class="data-text">-- m</div>
+        
+        <div id="compass-container">
+            <svg id="arrow" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="var(--col-2)" stroke-width="2"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--col-3)" stroke-width="1" stroke-dasharray="4 4"/>
+                <polygon points="50,12 58,50 50,50" fill="var(--col-5)" />
+                <polygon points="50,12 42,50 50,50" fill="var(--col-4)" />
+                <polygon points="50,88 58,50 50,50" fill="var(--col-3)" />
+                <polygon points="50,88 42,50 50,50" fill="var(--col-2)" />
+            </svg>
+            <!-- Lutningskors -->
+            <div class="crosshair crosshair-fixed"></div>
+            <div class="crosshair crosshair-dynamic" id="tilt-cross"></div>
+        </div>
+
+        <div class="label">Riktning</div>
+        <div id="heading" class="data-text">--°</div>
+        
+        <div id="status"></div>
+        
+        <div class="btn-controls">
+            <button class="btn-back" onclick="goBack()">Avbryt</button>
+            <button class="btn-secondary" onclick="resetCompass()">Återställ kompass</button>
+        </div>
+    </div>
+
+    <script>
+        // --- FÖRHINDRA PINCH-TO-ZOOM PÅ IOS ---
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // --- DATASTRUKTUR FÖR LAGENS MÅL (ETAPP 1) ---
+        const teamCoordinates = {
+            'Lag Röd':  { lat: 56.996242, lng: 15.275598 },
+            'Lag Blå':  { lat: 57.179031, lng: 15.335587 }, 
+            'Lag Grön': { lat: 57.177323, lng: 15.334038 }, 
+            'Lag Gul':  { lat: 56.995893, lng: 15.275916 }  
+        };
+
+        const startScreen = document.getElementById('start-screen');
+        const appScreen = document.getElementById('app-screen');
+        const activeTeamDisplay = document.getElementById('active-team-display');
+        const distanceEl = document.getElementById('distance');
+        const arrowEl = document.getElementById('arrow');
+        const headingEl = document.getElementById('heading');
+        const statusEl = document.getElementById('status');
+        const tiltCrossEl = document.getElementById('tilt-cross'); // Ny referens
+        const compassContainer = document.getElementById('compass-container');
+
+        let currentTargetLat = null;
+        let currentTargetLng = null;
+        let currentLat = null;
+        let currentLng = null;
+        let currentHeading = 0;
+        
+        // Tilt variabler
+        let currentBeta = 0;
+        let currentGamma = 0;
+        
+        let bearingToTarget = 0;
+        let targetVisualRotation = 0;
+        let currentVisualRotation = 0;
+        
+        let watchId = null;
+        let isTracking = false;
+        let animationFrameId = null;
+
+        function toRad(deg) { return deg * Math.PI / 180; }
+        function toDeg(rad) { return rad * 180 / Math.PI; }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return Math.round(R * c);
+        }
+
+        function calculateBearing(lat1, lng1, lat2, lng2) {
+            const dLon = toRad(lng2 - lng1);
+            const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+            const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+            let brng = toDeg(Math.atan2(y, x));
+            return (brng + 360) % 360;
+        }
+
+        function updateLogic() {
+            if (currentLat === null || currentLng === null || currentTargetLat === null) return;
+
+            const dist = calculateDistance(currentLat, currentLng, currentTargetLat, currentTargetLng);
+            bearingToTarget = calculateBearing(currentLat, currentLng, currentTargetLat, currentTargetLng);
+
+            if (dist <= 5) {
+                distanceEl.innerText = "MÅL NÅTT!";
+                distanceEl.style.color = "var(--col-5)";
+            } else {
+                distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
+                distanceEl.style.color = "var(--col-5)";
+            }
+            headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
+
+            let rawTarget = bearingToTarget - currentHeading;
+            let diff = (rawTarget - targetVisualRotation) % 360;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+            
+            targetVisualRotation += diff;
+            
+            // Uppdatera lutningskorset
+            // Begränsa förskjutningen så korset inte åker utanför kompassen
+            let maxOffset = 40; 
+            let offsetX = Math.max(-maxOffset, Math.min(maxOffset, currentGamma));
+            let offsetY = Math.max(-maxOffset, Math.min(maxOffset, currentBeta));
+            
+            // Vid porträttläge på iOS: beta är lutning fram/bak (Y), gamma är lutning vänster/höger (X)
+            tiltCrossEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
+            // Tona ut korset om telefonen ligger plant (mindre än 2 graders lutning)
+            if (Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2) {
+                compassContainer.classList.add('is-level');
+            } else {
+                compassContainer.classList.remove('is-level');
+            }
+        }
+
+        function renderFrame() {
+            const smoothingFactor = 0.2; 
+            currentVisualRotation += (targetVisualRotation - currentVisualRotation) * smoothingFactor;
+            arrowEl.style.transform = `rotate(${currentVisualRotation}deg)`;
+            
+            if(isTracking) {
+                animationFrameId = requestAnimationFrame(renderFrame);
+            }
+        }
+
+        function handleOrientation(event) {
+            if (event.webkitCompassHeading) {
+                currentHeading = event.webkitCompassHeading;
+            } else if (event.alpha !== null) {
+                currentHeading = 360 - event.alpha;
+            }
+            
+            // Spara lutningsvärden (fungerar bäst om telefonen ligger hyfsat plant)
+            if (event.beta !== null && event.gamma !== null) {
+                currentBeta = event.beta;
+                currentGamma = event.gamma;
+            }
+            
+            updateLogic();
+        }
+
+        function resetCompass() {
+            window.removeEventListener('deviceorientation', handleOrientation);
+            
+            currentHeading = 0;
+            targetVisualRotation = 0;
+            currentVisualRotation = 0;
+            arrowEl.style.transform = `rotate(0deg)`;
+            tiltCrossEl.style.transform = `translate(0px, 0px)`;
+            
+            setTimeout(() => {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }, 100);
+        }
+
+        async function selectTeam(teamName) {
+            statusEl.innerText = "";
+            currentTargetLat = teamCoordinates[teamName].lat;
+            currentTargetLng = teamCoordinates[teamName].lng;
+            activeTeamDisplay.innerText = teamName;
+            
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission !== 'granted') {
+                        statusEl.innerText = "Kompass nekad. Godkänn i inställningar.";
+                        return;
+                    }
+                } catch (error) {
+                    statusEl.innerText = "Kunde inte begära rättigheter.";
+                    return;
+                }
+            }
+
+            startScreen.classList.remove('active');
+            appScreen.classList.add('active');
+
+            isTracking = true;
+            animationFrameId = requestAnimationFrame(renderFrame);
+
+            if (navigator.geolocation) {
+                distanceEl.innerText = "Söker GPS...";
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        currentLat = position.coords.latitude;
+                        currentLng = position.coords.longitude;
+                        updateLogic();
+                    },
+                    (error) => {
+                        distanceEl.innerText = "GPS Fel";
+                        console.error(error);
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0 }
+                );
+            } else {
+                distanceEl.innerText = "GPS ej stödd";
+            }
+
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
+
+        function goBack() {
+            isTracking = false;
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('deviceorientation', handleOrientation);
+            if(watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            distanceEl.innerText = "-- m";
+            headingEl.innerText = "--°";
+            currentLat = null;
+            currentLng = null;
+            
+            appScreen.classList.remove('active');
+            startScreen.classList.add('active');
+        }
+
+        // --- PWA Service Worker (v14) ---
+        const swCode = `
+            const CACHE_NAME = 'skattjakt-cache-v14';
+            self.addEventListener('install', event => {
+                event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
+            });
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    fetch(event.request).then(response => {
+                        return caches.open(CACHE_NAME).then(cache => {
+                            cache.put(event.request, response.clone());
+                            return response;
+                        });
+                    }).catch(() => caches.match(event.request))
+                );
+            });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
+        }
+    </script>
+
+<!-- Slut på wrappern -->
+</div>
+
+</body>
+</html>
