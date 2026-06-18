@@ -180,6 +180,7 @@
 
         .team-btn {
             background-color: var(--col-1);
+            color: var(--col-5); /* Explicit färg för att undvika iOS blåa standardfärg */
             border: 2px solid var(--col-3);
             border-radius: 14px;
             padding: 1.5vh 15px; 
@@ -293,9 +294,9 @@
         #proximity-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(237, 229, 190, 0.95);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(237, 229, 190, 0.4); /* Gjort mer transparent */
+            backdrop-filter: none; /* Tagit bort blur så pilen är skarp */
+            -webkit-backdrop-filter: none;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -308,6 +309,10 @@
 
         .in-zone #proximity-overlay {
             opacity: 1;
+        }
+
+        #zone-timer {
+            text-shadow: 0 0 15px var(--col-1), 0 0 30px var(--col-1); /* Vit glöd så texten syns bra över pilen */
         }
 
         .data-text {
@@ -510,18 +515,18 @@
         const gameStages = [
             {
                 title: "Etapp 1",
-                successText: "Snyggt jobbat! Ni har nått första platsen. För att hitta nästa punkt, gå mot den stora eken och följ kompassen noggrant.",
+                successText: "Snyggt jobbat! Första platsen är säkrad. Er nästa ledtråd har dock fått fötter och är på vift! Följ kompassen och försök fånga den – ni måste hålla er hack i häl i en hel minut för att den ska ge upp.",
                 zoneRadius: 3,
                 timerDuration: 30,
                 coords: {
-                    'Lag Röd':  { lat: 57.177755, lng: 15.335207 },
+                    'Lag Röd':  { lat: 57.177412, lng: 15.335086 },
                     'Lag Blå':  { lat: 57.177755, lng: 15.335207 },
                     'Lag Grön': { lat: 57.177755, lng: 15.335207 }
                 }
             },
             {
                 title: "Etapp 2",
-                successText: "Hälften avklarat på land! Fortsätt längs stigen tills ni ser klipporna. Lita på kompassen.",
+                successText: "Snyggt fångat! Hälften avklarat på land! Fortsätt längs stigen tills ni ser klipporna. Lita på kompassen.",
                 zoneRadius: 5,     
                 timerDuration: 60, 
                 isMoving: true,
@@ -797,7 +802,7 @@
             bearingToTarget = calculateBearing(currentLat, currentLng, dynamicTargetLat, dynamicTargetLng);
 
             if (dist <= currentZoneRadius) {
-                distanceEl.innerHTML = `<span class="num">0</span> m`;
+                distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
                 if (!inZone) {
                     inZone = true;
                     compassContainer.classList.add('in-zone');
@@ -1014,9 +1019,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v23) ---
+        // --- PWA Service Worker (v25) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v23';
+            const CACHE_NAME = 'skattjakt-cache-v25';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
