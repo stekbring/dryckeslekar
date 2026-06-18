@@ -8,12 +8,11 @@
     <link rel="stylesheet" href="https://use.typekit.net/gql3yae.css">
     <style>
         :root {
-            /* Färgpalett */
-            --col-1: #EDE5BE; /* Bakgrund */
+            --col-1: #EDE5BE;
             --col-2: #C9C3A1;
             --col-3: #A19B81;
             --col-4: #787460;
-            --col-5: #4F4C3F; /* Text och accenter */
+            --col-5: #4F4C3F;
         }
         
         * {
@@ -34,10 +33,9 @@
             height: 100dvh;
             overflow: hidden;
             overscroll-behavior: none;
-            touch-action: pan-x pan-y; /* Tillåter scroll men blockerar pinch-zoom */
+            touch-action: pan-x pan-y;
         }
 
-        /* Ny wrapper som tvingar Safari att hålla sig inom skärmens gränser */
         #app-wrapper {
             position: relative;
             width: 100%;
@@ -45,7 +43,6 @@
             overflow: hidden;
         }
 
-        /* 3D KARTBAKGRUND */
         .map-background {
             position: absolute;
             top: -20%;
@@ -64,7 +61,6 @@
             height: 100%;
         }
 
-        /* SKÄRM-HANTERING (SPA) */
         .screen {
             position: absolute;
             top: 0;
@@ -84,7 +80,6 @@
             display: flex;
         }
 
-        /* ANIMERADE HÖJD-BEHÅLLARE (För glid-effekten) */
         .anim-height {
             display: grid;
             grid-template-rows: 0fr;
@@ -103,7 +98,6 @@
             width: 100%;
         }
 
-        /* TYPOGRAFI OCH UI - STARTSKÄRM */
         .header-container {
             text-align: center;
             margin-bottom: 1.5vh; 
@@ -113,7 +107,8 @@
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             flex-shrink: 0;
-            transition: all 0.8s ease; /* Jämn övergång när innehållet ändras */
+            transition: all 0.8s ease;
+            max-width: 90vw;
         }
 
         h1 {
@@ -126,7 +121,6 @@
             text-transform: uppercase;
         }
 
-        /* Crossfade-rubrikerna */
         .title-crossfade {
             display: grid;
             grid-template-areas: "title";
@@ -150,13 +144,12 @@
         #title-s {
             font-size: inherit;
             opacity: 0;
-            transform: translateY(15px); /* Startar lite längre ner */
+            transform: translateY(15px);
         }
 
-        /* När .view-welcome tas bort (efter knapptryck) */
         #start-screen:not(.view-welcome) #title-w {
             opacity: 0;
-            transform: translateY(-15px); /* Glider upp och försvinner */
+            transform: translateY(-15px);
         }
         #start-screen:not(.view-welcome) #title-s {
             opacity: 1;
@@ -176,7 +169,6 @@
             margin-top: 1vh;
         }
 
-        /* LAG-KNAPPAR */
         .team-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -234,7 +226,6 @@
             font-weight: 500;
         }
         
-        /* KOMPASS STYLING */
         #compass-container {
             position: relative;
             width: 60vmin; 
@@ -251,6 +242,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* För att hålla zontimern inuti cirkeln */
         }
 
         #arrow {
@@ -260,7 +252,6 @@
             position: absolute;
         }
         
-        /* Lutningskors (Tilt Crosshairs) */
         .crosshair {
             position: absolute;
             width: 16px;
@@ -298,6 +289,27 @@
         .crosshair-dynamic::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
         .crosshair-dynamic::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
 
+        /* ZON-TIMER OVERLAY OVANPÅ KOMPASSEN */
+        #proximity-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(237, 229, 190, 0.95);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .in-zone #proximity-overlay {
+            opacity: 1;
+        }
+
         .data-text {
             font-size: clamp(1.8rem, 7vw, 2.4rem);
             font-family: antiquarian-scribe, sans-serif;
@@ -331,11 +343,8 @@
             flex-shrink: 0;
         }
 
-        .btn-back {
+        .btn-back, .btn-secondary {
             padding: 8px 16px;
-            background: var(--col-4);
-            color: var(--col-1);
-            border: none;
             border-radius: 8px;
             font-weight: bold;
             font-family: antiquarian, sans-serif;
@@ -343,16 +352,25 @@
             cursor: pointer;
         }
 
+        .btn-back {
+            background: var(--col-4);
+            color: var(--col-1);
+            border: none;
+        }
+
         .btn-secondary {
-            padding: 8px 16px;
             background: transparent;
             color: var(--col-5);
             border: 2px solid var(--col-4);
-            border-radius: 8px;
-            font-weight: bold;
-            font-family: antiquarian, sans-serif;
-            font-size: 0.95rem;
-            cursor: pointer;
+        }
+
+        /* SUCCESS SCREEN */
+        .story-text {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            line-height: 1.5;
+            color: var(--col-5);
+            margin: 2vh 0;
+            font-weight: 500;
         }
 
     </style>
@@ -381,16 +399,13 @@
         </svg>
     </div>
 
-    <!-- STARTSKÄRM (Nu med view-welcome klassen för animation) -->
+    <!-- STARTSKÄRM -->
     <div id="start-screen" class="screen active view-welcome">
-        
         <div class="header-container">
             <h1 class="title-crossfade">
                 <span id="title-w">Välkommen till den årliga<br>midsommarjakten</span>
                 <span id="title-s">Midsommarjakten <span class="num">2026</span></span>
             </h1>
-            
-            <!-- Underrubriken är dold inuti anim-height från början -->
             <div class="anim-height" id="subtitle-wrapper">
                 <div class="inner">
                     <div class="subtitle">Välj ditt lag</div>
@@ -398,7 +413,6 @@
             </div>
         </div>
 
-        <!-- Välkomstknapp (öppen från start) -->
         <div class="anim-height open" id="welcome-btn-wrapper">
             <div class="inner">
                 <button class="team-btn" onclick="beginHunt()" style="margin-top: 3vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.8rem, 6vw, 2.2rem); padding: 1.5vh 30px; border-width: 3px;">
@@ -407,7 +421,6 @@
             </div>
         </div>
 
-        <!-- Lag-grid (dold från start) -->
         <div class="anim-height" id="team-grid-wrapper">
             <div class="inner">
                 <div class="team-grid">
@@ -423,30 +436,23 @@
                         <span class="team-name">Lag Grön</span>
                         <span class="team-members">Thelma, Nathalie, Malou/Mira</span>
                     </button>
-                    
-                    <!-- FÖR ATT ANVÄNDA 4 LAG: Ta bort kommenteringstaggarna nedan 
-                    <button class="team-btn" onclick="selectTeam('Lag Gul')">
-                        <span class="team-name">Lag Gul</span>
-                        <span class="team-members">Lars, Maria, Niklas</span>
-                    </button>
-                    -->
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- SPELSKÄRM (Kompass) -->
     <div id="app-screen" class="screen">
         <div class="header-container">
             <h1 id="active-team-display">Inget lag valt</h1>
-            <div class="subtitle">Etapp <span class="num">1</span></div>
+            <div class="subtitle">Etapp <span class="num" id="stage-display">1</span> / 4</div>
         </div>
 
         <div class="label">Avstånd till mål</div>
         <div id="distance" class="data-text">-- m</div>
         
         <div id="compass-container">
+            <!-- Kompassnål -->
             <svg id="arrow" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="none" stroke="var(--col-2)" stroke-width="2"/>
                 <circle cx="50" cy="50" r="42" fill="none" stroke="var(--col-3)" stroke-width="1" stroke-dasharray="4 4"/>
@@ -455,9 +461,17 @@
                 <polygon points="50,88 58,50 50,50" fill="var(--col-3)" />
                 <polygon points="50,88 42,50 50,50" fill="var(--col-2)" />
             </svg>
+            
             <!-- Lutningskors -->
             <div class="crosshair crosshair-fixed"></div>
             <div class="crosshair crosshair-dynamic" id="tilt-cross"></div>
+
+            <!-- PROXIMITY OVERLAY (Visas inom 3 meter) -->
+            <div id="proximity-overlay">
+                <div class="label">Stanna här i</div>
+                <div id="zone-timer" class="data-text num" style="font-size: 4rem;">30</div>
+                <div class="label">sekunder</div>
+            </div>
         </div>
 
         <div class="label">Riktning</div>
@@ -471,69 +485,70 @@
         </div>
     </div>
 
-    <script>
-        // --- FÖRHINDRA PINCH-TO-ZOOM PÅ IOS ---
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-
-        // --- LOCAL STORAGE: SPARA LAGVAL ---
-        function checkSavedTeam() {
-            const savedTeam = localStorage.getItem('midsommarTeam');
-            if (savedTeam) {
-                // Ta bort välkomstvyn och dölj grid
-                document.getElementById('start-screen').classList.remove('view-welcome');
-                document.getElementById('subtitle-wrapper').style.display = 'none';
-                document.getElementById('team-grid-wrapper').style.display = 'none';
-                
-                // Bygg om startknappen till en fortsätt-knapp
-                const welcomeBtnWrapper = document.getElementById('welcome-btn-wrapper');
-                welcomeBtnWrapper.classList.add('open');
-                welcomeBtnWrapper.innerHTML = `
-                    <div class="inner">
-                        <div class="subtitle" style="margin-bottom: 1vh; margin-top: 2vh;">Ditt lag: ${savedTeam}</div>
-                        <button class="team-btn" onclick="selectTeam('${savedTeam}')" style="margin-top: 1vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.8rem); padding: 1.5vh 30px; border-width: 3px;">
-                            Återuppta jakten
-                        </button>
-                        <button class="btn-secondary" onclick="devResetTeam()" style="margin-top: 4vh; border: none; opacity: 0.5; font-size: 0.8rem;">Dev: Byt lag</button>
-                    </div>
-                `;
-            }
-        }
+    <!-- ETAPP AVSLUTAD / SUCCESS SCREEN -->
+    <div id="success-screen" class="screen">
+        <div class="header-container">
+            <h1>Bra jobbat!</h1>
+            <div class="subtitle" id="success-subtitle">Etapp avklarad</div>
+        </div>
         
-        function devResetTeam() {
-            localStorage.removeItem('midsommarTeam');
-            location.reload();
-        }
+        <div class="header-container" style="background: var(--col-1); border: 2px solid var(--col-3);">
+            <div class="story-text" id="success-text">
+                Här kommer ledtråden till nästa plats.
+            </div>
+        </div>
+        
+        <button class="team-btn" id="next-stage-btn" onclick="startNextStage()" style="margin-top: 2vh; border-width: 3px;">
+            <span class="team-name" style="font-size: 1.4rem;">Starta nästa etapp</span>
+        </button>
+    </div>
 
-        // Kör direkt vid start
-        checkSavedTeam();
+    <script>
+        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
-        // --- UI ANIMATION: BÖRJA LETA ---
-        function beginHunt() {
-            document.getElementById('start-screen').classList.remove('view-welcome');
-            document.getElementById('welcome-btn-wrapper').classList.remove('open');
-            document.getElementById('subtitle-wrapper').classList.add('open');
-            document.getElementById('team-grid-wrapper').classList.add('open');
-        }
+        // --- SPELDATA (4 Etapper) ---
+        const gameStages = [
+            {
+                title: "Etapp 1",
+                successText: "Snyggt jobbat! Ni har nått första platsen. För att hitta nästa punkt, gå mot den stora eken och följ kompassen noggrant.",
+                coords: {
+                    'Lag Röd':  { lat: 59.3293, lng: 18.0686 },
+                    'Lag Blå':  { lat: 59.3300, lng: 18.0700 },
+                    'Lag Grön': { lat: 59.3280, lng: 18.0650 }
+                }
+            },
+            {
+                title: "Etapp 2",
+                successText: "Hälften avklarat på land! Fortsätt längs stigen tills ni ser klipporna. Lita på kompassen.",
+                coords: {
+                    'Lag Röd':  { lat: 59.3294, lng: 18.0687 },
+                    'Lag Blå':  { lat: 59.3301, lng: 18.0701 },
+                    'Lag Grön': { lat: 59.3281, lng: 18.0651 }
+                }
+            },
+            {
+                title: "Etapp 3",
+                successText: "Sista ledtråden på land! Nästa och sista punkten ligger ute i vattnet. Bege er mot vattnet och leta efter en boj som guppar precis vid ytan. Skatten ligger på bottnen!",
+                coords: {
+                    'Lag Röd':  { lat: 59.3295, lng: 18.0688 },
+                    'Lag Blå':  { lat: 59.3302, lng: 18.0702 },
+                    'Lag Grön': { lat: 59.3282, lng: 18.0652 }
+                }
+            },
+            {
+                title: "Etapp 4 (Finalen)",
+                successText: "GRATTIS! Ni har hittat midsommarskatten! Hoppas ni inte blev för blöta.",
+                coords: {
+                    'Lag Röd':  { lat: 59.3299, lng: 18.0699 },
+                    'Lag Blå':  { lat: 59.3299, lng: 18.0699 },
+                    'Lag Grön': { lat: 59.3299, lng: 18.0699 }
+                }
+            }
+        ];
 
-        // --- DATASTRUKTUR FÖR LAGENS MÅL (ETAPP 1) ---
-        const teamCoordinates = {
-            'Lag Röd':  { lat: 59.3293, lng: 18.0686 },
-            'Lag Blå':  { lat: 59.3300, lng: 18.0700 },
-            'Lag Grön': { lat: 59.3280, lng: 18.0650 }, 
-            'Lag Gul':  { lat: 59.3310, lng: 18.0670 }  
-        };
-
-        const startScreen = document.getElementById('start-screen');
-        const appScreen = document.getElementById('app-screen');
-        const activeTeamDisplay = document.getElementById('active-team-display');
-        const distanceEl = document.getElementById('distance');
-        const arrowEl = document.getElementById('arrow');
-        const headingEl = document.getElementById('heading');
-        const statusEl = document.getElementById('status');
-        const tiltCrossEl = document.getElementById('tilt-cross');
-        const compassContainer = document.getElementById('compass-container');
+        // --- STATE & VARIABLER ---
+        let currentTeam = null;
+        let currentStageIndex = 0;
 
         let currentTargetLat = null;
         let currentTargetLng = null;
@@ -541,7 +556,6 @@
         let currentLng = null;
         let currentHeading = 0;
         
-        // Tilt variabler
         let currentBeta = 0;
         let currentGamma = 0;
         
@@ -552,6 +566,93 @@
         let watchId = null;
         let isTracking = false;
         let animationFrameId = null;
+
+        let inZone = false;
+        let zoneInterval = null;
+        let timeLeft = 30;
+
+        const startScreen = document.getElementById('start-screen');
+        const appScreen = document.getElementById('app-screen');
+        const successScreen = document.getElementById('success-screen');
+        
+        const activeTeamDisplay = document.getElementById('active-team-display');
+        const stageDisplay = document.getElementById('stage-display');
+        const distanceEl = document.getElementById('distance');
+        const arrowEl = document.getElementById('arrow');
+        const headingEl = document.getElementById('heading');
+        const statusEl = document.getElementById('status');
+        const tiltCrossEl = document.getElementById('tilt-cross');
+        const compassContainer = document.getElementById('compass-container');
+        const zoneTimerEl = document.getElementById('zone-timer');
+
+        // --- LOCAL STORAGE LOGIK ---
+        function checkSavedState() {
+            const savedTeam = localStorage.getItem('midsommarTeam');
+            const savedStage = localStorage.getItem('midsommarStage');
+            
+            if (savedTeam) {
+                currentTeam = savedTeam;
+                currentStageIndex = savedStage ? parseInt(savedStage) : 0;
+
+                document.getElementById('start-screen').classList.remove('view-welcome');
+                document.getElementById('subtitle-wrapper').style.display = 'none';
+                document.getElementById('team-grid-wrapper').style.display = 'none';
+                
+                const welcomeBtnWrapper = document.getElementById('welcome-btn-wrapper');
+                welcomeBtnWrapper.classList.add('open');
+                
+                let btnText = currentStageIndex >= gameStages.length ? "Visa Resultat" : "Återuppta jakten";
+
+                welcomeBtnWrapper.innerHTML = `
+                    <div class="inner">
+                        <div class="subtitle" style="margin-bottom: 1vh; margin-top: 2vh;">Ditt lag: ${savedTeam}</div>
+                        <div class="subtitle" style="font-size: 0.75rem;">(Etapp ${Math.min(currentStageIndex + 1, 4)} av 4)</div>
+                        <button class="team-btn" onclick="startTracking()" style="margin-top: 1vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.8rem); padding: 1.5vh 30px; border-width: 3px;">
+                            ${btnText}
+                        </button>
+                        <button class="btn-secondary" onclick="devResetTeam()" style="margin-top: 4vh; border: none; opacity: 0.5; font-size: 0.8rem;">Dev: Återställ helt</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function devResetTeam() {
+            localStorage.removeItem('midsommarTeam');
+            localStorage.removeItem('midsommarStage');
+            location.reload();
+        }
+
+        checkSavedState();
+
+        function beginHunt() {
+            document.getElementById('start-screen').classList.remove('view-welcome');
+            document.getElementById('welcome-btn-wrapper').classList.remove('open');
+            document.getElementById('subtitle-wrapper').classList.add('open');
+            document.getElementById('team-grid-wrapper').classList.add('open');
+        }
+
+        async function selectTeam(teamName) {
+            currentTeam = teamName;
+            currentStageIndex = 0;
+            localStorage.setItem('midsommarTeam', currentTeam);
+            localStorage.setItem('midsommarStage', currentStageIndex);
+            
+            startTracking();
+        }
+
+        function loadStageData() {
+            if (currentStageIndex >= gameStages.length) {
+                showSuccessScreen(true);
+                return false;
+            }
+            const stage = gameStages[currentStageIndex];
+            currentTargetLat = stage.coords[currentTeam].lat;
+            currentTargetLng = stage.coords[currentTeam].lng;
+            
+            activeTeamDisplay.innerText = currentTeam;
+            stageDisplay.innerText = currentStageIndex + 1;
+            return true;
+        }
 
         function toRad(deg) { return deg * Math.PI / 180; }
         function toDeg(rad) { return rad * 180 / Math.PI; }
@@ -582,13 +683,22 @@
             const dist = calculateDistance(currentLat, currentLng, currentTargetLat, currentTargetLng);
             bearingToTarget = calculateBearing(currentLat, currentLng, currentTargetLat, currentTargetLng);
 
-            if (dist <= 5) {
-                distanceEl.innerText = "MÅL NÅTT!";
-                distanceEl.style.color = "var(--col-5)";
+            if (dist <= 3) {
+                distanceEl.innerHTML = `<span class="num">0</span> m`;
+                if (!inZone) {
+                    inZone = true;
+                    compassContainer.classList.add('in-zone');
+                    startZoneTimer();
+                }
             } else {
                 distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
-                distanceEl.style.color = "var(--col-5)";
+                if (inZone) {
+                    inZone = false;
+                    compassContainer.classList.remove('in-zone');
+                    stopZoneTimer();
+                }
             }
+
             headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
 
             let rawTarget = bearingToTarget - currentHeading;
@@ -611,6 +721,67 @@
             }
         }
 
+        function startZoneTimer() {
+            timeLeft = 30;
+            zoneTimerEl.innerText = timeLeft;
+            clearInterval(zoneInterval);
+            
+            zoneInterval = setInterval(() => {
+                timeLeft--;
+                zoneTimerEl.innerText = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(zoneInterval);
+                    inZone = false;
+                    compassContainer.classList.remove('in-zone');
+                    stageCompleted();
+                }
+            }, 1000);
+        }
+
+        function stopZoneTimer() {
+            clearInterval(zoneInterval);
+            timeLeft = 30;
+            zoneTimerEl.innerText = timeLeft;
+        }
+
+        function stageCompleted() {
+            stopTracking();
+            showSuccessScreen();
+        }
+
+        function showSuccessScreen(alreadyFinished = false) {
+            appScreen.classList.remove('active');
+            startScreen.classList.remove('active');
+            successScreen.classList.add('active');
+            
+            const stageTextEl = document.getElementById('success-text');
+            const stageSubtitleEl = document.getElementById('success-subtitle');
+            const nextBtn = document.getElementById('next-stage-btn');
+
+            if (alreadyFinished || currentStageIndex >= gameStages.length - 1) {
+                stageSubtitleEl.innerText = "Skatten är funnen!";
+                stageTextEl.innerText = gameStages[3].successText;
+                nextBtn.style.display = 'none';
+                if (!alreadyFinished) {
+                    currentStageIndex = 4;
+                    localStorage.setItem('midsommarStage', currentStageIndex);
+                }
+            } else {
+                stageSubtitleEl.innerText = `Etapp ${currentStageIndex + 1} avklarad`;
+                stageTextEl.innerText = gameStages[currentStageIndex].successText;
+                nextBtn.style.display = 'block';
+                
+                currentStageIndex++;
+                localStorage.setItem('midsommarStage', currentStageIndex);
+            }
+        }
+
+        function startNextStage() {
+            successScreen.classList.remove('active');
+            startTracking();
+        }
+
         function renderFrame() {
             const smoothingFactor = 0.2; 
             currentVisualRotation += (targetVisualRotation - currentVisualRotation) * smoothingFactor;
@@ -627,59 +798,52 @@
             } else if (event.alpha !== null) {
                 currentHeading = 360 - event.alpha;
             }
-            
             if (event.beta !== null && event.gamma !== null) {
                 currentBeta = event.beta;
                 currentGamma = event.gamma;
             }
-            
             updateLogic();
         }
 
         function resetCompass() {
             window.removeEventListener('deviceorientation', handleOrientation);
-            
-            currentHeading = 0;
-            targetVisualRotation = 0;
-            currentVisualRotation = 0;
+            currentHeading = 0; targetVisualRotation = 0; currentVisualRotation = 0;
             arrowEl.style.transform = `rotate(0deg)`;
             tiltCrossEl.style.transform = `translate(0px, 0px)`;
-            
-            setTimeout(() => {
-                window.addEventListener('deviceorientation', handleOrientation);
-            }, 100);
+            setTimeout(() => { window.addEventListener('deviceorientation', handleOrientation); }, 100);
         }
 
-        async function selectTeam(teamName) {
-            // Spara lagvalet och uppdatera startskärmen i bakgrunden
-            localStorage.setItem('midsommarTeam', teamName);
-            checkSavedTeam();
+        async function startTracking() {
+            if (!loadStageData()) return;
 
             statusEl.innerText = "";
-            currentTargetLat = teamCoordinates[teamName].lat;
-            currentTargetLng = teamCoordinates[teamName].lng;
-            activeTeamDisplay.innerText = teamName;
+            checkSavedState();
             
+            // 1. Fråga om kompass-behörighet (Krävs på iOS 13+)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
                     const permission = await DeviceOrientationEvent.requestPermission();
                     if (permission !== 'granted') {
-                        statusEl.innerText = "Kompass nekad. Godkänn i inställningar.";
+                        statusEl.innerText = "Kompass nekad. Godkänn i inställningar och starta om.";
                         return;
                     }
                 } catch (error) {
-                    statusEl.innerText = "Kunde inte begära rättigheter.";
+                    statusEl.innerText = "Kunde inte begära kompass.";
                     return;
                 }
             }
 
+            // Byt UI
             startScreen.classList.remove('active');
+            successScreen.classList.remove('active');
             appScreen.classList.add('active');
 
             isTracking = true;
             animationFrameId = requestAnimationFrame(renderFrame);
+            window.addEventListener('deviceorientation', handleOrientation);
 
-            if (navigator.geolocation) {
+            // 2. Starta GPS (Nu med robust felhantering och timeout)
+            if ("geolocation" in navigator) {
                 distanceEl.innerText = "Söker GPS...";
                 watchId = navigator.geolocation.watchPosition(
                     (position) => {
@@ -688,19 +852,31 @@
                         updateLogic();
                     },
                     (error) => {
-                        distanceEl.innerText = "GPS Fel";
-                        console.error(error);
+                        console.error("GPS Fel:", error);
+                        if (error.code === 1) {
+                            // Permission denied
+                            distanceEl.innerText = "Plats nekad";
+                            statusEl.innerText = "Aktivera platstjänster för webbläsaren i telefonens inställningar.";
+                        } else if (error.code === 2) {
+                            // Position unavailable
+                            distanceEl.innerText = "Ingen signal";
+                            statusEl.innerText = "Svag GPS-mottagning, vänta...";
+                        } else if (error.code === 3) {
+                            // Timeout
+                            distanceEl.innerText = "GPS Timeout";
+                            statusEl.innerText = "Det tog för lång tid. Säkerställ att du är utomhus.";
+                        } else {
+                            distanceEl.innerText = "GPS Fel";
+                        }
                     },
-                    { enableHighAccuracy: true, maximumAge: 0 }
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
                 );
             } else {
                 distanceEl.innerText = "GPS ej stödd";
             }
-
-            window.addEventListener('deviceorientation', handleOrientation);
         }
 
-        function goBack() {
+        function stopTracking() {
             isTracking = false;
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener('deviceorientation', handleOrientation);
@@ -708,19 +884,24 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
-            
+            stopZoneTimer();
+            compassContainer.classList.remove('in-zone');
+            inZone = false;
+        }
+
+        function goBack() {
+            stopTracking();
             distanceEl.innerText = "-- m";
             headingEl.innerText = "--°";
-            currentLat = null;
-            currentLng = null;
+            currentLat = null; currentLng = null;
             
             appScreen.classList.remove('active');
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v19) ---
+        // --- PWA Service Worker (v21) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v19';
+            const CACHE_NAME = 'skattjakt-cache-v21';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
@@ -740,8 +921,6 @@
             navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
         }
     </script>
-
 </div>
-
 </body>
 </html>
