@@ -511,24 +511,40 @@
             {
                 title: "Etapp 1",
                 successText: "Snyggt jobbat! Ni har nått första platsen. För att hitta nästa punkt, gå mot den stora eken och följ kompassen noggrant.",
+                zoneRadius: 3,
+                timerDuration: 30,
                 coords: {
-                    'Lag Röd':  { lat: 59.3293, lng: 18.0686 },
-                    'Lag Blå':  { lat: 59.3300, lng: 18.0700 },
-                    'Lag Grön': { lat: 59.3280, lng: 18.0650 }
+                    'Lag Röd':  { lat: 57.177755, lng: 15.335207 },
+                    'Lag Blå':  { lat: 57.177755, lng: 15.335207 },
+                    'Lag Grön': { lat: 57.177755, lng: 15.335207 }
                 }
             },
             {
                 title: "Etapp 2",
                 successText: "Hälften avklarat på land! Fortsätt längs stigen tills ni ser klipporna. Lita på kompassen.",
+                zoneRadius: 5,     
+                timerDuration: 60, 
+                isMoving: true,
+                // VIKTIGT: Ersätt dessa 4 punkter med dina verkliga hörnkoordinater för rektangeln vid vattnet.
+                // Ange dem i ordning (t.ex. medurs).
+                roamBounds: [
+                    { lat: 57.177517, lng: 15.334964 }, // Hörn 1 (t.ex. Övre Vänster)
+                    { lat: 57.177450, lng: 15.335310 }, // Hörn 2 (t.ex. Övre Höger)
+                    { lat: 57.177251, lng: 15.335170 }, // Hörn 3 (t.ex. Nedre Höger)
+                    { lat: 57.177337, lng: 15.334841 }  // Hörn 4 (t.ex. Nedre Vänster)
+                ],
                 coords: {
-                    'Lag Röd':  { lat: 59.3294, lng: 18.0687 },
-                    'Lag Blå':  { lat: 59.3301, lng: 18.0701 },
-                    'Lag Grön': { lat: 59.3281, lng: 18.0651 }
+                    // Startpunkter för lagen (bör vara inuti rektangeln ovan)
+                    'Lag Röd':  { lat: 57.177412, lng: 15.335086 },
+                    'Lag Blå':  { lat: 57.177412, lng: 15.335086 },
+                    'Lag Grön': { lat: 57.177412, lng: 15.335086 }
                 }
             },
             {
                 title: "Etapp 3",
                 successText: "Sista ledtråden på land! Nästa och sista punkten ligger ute i vattnet. Bege er mot vattnet och leta efter en boj som guppar precis vid ytan. Skatten ligger på bottnen!",
+                zoneRadius: 3,
+                timerDuration: 30,
                 coords: {
                     'Lag Röd':  { lat: 59.3295, lng: 18.0688 },
                     'Lag Blå':  { lat: 59.3302, lng: 18.0702 },
@@ -538,6 +554,8 @@
             {
                 title: "Etapp 4 (Finalen)",
                 successText: "GRATTIS! Ni har hittat midsommarskatten! Hoppas ni inte blev för blöta.",
+                zoneRadius: 3,
+                timerDuration: 30,
                 coords: {
                     'Lag Röd':  { lat: 59.3299, lng: 18.0699 },
                     'Lag Blå':  { lat: 59.3299, lng: 18.0699 },
@@ -550,8 +568,10 @@
         let currentTeam = null;
         let currentStageIndex = 0;
 
-        let currentTargetLat = null;
+        let currentTargetLat = null; // Centrumpunkten
         let currentTargetLng = null;
+        let dynamicTargetLat = null; // Den faktiska (eventuellt rörliga) punkten
+        let dynamicTargetLng = null;
         let currentLat = null;
         let currentLng = null;
         let currentHeading = 0;
@@ -566,6 +586,12 @@
         let watchId = null;
         let isTracking = false;
         let animationFrameId = null;
+
+        // Dynamiska målvärden
+        let targetRoamHeading = Math.random() * 360;
+        let targetMoveInterval = null;
+        let currentZoneRadius = 3;
+        let currentTimerDuration = 30;
 
         let inZone = false;
         let zoneInterval = null;
@@ -649,6 +675,65 @@
             currentTargetLat = stage.coords[currentTeam].lat;
             currentTargetLng = stage.coords[currentTeam].lng;
             
+            // Ladda etappens specifika regler
+            currentZoneRadius = stage.zoneRadius || 3;
+            currentTimerDuration = stage.timerDuration || 30;
+            zoneTimerEl.innerText = currentTimerDuration;
+            
+            // Starta målet i centrum
+            dynamicTargetLat = currentTargetLat;
+            dynamicTargetLng = currentTargetLng;
+            
+            // Rensa tidigare rörelse-loop
+            if (targetMoveInterval) clearInterval(targetMoveInterval);
+            
+            // Aktivera rörligt mål inom rektangel (roamBounds)
+            if (stage.isMoving && stage.roamBounds) {
+                targetMoveInterval = setInterval(() => {
+                    // 1. Beräkna ny potentiell position (0.4m per 500ms = 0.8m/s)
+                    const potentialCoords = moveCoordinate(dynamicTargetLat, dynamicTargetLng, 0.4, targetRoamHeading);
+
+                    // 2. Kolla om innanför rektangeln
+                    if (isPointInPolygon(potentialCoords, stage.roamBounds)) {
+                        // Innanför: Acceptera positionen, lägg till lite slumpmässigt vingel
+                        dynamicTargetLat = potentialCoords.lat;
+                        dynamicTargetLng = potentialCoords.lng;
+                        targetRoamHeading += (Math.random() * 30) - 15; 
+                    } else {
+                        // Utanför: STUDS!
+                        // Hitta närmaste vägg för att beräkna normalen
+                        let closestEdgeHeading = 0;
+                        let minEdgeDist = Infinity;
+
+                        for (let i = 0; i < stage.roamBounds.length; i++) {
+                            let p1 = stage.roamBounds[i];
+                            let p2 = stage.roamBounds[(i + 1) % stage.roamBounds.length];
+                            // Förenklad avståndskoll till väggens mittpunkt
+                            let midLat = (p1.lat + p2.lat) / 2;
+                            let midLng = (p1.lng + p2.lng) / 2;
+                            let dist = calculateDistance(dynamicTargetLat, dynamicTargetLng, midLat, midLng);
+                            if (dist < minEdgeDist) {
+                                minEdgeDist = dist;
+                                // Väggens riktning
+                                closestEdgeHeading = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
+                            }
+                        }
+
+                        // Beräkna inåtriktning (normalen), förutsätter medurs hörnordning (+90 grader)
+                        let inwardNormal = (closestEdgeHeading + 90) % 360;
+
+                        // Studs: Normalen +/- slumpmässig vinkel mellan 25 och 45 grader
+                        let bounceAngle = 25 + Math.random() * 20; // 25 till 45
+                        let direction = Math.random() > 0.5 ? 1 : -1;
+                        targetRoamHeading = (inwardNormal + (bounceAngle * direction) + 360) % 360;
+
+                        // Flyttar inte denna frame, bara vänder. Nästa frame går inåt.
+                    }
+                    
+                    if (isTracking) updateLogic();
+                }, 500);
+            }
+            
             activeTeamDisplay.innerText = currentTeam;
             stageDisplay.innerText = currentStageIndex + 1;
             return true;
@@ -656,6 +741,33 @@
 
         function toRad(deg) { return deg * Math.PI / 180; }
         function toDeg(rad) { return rad * 180 / Math.PI; }
+
+        // Kollar om en punkt är inuti en polygon (Ray Casting algoritmen)
+        function isPointInPolygon(point, polygon) {
+            let x = point.lng, y = point.lat;
+            let inside = false;
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                let xi = polygon[i].lng, yi = polygon[i].lat;
+                let xj = polygon[j].lng, yj = polygon[j].lat;
+                let intersect = ((yi > y) != (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        // Omvandlar avstånd i meter och vinkel till nya koordinater
+        function moveCoordinate(lat, lng, distanceMeters, bearingDegrees) {
+            const R = 6371000;
+            const latRad = toRad(lat);
+            const lngRad = toRad(lng);
+            const brngRad = toRad(bearingDegrees);
+
+            const newLatRad = Math.asin(Math.sin(latRad)*Math.cos(distanceMeters/R) + Math.cos(latRad)*Math.sin(distanceMeters/R)*Math.cos(brngRad));
+            const newLngRad = lngRad + Math.atan2(Math.sin(brngRad)*Math.sin(distanceMeters/R)*Math.cos(latRad), Math.cos(distanceMeters/R)-Math.sin(latRad)*Math.sin(newLatRad));
+            
+            return { lat: toDeg(newLatRad), lng: toDeg(newLngRad) };
+        }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
@@ -678,12 +790,13 @@
         }
 
         function updateLogic() {
-            if (currentLat === null || currentLng === null || currentTargetLat === null) return;
+            if (currentLat === null || currentLng === null || dynamicTargetLat === null) return;
 
-            const dist = calculateDistance(currentLat, currentLng, currentTargetLat, currentTargetLng);
-            bearingToTarget = calculateBearing(currentLat, currentLng, currentTargetLat, currentTargetLng);
+            // Beräkna mot den dynamiska målpunkten istället för centrum
+            const dist = calculateDistance(currentLat, currentLng, dynamicTargetLat, dynamicTargetLng);
+            bearingToTarget = calculateBearing(currentLat, currentLng, dynamicTargetLat, dynamicTargetLng);
 
-            if (dist <= 3) {
+            if (dist <= currentZoneRadius) {
                 distanceEl.innerHTML = `<span class="num">0</span> m`;
                 if (!inZone) {
                     inZone = true;
@@ -722,7 +835,7 @@
         }
 
         function startZoneTimer() {
-            timeLeft = 30;
+            timeLeft = currentTimerDuration;
             zoneTimerEl.innerText = timeLeft;
             clearInterval(zoneInterval);
             
@@ -741,7 +854,7 @@
 
         function stopZoneTimer() {
             clearInterval(zoneInterval);
-            timeLeft = 30;
+            timeLeft = currentTimerDuration;
             zoneTimerEl.innerText = timeLeft;
         }
 
@@ -880,6 +993,8 @@
             isTracking = false;
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener('deviceorientation', handleOrientation);
+            if (targetMoveInterval) clearInterval(targetMoveInterval);
+            
             if(watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
@@ -899,9 +1014,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v21) ---
+        // --- PWA Service Worker (v23) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v21';
+            const CACHE_NAME = 'skattjakt-cache-v23';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
