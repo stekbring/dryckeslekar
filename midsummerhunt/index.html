@@ -180,7 +180,7 @@
 
         .team-btn {
             background-color: var(--col-1);
-            color: var(--col-5); /* Explicit färg för att undvika iOS blåa standardfärg */
+            color: var(--col-5);
             border: 2px solid var(--col-3);
             border-radius: 14px;
             padding: 1.5vh 15px; 
@@ -243,7 +243,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* För att hålla zontimern inuti cirkeln */
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        /* Dynamisk kompass-storlek vid quiz */
+        .is-quiz #compass-container {
+            width: 38vmin;
+            height: 38vmin;
+            margin: 1vh 0 4vh 0; /* Ökade marginalen i botten för att ge andrum mot frågan */
         }
 
         #arrow {
@@ -290,12 +298,11 @@
         .crosshair-dynamic::before { top: 7.5px; left: 0; width: 16px; height: 1px; }
         .crosshair-dynamic::after { top: 0; left: 7.5px; width: 1px; height: 16px; }
 
-        /* ZON-TIMER OVERLAY OVANPÅ KOMPASSEN */
         #proximity-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(237, 229, 190, 0.4); /* Gjort mer transparent */
-            backdrop-filter: none; /* Tagit bort blur så pilen är skarp */
+            background: rgba(237, 229, 190, 0.4);
+            backdrop-filter: none;
             -webkit-backdrop-filter: none;
             display: flex;
             flex-direction: column;
@@ -312,7 +319,7 @@
         }
 
         #zone-timer {
-            text-shadow: 0 0 15px var(--col-1), 0 0 30px var(--col-1); /* Vit glöd så texten syns bra över pilen */
+            text-shadow: 0 0 15px var(--col-1), 0 0 30px var(--col-1);
         }
 
         .data-text {
@@ -322,6 +329,11 @@
             margin: 0px 0 0.5vh 0; 
             color: var(--col-5);
             letter-spacing: -1px;
+            transition: font-size 0.3s ease;
+        }
+
+        .is-quiz .data-text {
+            font-size: clamp(1.4rem, 6vw, 1.8rem); /* Mindre text under quiz för att spara plats */
         }
 
         .label {
@@ -348,6 +360,10 @@
             flex-shrink: 0;
         }
 
+        .is-quiz .btn-controls {
+            display: none; /* Döljer bottenknapparna under quizet */
+        }
+
         .btn-back, .btn-secondary {
             padding: 8px 16px;
             border-radius: 8px;
@@ -369,6 +385,49 @@
             border: 2px solid var(--col-4);
         }
 
+        /* --- QUIZ STYLING --- */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            width: 100%;
+            margin-bottom: 2vh; 
+        }
+        
+        .quiz-btn {
+            background: var(--col-2);
+            border: 2px solid var(--col-3);
+            color: var(--col-5);
+            border-radius: 8px;
+            padding: 3px 0; 
+            font-family: antiquarian-scribe, sans-serif;
+            font-size: 1.1rem; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .quiz-btn.active {
+            background: var(--col-4);
+            color: var(--col-1);
+            border-color: var(--col-5);
+            transform: scale(0.95);
+        }
+        
+        .quiz-btn.solved {
+            background: #8FA678; /* Mjuk grön */
+            color: #fff;
+            border-color: #6C8257;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        #quiz-question {
+            font-size: 1.3rem !important; /* Ökad textstorlek på frågan */
+            margin-bottom: 3vh !important; /* Mer plats mellan fråga och svarsruta */
+        }
+
         /* SUCCESS SCREEN */
         .story-text {
             font-size: clamp(1rem, 4vw, 1.2rem);
@@ -378,11 +437,39 @@
             font-weight: 500;
         }
 
+        /* TOAST MESSAGE */
+        .toast-msg {
+            position: absolute;
+            top: 12vh;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(79, 76, 63, 0.9);
+            color: var(--col-1);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+            width: max-content;
+            max-width: 90vw;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .toast-msg.show {
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
+    <!-- Nytt toast-meddelande element -->
+    <div id="toast" class="toast-msg">Leta upp platsen med hjälp av kompassen!</div>
 
     <!-- 3D BAKGRUND -->
     <div class="map-background">
@@ -471,7 +558,7 @@
             <div class="crosshair crosshair-fixed"></div>
             <div class="crosshair crosshair-dynamic" id="tilt-cross"></div>
 
-            <!-- PROXIMITY OVERLAY (Visas inom 3 meter) -->
+            <!-- PROXIMITY OVERLAY (Visas inom 3 meter i normalt läge) -->
             <div id="proximity-overlay">
                 <div class="label">Stanna här i</div>
                 <div id="zone-timer" class="data-text num" style="font-size: 4rem;">30</div>
@@ -479,7 +566,24 @@
             </div>
         </div>
 
-        <div class="label">Riktning</div>
+        <!-- QUIZ UI (Endast synligt på etapp 3) -->
+        <div id="quiz-ui" class="anim-height" style="width: 100%; max-width: 400px; margin-bottom: 1vh;">
+            <div class="inner" style="width: 100%;">
+                <div class="quiz-grid" id="quiz-btn-grid">
+                    <!-- Knappar genereras här -->
+                </div>
+                <div style="width: 100%; text-align: center;">
+                    <div id="quiz-question" style="color: var(--col-5); font-weight: 600; line-height: 1.3; min-height: 2.6em;">Välj en siffra ovan för att få en riktning.</div>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <input type="text" id="quiz-input" placeholder="Ditt svar..." style="flex: 1; padding: 6px 10px; border-radius: 8px; border: 2px solid var(--col-3); font-family: antiquarian, sans-serif; font-size: 0.95rem; outline: none; background: var(--col-1); color: var(--col-5);" disabled>
+                        <button id="quiz-submit" onclick="checkQuizAnswer()" class="btn-secondary" style="background: var(--col-4); color: var(--col-1); border: none; padding: 6px 14px; font-size: 0.95rem;" disabled>Svara</button>
+                    </div>
+                    <div id="quiz-feedback" style="font-size: 0.85rem; font-weight: bold; margin-top: 6px; height: 1.2em;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="label" id="heading-label">Riktning</div>
         <div id="heading" class="data-text">--°</div>
         
         <div id="status"></div>
@@ -487,6 +591,16 @@
         <div class="btn-controls">
             <button class="btn-back" onclick="goBack()">Avbryt</button>
             <button class="btn-secondary" onclick="resetCompass()">Återställ kompass</button>
+        </div>
+
+        <!-- FRI NAVIGERING / REVIEW MODE (Visas endast efter spelet) -->
+        <div id="review-mode-controls" style="display: none; margin-top: 2vh; padding-top: 1vh; border-top: 1px dashed var(--col-3); width: 100%; flex-wrap: wrap; gap: 6px; justify-content: center;">
+            <span style="width: 100%; text-align: center; font-size: 0.65rem; color: var(--col-4); text-transform: uppercase;">Fri navigering (Spelet är över)</span>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; border-width: 1px;" onclick="reviewStage(0)">E1</button>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; border-width: 1px;" onclick="reviewStage(1)">E2</button>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; border-width: 1px;" onclick="reviewStage(2)">E3</button>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; border-width: 1px;" onclick="reviewStage(3)">E4</button>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; border-width: 1px; background: var(--col-2);" onclick="fastForwardTimer()">Snabbspola Timer</button>
         </div>
     </div>
 
@@ -504,7 +618,7 @@
         </div>
         
         <button class="team-btn" id="next-stage-btn" onclick="startNextStage()" style="margin-top: 2vh; border-width: 3px;">
-            <span class="team-name" style="font-size: 1.4rem;">Starta nästa etapp</span>
+            <span class="team-name" id="next-stage-btn-text" style="font-size: 1.4rem;">Starta nästa etapp</span>
         </button>
     </div>
 
@@ -515,56 +629,64 @@
         const gameStages = [
             {
                 title: "Etapp 1",
+                type: "normal",
                 successText: "Snyggt jobbat! Första platsen är säkrad. Er nästa ledtråd har dock fått fötter och är på vift! Följ kompassen och försök fånga den – ni måste hålla er hack i häl i en hel minut för att den ska ge upp.",
                 zoneRadius: 3,
                 timerDuration: 30,
                 coords: {
-                    'Lag Röd':  { lat: 57.177412, lng: 15.335086 },
-                    'Lag Blå':  { lat: 57.177755, lng: 15.335207 },
-                    'Lag Grön': { lat: 57.177755, lng: 15.335207 }
+                    'Lag Röd':  { lat: 57.511185, lng: 15.626274 },
+                    'Lag Blå':  { lat: 57.510673, lng: 15.626101 },
+                    'Lag Grön': { lat: 57.510254, lng: 15.626530 },
+                    'Lag Gul':  { lat: 57.511517, lng: 15.626833 }
                 }
             },
             {
                 title: "Etapp 2",
-                successText: "Snyggt fångat! Hälften avklarat på land! Fortsätt längs stigen tills ni ser klipporna. Lita på kompassen.",
+                type: "normal",
+                successText: "Snyggt fångat! Hälften avklarat på land! Nu ställs era kunskaper på prov. Lös quizet genom att lista ut vad som ligger i riktningarna kompassen visar.",
                 zoneRadius: 5,     
                 timerDuration: 60, 
                 isMoving: true,
-                // VIKTIGT: Ersätt dessa 4 punkter med dina verkliga hörnkoordinater för rektangeln vid vattnet.
-                // Ange dem i ordning (t.ex. medurs).
                 roamBounds: [
-                    { lat: 57.177517, lng: 15.334964 }, // Hörn 1 (t.ex. Övre Vänster)
-                    { lat: 57.177450, lng: 15.335310 }, // Hörn 2 (t.ex. Övre Höger)
-                    { lat: 57.177251, lng: 15.335170 }, // Hörn 3 (t.ex. Nedre Höger)
-                    { lat: 57.177337, lng: 15.334841 }  // Hörn 4 (t.ex. Nedre Vänster)
+                    { lat: 57.511172, lng: 15.627481 }, // Hörn 1 (Övre höger)
+                    { lat: 57.510249, lng: 15.627293 }, // Hörn 2 (Nedre höger)
+                    { lat: 57.510336, lng: 15.626228 }, // Hörn 3 (Nedre vänster)
+                    { lat: 57.511253, lng: 15.626585 }  // Hörn 4 (Övre vänster)
                 ],
                 coords: {
-                    // Startpunkter för lagen (bör vara inuti rektangeln ovan)
-                    'Lag Röd':  { lat: 57.177412, lng: 15.335086 },
-                    'Lag Blå':  { lat: 57.177412, lng: 15.335086 },
-                    'Lag Grön': { lat: 57.177412, lng: 15.335086 }
+                    // Samma startpunkt för alla lag
+                    'Lag Röd':  { lat: 57.510780, lng: 15.627015 },
+                    'Lag Blå':  { lat: 57.510780, lng: 15.627015 },
+                    'Lag Grön': { lat: 57.510780, lng: 15.627015 },
+                    'Lag Gul':  { lat: 57.510780, lng: 15.627015 }
                 }
             },
             {
                 title: "Etapp 3",
-                successText: "Sista ledtråden på land! Nästa och sista punkten ligger ute i vattnet. Bege er mot vattnet och leta efter en boj som guppar precis vid ytan. Skatten ligger på bottnen!",
-                zoneRadius: 3,
-                timerDuration: 30,
-                coords: {
-                    'Lag Röd':  { lat: 59.3295, lng: 18.0688 },
-                    'Lag Blå':  { lat: 59.3302, lng: 18.0702 },
-                    'Lag Grön': { lat: 59.3282, lng: 18.0652 }
-                }
+                type: "compass-quiz", // Aktiverar quiz-läget!
+                successText: "Sista gåtan knäckt! Nu är det slut på torra land. Målet har simmat iväg och gömmer sig ute i det blå. Ni måste navigera till den exakta punkten i vattnet och hålla er (och mobilen) flytande där i 30 sekunder! 🚨 REGEL: Inga båtar, SUP-brädor eller flytetyg får användas förrän om 10 minuter! Först att simma ut vinner. Skatten ligger antagligen på bottnen... men vem vet? Dyk ner för att leta!",
+                quizTasks: [
+                    { lat: 57.165764, lng: 15.340593, question: "Vem bor här?", answers: ["melker", "Melker"] },
+                    { lat: 57.131156, lng: 15.154516, question: "Vad heter vägen?", answers: ["torsvägen", "Torsvägen"] },
+                    { lat: 59.321917, lng: 17.886722, question: "Vem bor här?", answers: ["kungen", "Kungen"] },
+                    { lat: 57.177279, lng: 15.334966, question: "Vem är den riktiga kungen som bor här?", answers: ["olle", "Olle"] },
+                    { lat: 55.560137, lng: 14.353585, question: "Vems hamns hamn ligger här?", answers: ["simris", "Simris"] },
+                    { lat: 56.196345, lng: 16.398558, question: "Vem står ståtligt här?", answers: ["långe jan", "Långe Jan", "jan", "Jan"] },
+                    { lat: -37.857733, lng: 175.680670, question: "Vilken filmserie spelades in här?", answers: ["sagan om ringen", "Sagan om ringen", "lord of the rings", "Lord of the Rings", "hobbit", "Hobbit"] },
+                    { lat: 57.346382, lng: 15.229895, question: "Vart kan man fira midsommar om inte här?", answers: ["förshult", "Förshult"] }
+                ]
             },
             {
                 title: "Etapp 4 (Finalen)",
+                type: "normal",
                 successText: "GRATTIS! Ni har hittat midsommarskatten! Hoppas ni inte blev för blöta.",
                 zoneRadius: 3,
                 timerDuration: 30,
                 coords: {
-                    'Lag Röd':  { lat: 59.3299, lng: 18.0699 },
-                    'Lag Blå':  { lat: 59.3299, lng: 18.0699 },
-                    'Lag Grön': { lat: 59.3299, lng: 18.0699 }
+                    'Lag Röd':  { lat: 57.509728, lng: 15.630737 },
+                    'Lag Blå':  { lat: 57.509728, lng: 15.630737 },
+                    'Lag Grön': { lat: 57.509728, lng: 15.630737 },
+                    'Lag Gul':  { lat: 57.509728, lng: 15.630737 }
                 }
             }
         ];
@@ -572,10 +694,11 @@
         // --- STATE & VARIABLER ---
         let currentTeam = null;
         let currentStageIndex = 0;
+        let isQuizMode = false;
 
-        let currentTargetLat = null; // Centrumpunkten
+        let currentTargetLat = null; 
         let currentTargetLng = null;
-        let dynamicTargetLat = null; // Den faktiska (eventuellt rörliga) punkten
+        let dynamicTargetLat = null; 
         let dynamicTargetLng = null;
         let currentLat = null;
         let currentLng = null;
@@ -592,7 +715,6 @@
         let isTracking = false;
         let animationFrameId = null;
 
-        // Dynamiska målvärden
         let targetRoamHeading = Math.random() * 360;
         let targetMoveInterval = null;
         let currentZoneRadius = 3;
@@ -601,6 +723,10 @@
         let inZone = false;
         let zoneInterval = null;
         let timeLeft = 30;
+
+        let quizActiveTask = -1;
+        let quizSolved = [];
+        let devZoneOverride = false;
 
         const startScreen = document.getElementById('start-screen');
         const appScreen = document.getElementById('app-screen');
@@ -611,19 +737,27 @@
         const distanceEl = document.getElementById('distance');
         const arrowEl = document.getElementById('arrow');
         const headingEl = document.getElementById('heading');
+        const headingLabelEl = document.getElementById('heading-label');
         const statusEl = document.getElementById('status');
         const tiltCrossEl = document.getElementById('tilt-cross');
         const compassContainer = document.getElementById('compass-container');
         const zoneTimerEl = document.getElementById('zone-timer');
+        const quizUiContainer = document.getElementById('quiz-ui');
 
-        // --- LOCAL STORAGE LOGIK ---
+        document.getElementById('quiz-input').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') checkQuizAnswer();
+        });
+
+        // --- LOCAL STORAGE LOGIK OCH FRI NAVIGERING ---
         function checkSavedState() {
             const savedTeam = localStorage.getItem('midsommarTeam');
-            const savedStage = localStorage.getItem('midsommarStage');
+            const savedStage = parseInt(localStorage.getItem('midsommarStage') || "0");
+            const isAfterHunt = new Date() >= new Date('2026-06-20T00:00:00');
+            const isFinished = savedStage >= gameStages.length;
             
             if (savedTeam) {
                 currentTeam = savedTeam;
-                currentStageIndex = savedStage ? parseInt(savedStage) : 0;
+                currentStageIndex = savedStage;
 
                 document.getElementById('start-screen').classList.remove('view-welcome');
                 document.getElementById('subtitle-wrapper').style.display = 'none';
@@ -632,7 +766,7 @@
                 const welcomeBtnWrapper = document.getElementById('welcome-btn-wrapper');
                 welcomeBtnWrapper.classList.add('open');
                 
-                let btnText = currentStageIndex >= gameStages.length ? "Visa Resultat" : "Återuppta jakten";
+                let btnText = (isFinished || isAfterHunt) ? "Öppna fri navigering" : "Återuppta jakten";
 
                 welcomeBtnWrapper.innerHTML = `
                     <div class="inner">
@@ -641,16 +775,31 @@
                         <button class="team-btn" onclick="startTracking()" style="margin-top: 1vh; font-family: antiquarian-scribe, sans-serif; font-size: clamp(1.4rem, 5vw, 1.8rem); padding: 1.5vh 30px; border-width: 3px;">
                             ${btnText}
                         </button>
-                        <button class="btn-secondary" onclick="devResetTeam()" style="margin-top: 4vh; border: none; opacity: 0.5; font-size: 0.8rem;">Dev: Återställ helt</button>
                     </div>
                 `;
             }
         }
         
-        function devResetTeam() {
-            localStorage.removeItem('midsommarTeam');
-            localStorage.removeItem('midsommarStage');
-            location.reload();
+        // --- REVIEW MODE FUNKTIONER ---
+        function reviewStage(index) {
+            devZoneOverride = false;
+            currentStageIndex = index;
+            // Sparar ej index i local storage här så vi inte raderar deras "finished" state
+            stopTracking();
+            startTracking();
+        }
+
+        function fastForwardTimer() {
+            if(isQuizMode) {
+                alert("Du är i quiz-läget! Lös frågorna eller navigera via Etapp-knapparna.");
+            } else {
+                devZoneOverride = true;
+                if (currentLat === null || currentLng === null) {
+                    currentLat = dynamicTargetLat || 57.511185;
+                    currentLng = dynamicTargetLng || 15.626274;
+                }
+                updateLogic();
+            }
         }
 
         checkSavedState();
@@ -673,70 +822,80 @@
 
         function loadStageData() {
             if (currentStageIndex >= gameStages.length) {
-                showSuccessScreen(true);
-                return false;
+                const isAfterHunt = new Date() >= new Date('2026-06-20T00:00:00');
+                if (isAfterHunt || parseInt(localStorage.getItem('midsommarStage') || "0") >= gameStages.length) {
+                    // Om man redan vunnit och klickat "Öppna fri navigering", starta på Etapp 1 by default
+                    currentStageIndex = 0; 
+                } else {
+                    showSuccessScreen(true);
+                    return false;
+                }
             }
+
             const stage = gameStages[currentStageIndex];
-            currentTargetLat = stage.coords[currentTeam].lat;
-            currentTargetLng = stage.coords[currentTeam].lng;
-            
-            // Ladda etappens specifika regler
-            currentZoneRadius = stage.zoneRadius || 3;
-            currentTimerDuration = stage.timerDuration || 30;
-            zoneTimerEl.innerText = currentTimerDuration;
-            
-            // Starta målet i centrum
-            dynamicTargetLat = currentTargetLat;
-            dynamicTargetLng = currentTargetLng;
-            
-            // Rensa tidigare rörelse-loop
+            isQuizMode = stage.type === 'compass-quiz';
+
             if (targetMoveInterval) clearInterval(targetMoveInterval);
             
-            // Aktivera rörligt mål inom rektangel (roamBounds)
-            if (stage.isMoving && stage.roamBounds) {
-                targetMoveInterval = setInterval(() => {
-                    // 1. Beräkna ny potentiell position (0.4m per 500ms = 0.8m/s)
-                    const potentialCoords = moveCoordinate(dynamicTargetLat, dynamicTargetLng, 0.4, targetRoamHeading);
+            if (isQuizMode) {
+                document.body.classList.add('is-quiz');
+                quizUiContainer.classList.add('open');
+                
+                let savedQuiz = localStorage.getItem('midsommarQuizProgress');
+                if (savedQuiz) {
+                    quizSolved = JSON.parse(savedQuiz);
+                } else {
+                    quizSolved = new Array(stage.quizTasks.length).fill(false);
+                }
+                
+                quizActiveTask = -1;
+                buildQuizGrid(stage.quizTasks.length);
+                
+                dynamicTargetLat = null;
+                dynamicTargetLng = null;
+                distanceEl.innerHTML = `-- m`;
+            } else {
+                document.body.classList.remove('is-quiz');
+                quizUiContainer.classList.remove('open');
 
-                    // 2. Kolla om innanför rektangeln
-                    if (isPointInPolygon(potentialCoords, stage.roamBounds)) {
-                        // Innanför: Acceptera positionen, lägg till lite slumpmässigt vingel
-                        dynamicTargetLat = potentialCoords.lat;
-                        dynamicTargetLng = potentialCoords.lng;
-                        targetRoamHeading += (Math.random() * 30) - 15; 
-                    } else {
-                        // Utanför: STUDS!
-                        // Hitta närmaste vägg för att beräkna normalen
-                        let closestEdgeHeading = 0;
-                        let minEdgeDist = Infinity;
-
-                        for (let i = 0; i < stage.roamBounds.length; i++) {
-                            let p1 = stage.roamBounds[i];
-                            let p2 = stage.roamBounds[(i + 1) % stage.roamBounds.length];
-                            // Förenklad avståndskoll till väggens mittpunkt
-                            let midLat = (p1.lat + p2.lat) / 2;
-                            let midLng = (p1.lng + p2.lng) / 2;
-                            let dist = calculateDistance(dynamicTargetLat, dynamicTargetLng, midLat, midLng);
-                            if (dist < minEdgeDist) {
-                                minEdgeDist = dist;
-                                // Väggens riktning
-                                closestEdgeHeading = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
+                currentTargetLat = stage.coords[currentTeam].lat;
+                currentTargetLng = stage.coords[currentTeam].lng;
+                currentZoneRadius = stage.zoneRadius || 3;
+                currentTimerDuration = stage.timerDuration || 30;
+                zoneTimerEl.innerText = currentTimerDuration;
+                
+                dynamicTargetLat = currentTargetLat;
+                dynamicTargetLng = currentTargetLng;
+                
+                if (stage.isMoving && stage.roamBounds) {
+                    targetMoveInterval = setInterval(() => {
+                        const potentialCoords = moveCoordinate(dynamicTargetLat, dynamicTargetLng, 0.4, targetRoamHeading);
+                        if (isPointInPolygon(potentialCoords, stage.roamBounds)) {
+                            dynamicTargetLat = potentialCoords.lat;
+                            dynamicTargetLng = potentialCoords.lng;
+                            targetRoamHeading += (Math.random() * 30) - 15; 
+                        } else {
+                            let closestEdgeHeading = 0;
+                            let minEdgeDist = Infinity;
+                            for (let i = 0; i < stage.roamBounds.length; i++) {
+                                let p1 = stage.roamBounds[i];
+                                let p2 = stage.roamBounds[(i + 1) % stage.roamBounds.length];
+                                let midLat = (p1.lat + p2.lat) / 2;
+                                let midLng = (p1.lng + p2.lng) / 2;
+                                let dist = calculateDistance(dynamicTargetLat, dynamicTargetLng, midLat, midLng);
+                                if (dist < minEdgeDist) {
+                                    minEdgeDist = dist;
+                                    closestEdgeHeading = calculateBearing(p1.lat, p1.lng, p2.lat, p2.lng);
+                                }
                             }
+                            let inwardNormal = (closestEdgeHeading + 90) % 360;
+                            let bounceAngle = 25 + Math.random() * 20; 
+                            let direction = Math.random() > 0.5 ? 1 : -1;
+                            targetRoamHeading = (inwardNormal + (bounceAngle * direction) + 360) % 360;
                         }
-
-                        // Beräkna inåtriktning (normalen), förutsätter medurs hörnordning (+90 grader)
-                        let inwardNormal = (closestEdgeHeading + 90) % 360;
-
-                        // Studs: Normalen +/- slumpmässig vinkel mellan 25 och 45 grader
-                        let bounceAngle = 25 + Math.random() * 20; // 25 till 45
-                        let direction = Math.random() > 0.5 ? 1 : -1;
-                        targetRoamHeading = (inwardNormal + (bounceAngle * direction) + 360) % 360;
-
-                        // Flyttar inte denna frame, bara vänder. Nästa frame går inåt.
-                    }
-                    
-                    if (isTracking) updateLogic();
-                }, 500);
+                        if (isTracking) updateLogic();
+                    }, 500);
+                }
             }
             
             activeTeamDisplay.innerText = currentTeam;
@@ -744,24 +903,105 @@
             return true;
         }
 
+        // --- QUIZ LOGIK ---
+        function buildQuizGrid(count) {
+            const grid = document.getElementById('quiz-btn-grid');
+            grid.innerHTML = '';
+            for(let i = 0; i < count; i++) {
+                let btn = document.createElement('button');
+                btn.className = 'quiz-btn num';
+                if(quizSolved[i]) btn.classList.add('solved');
+                btn.id = `quiz-btn-${i}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => selectQuizTask(i);
+                grid.appendChild(btn);
+            }
+            document.getElementById('quiz-question').innerText = "Välj en siffra ovan för att få en riktning.";
+            document.getElementById('quiz-input').disabled = true;
+            document.getElementById('quiz-submit').disabled = true;
+            document.getElementById('quiz-feedback').innerText = "";
+        }
+
+        function selectQuizTask(index) {
+            if(quizSolved[index]) return;
+
+            quizActiveTask = index;
+            const stage = gameStages[currentStageIndex];
+            
+            dynamicTargetLat = stage.quizTasks[index].lat;
+            dynamicTargetLng = stage.quizTasks[index].lng;
+            
+            document.querySelectorAll('.quiz-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`quiz-btn-${index}`).classList.add('active');
+            
+            document.getElementById('quiz-question').innerText = stage.quizTasks[index].question;
+            document.getElementById('quiz-input').disabled = false;
+            document.getElementById('quiz-input').value = "";
+            document.getElementById('quiz-input').focus();
+            document.getElementById('quiz-submit').disabled = false;
+            document.getElementById('quiz-feedback').innerText = "";
+            
+            updateLogic();
+        }
+
+        function checkQuizAnswer() {
+            if(quizActiveTask === -1) return;
+            
+            const stage = gameStages[currentStageIndex];
+            const task = stage.quizTasks[quizActiveTask];
+            const inputEl = document.getElementById('quiz-input');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const inputVal = inputEl.value.trim().toLowerCase();
+            
+            if(task.answers.includes(inputVal)) {
+                quizSolved[quizActiveTask] = true;
+                localStorage.setItem('midsommarQuizProgress', JSON.stringify(quizSolved));
+                
+                document.getElementById(`quiz-btn-${quizActiveTask}`).classList.remove('active');
+                document.getElementById(`quiz-btn-${quizActiveTask}`).classList.add('solved');
+                
+                inputEl.value = "";
+                inputEl.disabled = true;
+                document.getElementById('quiz-submit').disabled = true;
+                
+                feedbackEl.innerText = "Rätt svar!";
+                feedbackEl.style.color = "#8FA678";
+                
+                if(quizSolved.every(v => v === true)) {
+                    document.getElementById('quiz-question').innerText = "Alla punkter lösta!";
+                    setTimeout(stageCompleted, 1500);
+                } else {
+                    document.getElementById('quiz-question').innerText = "Välj nästa siffra ovan.";
+                    quizActiveTask = -1;
+                    dynamicTargetLat = null;
+                    dynamicTargetLng = null;
+                    distanceEl.innerHTML = `-- m`;
+                }
+            } else {
+                feedbackEl.innerText = "Fel, försök igen!";
+                feedbackEl.style.color = "#d9534f";
+                inputEl.style.transform = "translateX(5px)";
+                setTimeout(() => inputEl.style.transform = "translateX(-5px)", 100);
+                setTimeout(() => inputEl.style.transform = "translateX(5px)", 200);
+                setTimeout(() => inputEl.style.transform = "translateX(0)", 300);
+            }
+        }
+
         function toRad(deg) { return deg * Math.PI / 180; }
         function toDeg(rad) { return rad * 180 / Math.PI; }
 
-        // Kollar om en punkt är inuti en polygon (Ray Casting algoritmen)
         function isPointInPolygon(point, polygon) {
             let x = point.lng, y = point.lat;
             let inside = false;
             for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
                 let xi = polygon[i].lng, yi = polygon[i].lat;
                 let xj = polygon[j].lng, yj = polygon[j].lat;
-                let intersect = ((yi > y) != (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                let intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                 if (intersect) inside = !inside;
             }
             return inside;
         }
 
-        // Omvandlar avstånd i meter och vinkel till nya koordinater
         function moveCoordinate(lat, lng, distanceMeters, bearingDegrees) {
             const R = 6371000;
             const latRad = toRad(lat);
@@ -770,7 +1010,6 @@
 
             const newLatRad = Math.asin(Math.sin(latRad)*Math.cos(distanceMeters/R) + Math.cos(latRad)*Math.sin(distanceMeters/R)*Math.cos(brngRad));
             const newLngRad = lngRad + Math.atan2(Math.sin(brngRad)*Math.sin(distanceMeters/R)*Math.cos(latRad), Math.cos(distanceMeters/R)-Math.sin(latRad)*Math.sin(newLatRad));
-            
             return { lat: toDeg(newLatRad), lng: toDeg(newLngRad) };
         }
 
@@ -797,39 +1036,48 @@
         function updateLogic() {
             if (currentLat === null || currentLng === null || dynamicTargetLat === null) return;
 
-            // Beräkna mot den dynamiska målpunkten istället för centrum
             const dist = calculateDistance(currentLat, currentLng, dynamicTargetLat, dynamicTargetLng);
             bearingToTarget = calculateBearing(currentLat, currentLng, dynamicTargetLat, dynamicTargetLng);
 
-            if (dist <= currentZoneRadius) {
+            if (isQuizMode) {
+                headingLabelEl.innerText = "MATEMATISK RIKTNING";
+                headingEl.innerHTML = `<span class="num">${Math.round(bearingToTarget)}</span>°`;
                 distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
-                if (!inZone) {
-                    inZone = true;
-                    compassContainer.classList.add('in-zone');
-                    startZoneTimer();
-                }
             } else {
-                distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
-                if (inZone) {
-                    inZone = false;
-                    compassContainer.classList.remove('in-zone');
-                    stopZoneTimer();
+                headingLabelEl.innerText = "RIKTNING";
+                headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
+                
+                if (dist <= currentZoneRadius || devZoneOverride) {
+                    if (devZoneOverride) {
+                        distanceEl.innerHTML = `<span class="num" style="font-size: 1.5rem;">[SPOLAT]</span>`;
+                    } else {
+                        distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
+                    }
+                    
+                    if (!inZone) {
+                        inZone = true;
+                        compassContainer.classList.add('in-zone');
+                        startZoneTimer();
+                    }
+                } else {
+                    distanceEl.innerHTML = `<span class="num">${dist}</span> m`;
+                    if (inZone) {
+                        inZone = false;
+                        compassContainer.classList.remove('in-zone');
+                        stopZoneTimer();
+                    }
                 }
             }
-
-            headingEl.innerHTML = `<span class="num">${Math.round(currentHeading)}</span>°`;
 
             let rawTarget = bearingToTarget - currentHeading;
             let diff = (rawTarget - targetVisualRotation) % 360;
             if (diff < -180) diff += 360;
             if (diff > 180) diff -= 360;
-            
             targetVisualRotation += diff;
             
             let maxOffset = 40; 
             let offsetX = Math.max(-maxOffset, Math.min(maxOffset, currentGamma));
             let offsetY = Math.max(-maxOffset, Math.min(maxOffset, currentBeta));
-            
             tiltCrossEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
 
             if (Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2) {
@@ -873,22 +1121,36 @@
             startScreen.classList.remove('active');
             successScreen.classList.add('active');
             
+            localStorage.removeItem('midsommarQuizProgress');
+            
             const stageTextEl = document.getElementById('success-text');
             const stageSubtitleEl = document.getElementById('success-subtitle');
             const nextBtn = document.getElementById('next-stage-btn');
+            const nextBtnText = document.getElementById('next-stage-btn-text');
 
             if (alreadyFinished || currentStageIndex >= gameStages.length - 1) {
                 stageSubtitleEl.innerText = "Skatten är funnen!";
                 stageTextEl.innerText = gameStages[3].successText;
-                nextBtn.style.display = 'none';
+                
                 if (!alreadyFinished) {
                     currentStageIndex = 4;
                     localStorage.setItem('midsommarStage', currentStageIndex);
                 }
+
+                // Tillåt spelare att öppna fri navigering via knappen istället för att dölja den
+                nextBtn.style.display = 'block';
+                nextBtnText.innerText = "Öppna fri navigering";
+                nextBtn.onclick = () => {
+                    successScreen.classList.remove('active');
+                    currentStageIndex = 0;
+                    startTracking();
+                };
             } else {
                 stageSubtitleEl.innerText = `Etapp ${currentStageIndex + 1} avklarad`;
                 stageTextEl.innerText = gameStages[currentStageIndex].successText;
                 nextBtn.style.display = 'block';
+                nextBtnText.innerText = "Starta nästa etapp";
+                nextBtn.onclick = startNextStage; // Återställ ifall de gått från resultatsidan
                 
                 currentStageIndex++;
                 localStorage.setItem('midsommarStage', currentStageIndex);
@@ -937,7 +1199,6 @@
             statusEl.innerText = "";
             checkSavedState();
             
-            // 1. Fråga om kompass-behörighet (Krävs på iOS 13+)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 try {
                     const permission = await DeviceOrientationEvent.requestPermission();
@@ -951,16 +1212,30 @@
                 }
             }
 
-            // Byt UI
             startScreen.classList.remove('active');
             successScreen.classList.remove('active');
             appScreen.classList.add('active');
+
+            // Hantera visning av Fri navigering
+            const savedStage = parseInt(localStorage.getItem('midsommarStage') || "0");
+            const isAfterHunt = new Date() >= new Date('2026-06-20T00:00:00');
+            const isFinished = savedStage >= gameStages.length;
+            if (isFinished || isAfterHunt) {
+                document.getElementById('review-mode-controls').style.display = 'flex';
+            } else {
+                document.getElementById('review-mode-controls').style.display = 'none';
+            }
+
+            if(currentStageIndex === 0 && !inZone) {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 4000); 
+            }
 
             isTracking = true;
             animationFrameId = requestAnimationFrame(renderFrame);
             window.addEventListener('deviceorientation', handleOrientation);
 
-            // 2. Starta GPS (Nu med robust felhantering och timeout)
             if ("geolocation" in navigator) {
                 distanceEl.innerText = "Söker GPS...";
                 watchId = navigator.geolocation.watchPosition(
@@ -972,17 +1247,14 @@
                     (error) => {
                         console.error("GPS Fel:", error);
                         if (error.code === 1) {
-                            // Permission denied
                             distanceEl.innerText = "Plats nekad";
                             statusEl.innerText = "Aktivera platstjänster för webbläsaren i telefonens inställningar.";
                         } else if (error.code === 2) {
-                            // Position unavailable
                             distanceEl.innerText = "Ingen signal";
                             statusEl.innerText = "Svag GPS-mottagning, vänta...";
                         } else if (error.code === 3) {
-                            // Timeout
                             distanceEl.innerText = "GPS Timeout";
-                            statusEl.innerText = "Det tog för lång tid. Säkerställ att du är utomhus.";
+                            statusEl.innerText = "Säkerställ att du är utomhus.";
                         } else {
                             distanceEl.innerText = "GPS Fel";
                         }
@@ -1004,6 +1276,7 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
+            devZoneOverride = false; 
             stopZoneTimer();
             compassContainer.classList.remove('in-zone');
             inZone = false;
@@ -1019,9 +1292,9 @@
             startScreen.classList.add('active');
         }
 
-        // --- PWA Service Worker (v25) ---
+        // --- PWA Service Worker (v33) ---
         const swCode = `
-            const CACHE_NAME = 'skattjakt-cache-v25';
+            const CACHE_NAME = 'skattjakt-cache-v33';
             self.addEventListener('install', event => {
                 event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([location.href])));
             });
