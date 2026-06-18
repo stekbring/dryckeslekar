@@ -1,0 +1,70 @@
+etapp 1:
+lag1; 57.511185, 15.626274
+lag2; 57.510673, 15.626101
+lag3; 57.510254, 15.626530
+lag4; 57.511517, 15.626833
+
+
+etapp 2 startpunkt för alla lag: 57.510780, 15.627015
+
+hörnpunkter för etapp 2
+57.511172, 15.627481 //övre höger
+57.510249, 15.627293 //nedre höger
+57.510336, 15.626228 //nedre vänster
+57.511253, 15.626585 //övre vänster
+
+
+etapp 3;
+
+vem bor här? 					svar: Melker: 		57.165764, 15.340593
+vad heter vägen? 				svar: torsvägen: 	57.131156, 15.154516
+vem bor här? 					svar: kungen: 		57.177279, 15.334966
+vem är den riktiga kungen som bor här? 		svar: olle: 		57.177279, 15.334966
+vems hamns hamn ligger här? 			svar: simris: 		55.560137, 14.353585
+vem står ståtligt här? 				svar: långe jan/jan: 	56.196345, 16.398558
+vilken filmserie spelades in här? 		svar: sagan om ringen/lord of the rings/hobbit: -37.857733, 175.680670
+vart kan man fira midsommar om inte här? 	svar: förshult: 	57.346382, 15.229895
+
+
+etapp 4;
+skattkoordinat; 57.509728, 15.630737
+
+
+_________________________________________________________________
+
+
+lixerum
+hörnpunkter för etapp 2
+57.511172, 15.627481 //uppe höger
+57.510249, 15.627293
+57.510336, 15.626228
+57.511253, 15.626585
+
+roamBounds: [
+                    { lat: 57.511172, lng: 15.627481 }, // Hörn 1 (t.ex. Övre Vänster)
+                    { lat: 57.510249, lng: 15.627293 }, // Hörn 2 (t.ex. Övre Höger)
+                    { lat: 57.510336, lng: 15.626228 }, // Hörn 3 (t.ex. Nedre Höger)
+                    { lat: 57.511253, lng: 15.626585 }  // Hörn 4 (t.ex. Nedre Vänster)
+                ]
+
+
+hemma
+57.177517, 15.334964 //uppe mitten
+57.177450, 15.335310
+57.177251, 15.335170
+57.177337, 15.334841
+
+startpunkt; 57.177412, 15.335086
+
+roamBounds: [
+                    { lat: 57.177517, lng: 15.334964 }, // Hörn 1 (t.ex. Övre Vänster)
+                    { lat: 57.177450, lng: 15.335310 }, // Hörn 2 (t.ex. Övre Höger)
+                    { lat: 57.177251, lng: 15.335170 }, // Hörn 3 (t.ex. Nedre Höger)
+                    { lat: 57.177337, lng: 15.334841 }  // Hörn 4 (t.ex. Nedre Vänster)
+                ]
+
+
+testplats hemma;
+57.177755, 15.335207
+
+
