@@ -1,0 +1,97 @@
+10 000 – TÄRNINGSSPEL
+=====================
+
+Den här mappen är hela spelet, färdigt att lägga på din hemsida.
+Det fungerar på dator och mobil, går att spela i helskärm och kan
+installeras som en app på telefonen.
+
+
+VAD SOM FINNS I MAPPEN
+----------------------
+index.html              Själva spelet
+three.min.js            3D-tärningarna (behövs för att de ska se solida ut)
+manifest.webmanifest    Gör att sidan kan installeras som app (namn, ikon, helskärm)
+sw.js                   Gör att spelet fungerar utan internet
+icon-*.png, favicon-32.png, apple-touch-icon.png   Appikoner
+
+Ladda alltid upp alla filer tillsammans i samma mapp.
+
+
+1. LÄGG UPP PÅ HEMSIDAN
+-----------------------
+Ladda upp hela mappen "tiotusen" till ditt webbhotell, till exempel så
+att spelet hamnar på:
+
+    https://dindomän.se/tiotusen/
+
+Sidan måste ligga på https (inte http). Annars går den inte att
+installera som app och fungerar inte utan internet.
+
+Länka sedan till adressen från din vanliga hemsida.
+
+
+2. INSTALLERA SOM APP PÅ ONEPLUS (ENKLAST)
+-----------------------------------------
+1. Öppna https://dindomän.se/tiotusen/ i Chrome på telefonen.
+2. Tryck på "Installera app" (pil-ikonen uppe till höger).
+   I helskärm finns den under menyknappen ( ··· ).
+3. Tryck "Installera".
+
+Chrome bygger då en riktig app åt dig. Den hamnar bland dina appar och
+på hemskärmen, startar i helskärm och fungerar utan internet.
+
+
+3. EGEN APK-FIL (OM DU VILL KUNNA LADDA NER ELLER DELA EN FIL)
+-------------------------------------------------------------
+Chrome-installationen ovan räcker för dig själv. Vill du ha en .apk-fil
+som andra kan ladda ner gör du så här (tar ungefär 5 minuter):
+
+1. Gå till https://www.pwabuilder.com på datorn.
+2. Klistra in adressen till spelet och tryck "Start".
+3. Välj att paketera för Android och ladda ner paketet.
+   Du får en zip-fil med bland annat:
+     - en .apk-fil          (appen)
+     - assetlinks.json      (bevisar att appen hör till din hemsida)
+     - signing.keystore och signing-key-info.txt  (appens nyckel)
+4. Döp om .apk-filen till tiotusen.apk och ladda upp den i samma mapp
+   som index.html. Då dyker knappen "Ladda ner APK-fil" upp automatiskt
+   i installationsrutan på sidan.
+5. Ladda upp assetlinks.json så att den ligger här (i roten av domänen,
+   inte i spelmappen):
+       https://dindomän.se/.well-known/assetlinks.json
+   Utan den filen visas en adressrad överst i appen.
+6. SPARA signing.keystore och signing-key-info.txt på ett säkert ställe.
+   Nyckeln behövs om du någon gång gör en ny APK av samma app.
+
+Installera APK-filen på telefonen: ladda ner den och öppna den.
+Första gången frågar telefonen om Chrome får installera appar. Tillåt det.
+
+
+4. UPPDATERINGAR – SÅ FUNKAR DET
+--------------------------------
+Både Chrome-appen och APK-appen hämtar spelet från din hemsida.
+
+- När du laddar upp en ny index.html får appen den nya versionen
+  automatiskt nästa gång den öppnas med internet. Ingen ny APK behövs
+  och ingen uppdateringsruta visas, det bara är den nya versionen.
+- Utan internet används den senaste versionen som telefonen har sparat.
+- Byter du three.min.js eller ikonerna: ändra raden
+      const VERSION = 'tiotusen-1';
+  i sw.js till 'tiotusen-2' och så vidare, så att telefonen hämtar de
+  nya filerna.
+- En ny APK behövs bara om du ändrar appens namn, ikon eller adress.
+  Gör den då i PWABuilder med SAMMA nyckel (signing.keystore). Med en ny
+  nyckel vägrar telefonen att uppdatera och du måste avinstallera först.
+
+
+5. IPHONE
+---------
+Öppna sidan i Safari, tryck på Dela-knappen och välj
+"Lägg till på hemskärmen".
+
+
+BRA ATT VETA
+------------
+- Statistik och pågående parti sparas på varje enhet för sig.
+- Helskärm: tryck på "Helskärm" uppe till höger (eller F på tangentbordet).
+  I den installerade appen startar spelet i helskärm av sig självt.
