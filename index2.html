@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-E6WCG90MQZ');
+</script>
+  <meta charset="UTF-8">
+  <title>Dryckeslekar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="bilder/dryckeslekarlogga.ico">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Times New Roman', cursive, sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    .background {
+      background-color: #000000;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 0;
+      background-image: url("bilder\\party3.JPG");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .hero {
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      padding-top: 100px;
+    }
+
+    .hero-title {
+      font-size: 6em;
+      color: white;
+      text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+      text-align: center;
+      margin-bottom: 0.2em;
+      position: relative;
+      left: auto;
+      top: -5%;
+      transform: none;
+      text-shadow: 1px 1px 20px rgba(255, 0, 0, 1);
+    }
+
+    .hero-subtitle {
+      font-size: 1.8em;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      text-align: center;
+      position: relative;
+      left: auto;
+      top: 20%;
+      transform: none;
+    }
+
+    .content {
+      background-image: url("bilder/firepit2.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 50px 20px 200px 20px;
+      position: relative;
+      z-index: 2;
+      margin-top: -10px;
+      border-top-left-radius: 40px;
+      border-top-right-radius: 40px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+      min-height: 100vh;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 100px;
+      max-width: 900px;
+      margin: 0 auto;
+      padding-top: 40px;
+      grid-template-columns: 1fr;
+    }
+
+    .button-grid.grid-view {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .game-button {
+      background-color: transparent;
+      border: 3px solid #ff4081;
+      color: #ff4081;
+      padding: 60px 0;
+      border-radius: 6px;
+      font-size: 1.4em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .game-button:hover {
+      background-color: #ff4081;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .footer {
+      text-align: center;
+      color: white;
+      padding: 20px 20px;
+      margin-top: 20px;
+    }
+
+    .footer a {
+      color: rgb(255, 255, 255); 
+      text-decoration: underline; /* standard understruken */
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    #toggleViewButton {
+      background-color: #fa7325;
+      border: none;
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+      min-width: 32px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #toggleViewButton img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+
+    #toggleViewButton:hover {
+      transform: scale(1.1);
+    }
+
+    
+    /* Desktop-anpassning */
+    @media (min-width: 1024px) {
+      .hero {
+        padding-top: 200px;
+      }
+
+      .hero-title-img {
+        max-width: 1500px;
+      }
+
+      .button-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* större kolumner */
+        gap: 60px; /* lite mer luft mellan knapparna */
+        max-width: 1400px; /* låter dem breda ut sig mer */
+        padding: 40px;
+      }
+
+      .game-button {
+        border: none; /* tar bort rosa kant */
+        min-height: 200px; /* högre knappar */
+        font-size: 1.4em; /* större text */
+        background-color: transparent;
+        box-shadow: none;
+        transition: transform 0.2s ease; /* mjuk animation */
+      }
+
+      .game-button:hover {
+        transform: scale(1.1); /* bara lite större vid hover */
+        background-color: transparent; /* ingen svart rektangel */
+      }
+
+      .image-button img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px; /* lite rundare hörn */
+        transition: transform 0.2s ease;
+      }
+
+      #toggleViewButton {
+        min-width: 40px;
+        min-height: 40px;
+      }
+
+      #toggleViewButton img {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .background {
+        background-image: url("bilder\\party3.2.JPG");
+        background-size: cover;
+        background-position: center;
+      }
+
+      .hero {
+        height: 110vh;
+        aspect-ratio: 4/5;
+      }
+
+      .hero-title {
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2.5em;
+        color: white;
+        text-shadow: 1px 1px 20px rgba(255, 0, 0, 0.8);
+        text-align: center;
+      }
+
+      .hero-subtitle {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 1em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+      }
+
+      .game-button {
+        border: 3px solid #fa7325;
+        min-height: 150px;
+        border-width: 2px;
+        border-radius: 4px;
+        background-color: transparent;
+        box-shadow: none;
+        font-size: 1em;
+        font-weight: bold;
+        font-family: 'Times New Roman', Times, serif;
+        color: #ffffff;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 10px;
+      }
+
+      .game-button:hover {
+        background-color: #000000;
+        color: white;
+        transform: scale(1.02);
+      }
+
+      .button-grid {
+        gap: 50px;
+        max-width: 90%;
+        max-height: 100%;
+        padding: 20px;
+        grid-template-columns: 1fr;
+      }
+
+      .image-button {
+        background: transparent;
+        padding: 0;
+        overflow: hidden;
+        border: none;
+      }
+
+      .image-button img {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 6px;
+        display: block;
+      }
+
+      .button-grid.grid-view {
+        grid-template-columns: repeat(2, 1fr) !important;
+        row-gap: 0px; /* lägre vertikalt avstånd */
+        column-gap: 40px; /* valfritt: smalare mellan kolumnerna */
+      }
+      .hero-title-img {
+        width: 70%;
+        max-width: 300px;
+        height: auto;
+      }
+
+      .view-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+      }
+
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background"></div>
+
+  <section class="hero">
+    <img src="bilder/dryckeslekar.png" alt="Dryckeslekar" class="hero-title-img">
+    <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
+  </section>
+
+  <section class="content">
+    <div class="view-toggle">
+      <button id="toggleViewButton">
+        <img src="bilder/list.png" alt="Byt vy">
+      </button>
+
+    </div>
+
+    <div class="button-grid">
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/midsummerhunt'">
+        <img src="bilder/midsummerlogo.png" alt="Midsummer Treasure Hunt">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/newyearhunt'">
+        <img src="bilder/newyearlogo.png" alt="New Year Treasure Hunt">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bengt'">
+        <img src="bilder/bengt4.png" alt="Långa bollar på Bengt">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/ringoffire'">
+        <img src="bilder/ringoffire.png" alt="Ring of Fire">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthedealer'">
+        <img src="bilder/dealer.png" alt="Fuck the Dealer">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/lyric_confessions'">
+        <img src="bilder/lyric.png" alt="Lyric Confessions">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/imposter'">
+        <img src="bilder/imposter.png" alt="Whos's the Imposter">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/snusdosan'">
+        <img src="bilder/snusdosan2.png" alt="Snusdosan">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bingo'">
+        <img src="bilder/bingo2.png" alt="Ölbingo">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/america'">
+        <img src="bilder/american.png" alt="True American">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/opus'">
+        <img src="bilder/opus.png" alt="Opus">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthefire'">
+        <img src="bilder/fthefire.png" alt="fuck the fire">
+      </button>
+      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/spiken'">
+        <img src="bilder/spiken.png" alt="spiken">
+      </button>
+    </div>
+
+    <footer class="footer">
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      
+      <p style="font-size:12px;">Förslag på lekar?</p>
+      <p style="font-size:12px;">Maila namn och regler till:</p>
+      <br> 
+      <p style="font-size:14px;"><a href="mailto:nyalekar@ollesdryckeslekar.se">nyalekar@ollesdryckeslekar.se</a></p>
+    </footer>
+
+  </section>
+
+  <script>
+
+    const toggleButton = document.getElementById("toggleViewButton");
+    const toggleIcon = toggleButton.querySelector("img");
+    const buttonGrid = document.querySelector(".button-grid");
+
+    toggleButton.addEventListener("click", () => {
+      buttonGrid.classList.toggle("grid-view");
+
+      // Byt bild beroende på vy
+      if (buttonGrid.classList.contains("grid-view")) {
+        toggleIcon.src = "bilder/grid.png"; // ikon för listvy
+      } else {
+        toggleIcon.src = "bilder/list.png"; // ikon för gridvy
+      }
+    });
+
+  </script>
+</body>
+</html>

@@ -1,19 +1,52 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6WCG90MQZ');
-</script>
   <meta charset="UTF-8">
-  <title>Dryckeslekar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dryckeslekar</title>
+
+  <script>
+    /* =====================================================================
+       VERSION – ÄNDRA DENNA NÄR DU UPPDATERAR NÅGOT PÅ SIDAN
+       (ny bild, ny lek, ändrad text osv). Byt t.ex. "1" till "2".
+       Då hämtar alla besökare den nya versionen direkt i stället för
+       den gamla som ligger sparad i deras webbläsare.
+       ===================================================================== */
+    var VERSION = "1";
+
+    /* Lägger till ?v=VERSION på en bildadress så webbläsaren vet att det är en ny version */
+    function v(url) { return url + "?v=" + VERSION; }
+
+    /* Bakgrundsbilderna sätts härifrån så att de också får versionsnumret,
+       och den som behövs först (dator eller mobil) börjar laddas direkt. */
+    (function () {
+      var mobil = window.matchMedia("(max-width: 600px)").matches;
+      var bakgrund = v(mobil ? "bilder/webb/party3.2.webp" : "bilder/webb/party3.webp");
+      var s = document.documentElement.style;
+      s.setProperty("--bg-dator", 'url("' + v("bilder/webb/party3.webp") + '")');
+      s.setProperty("--bg-mobil", 'url("' + v("bilder/webb/party3.2.webp") + '")');
+      s.setProperty("--bg-eld", 'url("' + v("bilder/webb/firepit2.webp") + '")');
+      [bakgrund, v("bilder/webb/dryckeslekar.webp")].forEach(function (href) {
+        var l = document.createElement("link");
+        l.rel = "preload"; l.as = "image"; l.href = href;
+        l.setAttribute("fetchpriority", "high");
+        document.head.appendChild(l);
+      });
+    })();
+  </script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6WCG90MQZ');
+  </script>
+
+  <link rel="preconnect" href="https://www.googletagmanager.com">
   <link rel="icon" type="image/x-icon" href="bilder/dryckeslekarlogga.ico">
+
   <style>
     * {
       margin: 0;
@@ -25,6 +58,7 @@
       height: 100%;
       font-family: 'Times New Roman', cursive, sans-serif;
       scroll-behavior: smooth;
+      background-color: #000000;
     }
 
     .background {
@@ -35,7 +69,7 @@
       width: 100%;
       height: 100vh;
       z-index: 0;
-      background-image: url("bilder\\party3.JPG");
+      background-image: var(--bg-dator);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -53,32 +87,16 @@
       padding-top: 100px;
     }
 
-    .hero-title {
-      font-size: 6em;
-      color: white;
-      text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
-      text-align: center;
-      margin-bottom: 0.2em;
-      position: relative;
-      left: auto;
-      top: -5%;
-      transform: none;
-      text-shadow: 1px 1px 20px rgba(255, 0, 0, 1);
-    }
-
-    .hero-subtitle {
-      font-size: 1.8em;
-      color: white;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      text-align: center;
-      position: relative;
-      left: auto;
-      top: 20%;
-      transform: none;
+    .hero-title-img {
+      display: block;
+      width: 90%;
+      max-width: 1500px;
+      height: auto;
     }
 
     .content {
-      background-image: url("bilder/firepit2.png");
+      background-color: #0b1422;
+      background-image: var(--bg-eld);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -94,7 +112,6 @@
 
     .button-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 100px;
       max-width: 900px;
       margin: 0 auto;
@@ -107,6 +124,11 @@
     }
 
     .game-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-decoration: none;
       background-color: transparent;
       border: 3px solid #ff4081;
       color: #ff4081;
@@ -115,14 +137,21 @@
       font-size: 1.4em;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
       box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
     }
 
     .game-button:hover {
       background-color: #ff4081;
       color: white;
       transform: scale(1.05);
+    }
+
+    .image-button img {
+      display: block;
+      width: 100%;
+      height: auto;
     }
 
     .footer {
@@ -133,8 +162,8 @@
     }
 
     .footer a {
-      color: rgb(255, 255, 255); 
-      text-decoration: underline; /* standard understruken */
+      color: rgb(255, 255, 255);
+      text-decoration: underline;
       font-size: 1.1em;
       font-weight: bold;
     }
@@ -161,12 +190,10 @@
       pointer-events: none;
     }
 
-
     #toggleViewButton:hover {
       transform: scale(1.1);
     }
 
-    
     /* Desktop-anpassning */
     @media (min-width: 1024px) {
       .hero {
@@ -174,35 +201,33 @@
       }
 
       .hero-title-img {
+        width: 100%;
         max-width: 1500px;
       }
 
       .button-grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* större kolumner */
-        gap: 60px; /* lite mer luft mellan knapparna */
-        max-width: 1400px; /* låter dem breda ut sig mer */
+        gap: 60px;           /* lite mer luft mellan knapparna */
+        max-width: 1400px;   /* låter dem breda ut sig mer */
         padding: 40px;
       }
 
       .game-button {
-        border: none; /* tar bort rosa kant */
-        min-height: 200px; /* högre knappar */
-        font-size: 1.4em; /* större text */
+        border: none;        /* tar bort rosa kant */
+        min-height: 200px;   /* högre knappar */
+        font-size: 1.4em;
         background-color: transparent;
         box-shadow: none;
-        transition: transform 0.2s ease; /* mjuk animation */
+        transition: transform 0.2s ease;
       }
 
       .game-button:hover {
-        transform: scale(1.1); /* bara lite större vid hover */
-        background-color: transparent; /* ingen svart rektangel */
+        transform: scale(1.1);          /* bara lite större vid hover */
+        background-color: transparent;  /* ingen svart rektangel */
       }
 
       .image-button img {
-        width: 100%;
-        height: auto;
-        border-radius: 10px; /* lite rundare hörn */
-        transition: transform 0.2s ease;
+        border-radius: 10px;
       }
 
       #toggleViewButton {
@@ -218,36 +243,12 @@
 
     @media (max-width: 600px) {
       .background {
-        background-image: url("bilder\\party3.2.JPG");
-        background-size: cover;
-        background-position: center;
+        background-image: var(--bg-mobil);
       }
 
       .hero {
         height: 110vh;
         aspect-ratio: 4/5;
-      }
-
-      .hero-title {
-        position: absolute;
-        top: 15%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 2.5em;
-        color: white;
-        text-shadow: 1px 1px 20px rgba(255, 0, 0, 0.8);
-        text-align: center;
-      }
-
-      .hero-subtitle {
-        position: absolute;
-        top: 70%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 1em;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        text-align: center;
       }
 
       .game-button {
@@ -262,10 +263,6 @@
         font-family: 'Times New Roman', Times, serif;
         color: #ffffff;
         text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
         padding: 10px;
       }
 
@@ -291,23 +288,20 @@
       }
 
       .image-button img {
-        width: 100%;
-        height: auto;
         max-height: 100%;
         object-fit: contain;
         border-radius: 6px;
-        display: block;
       }
 
       .button-grid.grid-view {
         grid-template-columns: repeat(2, 1fr) !important;
-        row-gap: 0px; /* lägre vertikalt avstånd */
-        column-gap: 40px; /* valfritt: smalare mellan kolumnerna */
+        row-gap: 0px;
+        column-gap: 40px;
       }
+
       .hero-title-img {
         width: 70%;
         max-width: 300px;
-        height: auto;
       }
 
       .view-toggle {
@@ -316,67 +310,83 @@
         right: 20px;
         z-index: 10;
       }
-
     }
   </style>
+
+  <!-- Förhämtar spelsidan när man håller musen över / trycker på en lek (Chrome/Edge),
+       så att leken öppnas nästan direkt. Ignoreras av webbläsare som inte stödjer det. -->
+  <script type="speculationrules">
+    { "prefetch": [ { "where": { "selector_matches": ".game-button" }, "eagerness": "moderate" } ] }
+  </script>
 </head>
 <body>
 
   <div class="background"></div>
 
   <section class="hero">
-    <img src="bilder/dryckeslekar.png" alt="Dryckeslekar" class="hero-title-img">
+    <img data-src="bilder/webb/dryckeslekar.webp" alt="Dryckeslekar" class="hero-title-img"
+         width="1500" height="432" fetchpriority="high" decoding="async">
     <!-- <p class="hero-subtitle">Av Olle & Mira</p> -->
   </section>
 
   <section class="content">
     <div class="view-toggle">
-      <button id="toggleViewButton">
-        <img src="bilder/list.png" alt="Byt vy">
+      <button id="toggleViewButton" type="button" aria-label="Byt vy">
+        <img data-src="bilder/list.png" alt="" width="18" height="18">
       </button>
-
     </div>
 
+    <!--
+      Varje lek är en länk med en bild. Nya lekar: kopiera en rad och byt adress, bild och namn.
+      Bilderna ligger i bilder/webb/ (förminskade .webp-kopior). Originalen ligger kvar i bilder/.
+    -->
     <div class="button-grid">
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/midsummerhunt'">
-        <img src="bilder/midsummerlogo.png" alt="Midsummer Treasure Hunt">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/newyearhunt'">
-        <img src="bilder/newyearlogo.png" alt="New Year Treasure Hunt">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bengt'">
-        <img src="bilder/bengt4.png" alt="Långa bollar på Bengt">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/ringoffire'">
-        <img src="bilder/ringoffire.png" alt="Ring of Fire">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthedealer'">
-        <img src="bilder/dealer.png" alt="Fuck the Dealer">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/lyric_confessions'">
-        <img src="bilder/lyric.png" alt="Lyric Confessions">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/imposter'">
-        <img src="bilder/imposter.png" alt="Whos's the Imposter">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/snusdosan'">
-        <img src="bilder/snusdosan2.png" alt="Snusdosan">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/bingo'">
-        <img src="bilder/bingo2.png" alt="Ölbingo">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/america'">
-        <img src="bilder/american.png" alt="True American">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/opus'">
-        <img src="bilder/opus.png" alt="Opus">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/fthefire'">
-        <img src="bilder/fthefire.png" alt="fuck the fire">
-      </button>
-      <button class="game-button image-button" onclick="window.location.href='https://ollesdryckeslekar.se/spiken'">
-        <img src="bilder/spiken.png" alt="spiken">
-      </button>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/tiotusen">
+        <img data-src="bilder/webb/tiotusen.webp" alt="TioTusen" width="640" height="640" decoding="async">
+      </a>
+      <!-- Midsommarjakten (bortkommenterad)
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/midsummerhunt">
+        <img data-src="bilder/midsummerlogo.png" alt="Midsummer Treasure Hunt" loading="lazy" decoding="async">
+      </a>
+      -->
+      <!-- Nyårsjakten (bortkommenterad)
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/newyearhunt">
+        <img data-src="bilder/newyearlogo.png" alt="New Year Treasure Hunt" loading="lazy" decoding="async">
+      </a>
+      -->
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/bengt">
+        <img data-src="bilder/webb/bengt4.webp" alt="Långa bollar på Bengt" width="640" height="761" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/ringoffire">
+        <img data-src="bilder/webb/ringoffire.webp" alt="Ring of Fire" width="640" height="765" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/fthedealer">
+        <img data-src="bilder/webb/dealer.webp" alt="Fuck the Dealer" width="640" height="560" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/lyric_confessions">
+        <img data-src="bilder/webb/lyric.webp" alt="Lyric Confessions" width="640" height="592" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/imposter">
+        <img data-src="bilder/webb/imposter.webp" alt="Who's the Imposter" width="640" height="871" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/snusdosan">
+        <img data-src="bilder/webb/snusdosan2.webp" alt="Snusdosan" width="640" height="633" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/bingo">
+        <img data-src="bilder/webb/bingo2.webp" alt="Ölbingo" width="640" height="640" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/america">
+        <img data-src="bilder/webb/american.webp" alt="True American" width="640" height="442" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/opus">
+        <img data-src="bilder/webb/opus.webp" alt="Opus" width="640" height="578" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/fthefire">
+        <img data-src="bilder/webb/fthefire.webp" alt="Fuck the Fire" width="640" height="754" loading="lazy" decoding="async">
+      </a>
+      <a class="game-button image-button" href="https://ollesdryckeslekar.se/spiken">
+        <img data-src="bilder/webb/spiken.webp" alt="Spiken" width="640" height="640" loading="lazy" decoding="async">
+      </a>
     </div>
 
     <footer class="footer">
@@ -386,32 +396,52 @@
       <br>
       <br>
       <br>
-      
+
       <p style="font-size:12px;">Förslag på lekar?</p>
       <p style="font-size:12px;">Maila namn och regler till:</p>
-      <br> 
+      <br>
       <p style="font-size:14px;"><a href="mailto:nyalekar@ollesdryckeslekar.se">nyalekar@ollesdryckeslekar.se</a></p>
     </footer>
 
   </section>
 
   <script>
+    /* Sätt bildadresserna (med versionsnummer) */
+    var bilder = document.querySelectorAll("img[data-src]");
+    for (var i = 0; i < bilder.length; i++) {
+      bilder[i].src = v(bilder[i].getAttribute("data-src"));
+    }
 
-    const toggleButton = document.getElementById("toggleViewButton");
-    const toggleIcon = toggleButton.querySelector("img");
-    const buttonGrid = document.querySelector(".button-grid");
+    /* Byt mellan list- och rutnätsvy */
+    var toggleButton = document.getElementById("toggleViewButton");
+    var toggleIcon = toggleButton.querySelector("img");
+    var buttonGrid = document.querySelector(".button-grid");
+    var gridIkon = new Image(); gridIkon.src = v("bilder/grid.png"); // förladdad, så bytet sker direkt
 
-    toggleButton.addEventListener("click", () => {
+    toggleButton.addEventListener("click", function () {
       buttonGrid.classList.toggle("grid-view");
-
-      // Byt bild beroende på vy
-      if (buttonGrid.classList.contains("grid-view")) {
-        toggleIcon.src = "bilder/grid.png"; // ikon för listvy
-      } else {
-        toggleIcon.src = "bilder/list.png"; // ikon för gridvy
-      }
+      toggleIcon.src = buttonGrid.classList.contains("grid-view") ? v("bilder/grid.png") : v("bilder/list.png");
     });
 
+    /* Cache i besökarens webbläsare (service worker, se sw.js).
+       Sidan själv hämtas alltid ny när man är online; bilderna sparas och
+       byts ut automatiskt när VERSION ovan ändras. */
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js?v=" + VERSION).catch(function () {});
+
+        /* Spara alla sidans bilder i cachen i bakgrunden, så nästa besök går direkt */
+        function forladda() {
+          var sw = navigator.serviceWorker.controller;
+          if (!sw) return;
+          var urls = [v("bilder/webb/party3.webp"), v("bilder/webb/party3.2.webp"), v("bilder/webb/firepit2.webp"), v("bilder/grid.png")];
+          for (var i = 0; i < bilder.length; i++) urls.push(v(bilder[i].getAttribute("data-src")));
+          sw.postMessage({ typ: "forladda", version: VERSION, urls: urls });
+        }
+        navigator.serviceWorker.addEventListener("controllerchange", forladda);
+        setTimeout(forladda, 1500);
+      });
+    }
   </script>
 </body>
 </html>
