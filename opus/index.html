@@ -1,131 +1,407 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6WCG90MQZ');
-</script>
   <meta charset="UTF-8">
-  <title>Opus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opus</title>
+  <script>
+    /* =====================================================================
+       VERSION – höj denna när du byter ut en BILD i den här leken
+       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
+       i stället för den gamla som ligger sparad i deras webbläsare.
+       Text i den här filen och i .txt-filer syns alltid direkt ändå.
+       ===================================================================== */
+    var VERSION = "1";
+
+    function v(url) { return url + "?v=" + VERSION; }
+    (function () {
+      var bakgrund = null;
+      var forst = ["webb/rubrik.webp"];
+      if (bakgrund) {
+        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
+        forst.unshift(bakgrund);
+      }
+      forst.forEach(function (h) {
+        var l = document.createElement("link");
+        l.rel = "preload"; l.as = "image"; l.href = v(h);
+        document.head.appendChild(l);
+      });
+    })();
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6WCG90MQZ');
+  </script>
+  <link rel="icon" type="image/x-icon" href="/bilder/dryckeslekarlogga.ico">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
-      font-family: 'Times New Roman', serif;
-      color: #fff;
-      padding: 10px;
+    html {
+      min-height: 100%;
+      background: #07060d;
     }
 
-    .background {
-      position: fixed;
-      background: #333;
-
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 100vw;
-      z-index: -1;
-      background-image: url("background2.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+    body {
+      min-height: 100vh;
+      font-family: 'Times New Roman', serif;
+      color: #fff;
+      padding: 0 12px 60px 12px;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(120, 60, 200, 0.35), transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(40, 90, 200, 0.25), transparent 60%),
+        #07060d;
+      background-attachment: fixed;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .header-image {
       display: block;
-      max-width: 100%;
+      width: 70%;
+      max-width: 300px;
       height: auto;
-      margin-top: 40px;
-      margin-bottom: 50px;
-      margin-left: auto;
-      margin-right: auto;
-      border-radius: 10px;
+      margin: 30px auto 10px auto;
     }
 
-    body {
-      padding: 0px 10px 10px 10px;
-    }
-
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px 6px #000;
-    }
-
-    .rules-list {
+    .playlist-button {
+      display: block;
+      max-width: 320px;
+      margin: 10px auto 24px auto;
+      padding: 12px 20px;
       background: rgba(0, 0, 0, 0.6);
-      list-style-type: none;
-      padding: 20px;
-      border-radius: 5px;
-      max-width: 400px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .rules-list li {
-      margin-bottom: 15px;
-      font-size: 1.1em;
-      line-height: 1.6;
-    }
-
-    .big-text {
-      font-size: 1.2em;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1em;
       font-weight: bold;
       text-align: center;
+      transition: background 0.3s;
+    }
+    .playlist-button:hover { background: rgba(255, 255, 255, 0.15); }
+
+    .panel {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 20px;
+      max-width: 520px;
+      margin: 0 auto 18px auto;
+      line-height: 1.5;
+    }
+
+    h2 { text-align: center; font-size: 1.4em; margin-bottom: 12px; }
+    h3 { font-size: 1.1em; margin: 16px 0 6px 0; color: #d8c8ff; }
+    ul.regler { padding-left: 20px; }
+    ul.regler li { margin-bottom: 6px; }
+
+    /* Tärningen */
+    .status {
+      text-align: center;
+      font-size: 0.95em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #bfaef5;
+      min-height: 1.5em;
+    }
+
+    .tarning-yta {
+      display: flex;
+      justify-content: center;
+      padding: 18px 0 10px 0;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .tarning {
+      --storlek: min(52vw, 200px);
+      width: var(--storlek);
+      height: var(--storlek);
+      border-radius: 22%;
+      background: linear-gradient(145deg, #ffffff, #e4e0d8);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), inset 0 -6px 12px rgba(0, 0, 0, 0.15), inset 0 6px 10px rgba(255, 255, 255, 0.9);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      padding: calc(var(--storlek) * 0.12);
+      cursor: pointer;
+      border: none;
+      transition: box-shadow 0.3s;
+    }
+    .tarning:focus-visible { outline: 3px solid #bfaef5; outline-offset: 6px; }
+    .tarning.rullar { animation: skaka 0.12s linear infinite; }
+    .tarning.sexa { box-shadow: 0 0 0 4px #ffd84a, 0 0 40px 8px rgba(255, 216, 74, 0.6), 0 14px 30px rgba(0, 0, 0, 0.6); }
+    .tarning.etta { box-shadow: 0 0 0 4px #ff5a5a, 0 0 40px 8px rgba(255, 90, 90, 0.5), 0 14px 30px rgba(0, 0, 0, 0.6); }
+    .tarning.trea { box-shadow: 0 0 0 4px #5ab8ff, 0 0 40px 8px rgba(90, 184, 255, 0.5), 0 14px 30px rgba(0, 0, 0, 0.6); }
+
+    @keyframes skaka {
+      0%   { transform: rotate(-8deg) scale(0.97); }
+      50%  { transform: rotate(8deg) scale(1.02); }
+      100% { transform: rotate(-8deg) scale(0.97); }
+    }
+
+    .prick {
+      width: 72%;
+      height: 72%;
+      margin: auto;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #444, #000 70%);
+      visibility: hidden;
+    }
+    .prick.pa { visibility: visible; }
+    .tarning.etta .prick.pa { background: radial-gradient(circle at 35% 30%, #ff6b6b, #9e0d0d 70%); }
+
+    .besked {
+      text-align: center;
+      font-size: 1.35em;
+      font-weight: bold;
+      min-height: 3em;
+      padding: 6px 4px 0 4px;
+    }
+    .besked .liten { display: block; font-size: 0.75em; font-weight: normal; opacity: 0.85; margin-top: 4px; }
+
+    .val {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 12px;
+      font-size: 0.95em;
+    }
+    .val input { width: 20px; height: 20px; accent-color: #7c5cff; }
+
+    .knapp {
       display: block;
-      margin: 20px 0;
+      margin: 12px auto 0 auto;
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 0.95em;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
     }
-
-    h2, h3 {
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
+    .liten-text { font-size: 0.9em; opacity: 0.8; text-align: center; }
   </style>
 </head>
 <body>
 
-<div class="background"></div>
+<img data-src="webb/rubrik.webp" alt="Opus" class="header-image" width="640" height="578" fetchpriority="high">
 
-<img src="rubrik.png" alt="opus" class="header-image">
+<a href="https://open.spotify.com/track/3v2oAQomhOcYCPPHafS3KV?si=a92aca1a539742cf" target="_blank" rel="noopener" class="playlist-button">
+  Spela Opus – Eric Prydz på Spotify 🎵
+</a>
 
-<ul class="rules-list" id="rules"></ul>
+<div class="panel">
+  <div class="status" id="status">Första slaget</div>
+  <div class="tarning-yta">
+    <button class="tarning" id="tarning" aria-label="Slå tärningen">
+      <span class="prick"></span><span class="prick"></span><span class="prick"></span>
+      <span class="prick"></span><span class="prick"></span><span class="prick"></span>
+      <span class="prick"></span><span class="prick"></span><span class="prick"></span>
+    </button>
+  </div>
+  <div class="besked" id="besked">Tryck på tärningen för att slå</div>
+
+  <label class="val">
+    <input type="checkbox" id="extraregler" checked>
+    Extraregler: etta = tillbaka, trea = klunk
+  </label>
+  <button class="knapp" id="nyPerson">Ny person har tärningen</button>
+  <p class="liten-text" style="margin-top:12px">Fler än sex spelare? Öppna sidan på en telefon till för varje sex spelare – varje telefon är en tärning.</p>
+</div>
+
+<div class="panel">
+  <h2>Regler</h2>
+
+  <h3>Det här behövs</h3>
+  <ul class="regler">
+    <li>Låten <strong>"Opus" av Eric Prydz</strong> på en högtalare.</li>
+    <li>En tärning – den här sidan, en telefon per ungefär sex spelare.</li>
+    <li>Något att dricka.</li>
+  </ul>
+
+  <h3>Så spelar ni</h3>
+  <ul class="regler">
+    <li>Sätt er i en ring och starta låten. Den som har tärningen börjar slå.</li>
+    <li>Du slår tills du får en <strong>sexa</strong> – först då får du skicka tärningen vidare till personen bredvid (medsols).</li>
+    <li>Får du en <strong>sexa på första slaget</strong> väljer du själv vem som ska få tärningen.</li>
+    <li>Missar du att du fått en sexa och slår igen tar du en klunk.</li>
+  </ul>
+
+  <h3>Extraregler</h3>
+  <ul class="regler">
+    <li><strong>Etta:</strong> tärningen går tillbaka ett steg (motsols).</li>
+    <li><strong>Trea:</strong> ta en klunk och slå igen.</li>
+  </ul>
+
+  <h3>Droppet</h3>
+  <ul class="regler">
+    <li>Låten bygger upp i flera minuter. När <strong>droppet</strong> äntligen kommer måste den eller de som håller i en tärning dricka upp sin drink.</li>
+    <li>Sen är det bara att starta om låten och köra igen.</li>
+  </ul>
+</div>
 
 <script>
-  fetch('instruktioner.txt')
-    .then(response => response.text())
-    .then(data => {
-      const rulesList = document.getElementById('rules');
-      const lines = data.split('\n');
+  var MONSTER = {        // vilka av de 9 platserna (0–8) som har prickar
+    1: [4],
+    2: [2, 6],
+    3: [2, 4, 6],
+    4: [0, 2, 6, 8],
+    5: [0, 2, 4, 6, 8],
+    6: [0, 2, 3, 5, 6, 8]
+  };
 
-      lines.forEach(line => {
-        if (line.trim() !== "") {
-          let formatted = line
-            .replace(/^# (.*)/, '<h2>$1</h2>')
-            .replace(/^## (.*)/, '<h3>$1</h3>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/__(.*?)__/g, '<span class="big-text">$1</span>')
-            .replace(/--/g, '<br><br>');
+  var tarning = document.getElementById("tarning");
+  var prickar = tarning.querySelectorAll(".prick");
+  var besked = document.getElementById("besked");
+  var statusRad = document.getElementById("status");
+  var extra = document.getElementById("extraregler");
 
-          const container = document.createElement('div');
-          container.innerHTML = formatted;
-          rulesList.appendChild(container);
-        }
-      });
-    })
-    .catch(error => {
-      console.error("Kunde inte läsa filen:", error);
-    });
+  var forstaSlaget = true;
+  var rullar = false;
+  var lastTill = 0;               // kort spärr efter att tärningen ska skickas vidare
+  var wakeLock = null;
+
+  try { extra.checked = localStorage.getItem("opus_extra") !== "nej"; } catch (e) {}
+  extra.addEventListener("change", function () {
+    try { localStorage.setItem("opus_extra", extra.checked ? "ja" : "nej"); } catch (e) {}
+  });
+
+  function visa(tal) {
+    var pa = MONSTER[tal];
+    for (var i = 0; i < 9; i++) prickar[i].classList.toggle("pa", pa.indexOf(i) !== -1);
+  }
+
+  function slumpa() {
+    if (window.crypto && crypto.getRandomValues) {
+      var a = new Uint32Array(1), grans = 4294967296 - (4294967296 % 6);
+      do { crypto.getRandomValues(a); } while (a[0] >= grans);
+      return (a[0] % 6) + 1;
+    }
+    return Math.floor(Math.random() * 6) + 1;
+  }
+
+  function setBesked(huvud, liten) {
+    besked.innerHTML = "";
+    besked.appendChild(document.createTextNode(huvud));
+    if (liten) {
+      var s = document.createElement("span");
+      s.className = "liten";
+      s.textContent = liten;
+      besked.appendChild(s);
+    }
+  }
+
+  function uppdateraStatus() {
+    statusRad.textContent = forstaSlaget ? "Första slaget" : "";
+  }
+
+  function hallSkarmenVaken() {
+    if (!wakeLock && "wakeLock" in navigator) {
+      navigator.wakeLock.request("screen").then(function (l) {
+        wakeLock = l;
+        l.addEventListener("release", function () { wakeLock = null; });
+      }).catch(function () {});
+    }
+  }
+
+  function sla() {
+    if (rullar || Date.now() < lastTill) return;
+    rullar = true;
+    hallSkarmenVaken();
+    tarning.classList.remove("sexa", "etta", "trea");
+    tarning.classList.add("rullar");
+    setBesked("…");
+    if (navigator.vibrate) navigator.vibrate(30);
+
+    var steg = 0;
+    var bytTimer = setInterval(function () {
+      visa(slumpa());
+      if (++steg >= 7) {
+        clearInterval(bytTimer);
+        resultat(slumpa());
+      }
+    }, 70);
+  }
+
+  function resultat(tal) {
+    visa(tal);
+    tarning.classList.remove("rullar");
+    rullar = false;
+    var forsta = forstaSlaget;
+
+    if (tal === 6) {
+      tarning.classList.add("sexa");
+      if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+      if (forsta) setBesked("SEXA på första slaget!", "Du väljer själv vem som får tärningen.");
+      else setBesked("SEXA!", "Skicka tärningen vidare medsols.");
+      forstaSlaget = true;
+      lastTill = Date.now() + 900;
+    } else if (extra.checked && tal === 1) {
+      tarning.classList.add("etta");
+      if (navigator.vibrate) navigator.vibrate(200);
+      setBesked("Etta!", "Tärningen går tillbaka ett steg (motsols).");
+      forstaSlaget = true;
+      lastTill = Date.now() + 900;
+    } else if (extra.checked && tal === 3) {
+      tarning.classList.add("trea");
+      setBesked("Trea – ta en klunk!", "Slå sedan igen.");
+      forstaSlaget = false;
+    } else {
+      setBesked("Slå igen!");
+      forstaSlaget = false;
+    }
+    uppdateraStatus();
+  }
+
+  tarning.addEventListener("click", sla);
+  document.addEventListener("keydown", function (e) {
+    var f = document.activeElement;
+    if ((e.key === " " || e.key === "Enter") && (f === document.body || f === tarning)) { e.preventDefault(); sla(); }
+  });
+
+  document.getElementById("nyPerson").addEventListener("click", function () {
+    forstaSlaget = true;
+    tarning.classList.remove("sexa", "etta", "trea");
+    setBesked("Tryck på tärningen för att slå");
+    uppdateraStatus();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && wakeLock === null && rullar === false && besked.textContent !== "Tryck på tärningen för att slå") hallSkarmenVaken();
+  });
+
+  visa(6);
 </script>
 
+<script>
+  /* Bildadresser med versionsnummer */
+  (function () {
+    var bilder = document.querySelectorAll("img[data-src]");
+    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
+  })();
+
+  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+      function forladda() {
+        var sw = navigator.serviceWorker.controller;
+        if (!sw) return;
+        var urls = [].map(v);
+        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
+        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
+      }
+      navigator.serviceWorker.addEventListener("controllerchange", forladda);
+      setTimeout(forladda, 1500);
+    });
+  }
+</script>
 </body>
 </html>

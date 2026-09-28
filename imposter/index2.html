@@ -2,51 +2,23 @@
 <html lang="sv">
 <head>
   
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-E6WCG90MQZ');
+</script>
   <meta charset="UTF-8">
   <title>Who's the Imposter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    /* =====================================================================
-       VERSION – höj denna när du byter ut en BILD i den här leken
-       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
-       i stället för den gamla som ligger sparad i deras webbläsare.
-       Text i den här filen och i .txt-filer syns alltid direkt ändå.
-       ===================================================================== */
-    var VERSION = "1";
-
-    function v(url) { return url + "?v=" + VERSION; }
-    (function () {
-      var bakgrund = "webb/background.webp";
-      var forst = ["webb/rubrik.webp"];
-      if (bakgrund) {
-        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
-        forst.unshift(bakgrund);
-      }
-      forst.forEach(function (h) {
-        var l = document.createElement("link");
-        l.rel = "preload"; l.as = "image"; l.href = v(h);
-        document.head.appendChild(l);
-      });
-    })();
-    /* Textfilen börjar hämtas direkt (alltid senaste versionen från servern) */
-    var textLaddas = fetch("platser.txt", { cache: "no-cache" })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); });
-  </script>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-E6WCG90MQZ');
-  </script>
   <link rel="icon" type="image/x-icon" href="imposterlogga.ico">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; font-family: 'Arial', sans-serif; }
-    html { background-color: #0a0a0f; }
-    .background { position: fixed; top: 0; left: 0; height: 100vh; width: 100vw; z-index: -1; background-color: #0a0a0f; background-image: var(--bg); background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .background { position: fixed; top: 0; left: 0; height: 100vh; width: 100vw; z-index: -1; background-image: url("background.png"); background-size: cover; background-position: center; background-repeat: no-repeat; }
     body { padding: 60px 10px 10px 10px; color: #fff; }
     h1, h2 { text-align: center; text-shadow: 2px 2px 6px #000; margin-bottom: 20px; }
     .container { background: none; border-radius: 15px; padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -182,8 +154,6 @@
       overflow: hidden;
     }
 
-    #starterOverlay { display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7); z-index: 1100; }
-
     #wheelContainer {
       position: relative;
       width: 100%;
@@ -267,7 +237,7 @@
 </head>
 <body>
   <div class="background"></div>
-  <img data-src="webb/rubrik.webp" alt="Who's the Imposter" class="header-image" width="1496" height="232" fetchpriority="high">
+  <img src="rubrik.png" alt="Who's the Imposter" class="header-image">
   <div class="container">
     <div id="setup">
       <div id="nameInputsContainer"></div>
@@ -319,7 +289,7 @@
   <div id="starterPopup">
     <div id="wheelContainer">
       <div id="wheelNames"></div>
-      <img id="wheelArrow" data-src="webb/pil.webp" alt="Pil" width="480" height="51">
+      <img id="wheelArrow" src="pil.png" alt="Arrow">
       <div id="chosenName"></div>
       <button id="closeStarterBtn" onclick="closeStarterPopup()">Stäng</button>
     </div>
@@ -337,7 +307,8 @@
 
     async function loadLocations() {
       try {
-        const text = await textLaddas;   // platser.txt, hämtas redan i <head>
+        const response = await fetch("platser.txt");
+        const text = await response.text();
         defaultLocations = text
           .split("\n")
           .map(line => line.trim())
@@ -469,28 +440,19 @@
       assignRoles(numImposters);
     }
 
-    // Rättvis blandning (Fisher–Yates)
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
     function assignRoles(numImposters) {
       roles = {};
-      // Roller kopplas till spelarens plats i listan, så två spelare med samma namn funkar också
-      const imposterIndex = shuffle(players.map((_, i) => i)).slice(0, numImposters);
+      const shuffled = [...players].sort(() => Math.random() - 0.5);
+      const imposters = shuffled.slice(0, numImposters);
       currentLocation = locations[Math.floor(Math.random() * locations.length)];
 
-      players.forEach((p, i) => {
-        roles[i] = imposterIndex.includes(i) ? "Imposter" : currentLocation;
+      players.forEach(p => {
+        roles[p] = imposters.includes(p) ? "Imposter" : currentLocation;
       });
 
       const container = document.getElementById('playerButtons');
       container.innerHTML = "";
-      players.forEach((p, i) => {
+      players.forEach(p => {
         const btn = document.createElement('button');
         btn.innerText = p;
         btn.className = 'player-btn';
@@ -499,10 +461,10 @@
           btn.classList.add('used');
           btn.disabled = true;
           const revealText = document.getElementById('revealText');
-          if (roles[i] === "Imposter") {
-            revealText.innerHTML = `<img src="${v('webb/imposter2.webp')}" alt="IMPOSTER!" width="648" height="208" style="max-width:100%; height:auto;">`;
+          if (roles[p] === "Imposter") {
+            revealText.innerHTML = `<img src="imposter2.png" alt="IMPOSTER!" style="max-width:100%; height:auto;">`;
           } else {
-            revealText.innerText = `${roles[i]}`;
+            revealText.innerText = `${roles[p]}`;
           }
           document.getElementById('overlay').style.display = 'block';
           document.getElementById('revealBox').style.display = 'block';
@@ -604,8 +566,8 @@
       if (playerCount >= 2) {
         const anglePer = 360 / playerCount;
         targetIndex = Math.floor(Math.random() * playerCount);
-        const offset = (Math.random() - 0.5) * anglePer * 0.24;  // lite slump, men alltid tydligt på ett namn
-        targetAngle = targetIndex * anglePer - 90 + offset;       // -90 eftersom pilbilden pekar åt höger
+        const offset = (Math.random() * 0.8 - 0.4) * anglePer * 0.9;
+        targetAngle = (targetIndex + 0.5) * anglePer + offset;
       } else {
         targetAngle = Math.random() * 360;
       }
@@ -674,28 +636,5 @@
 
 
   </script>
-<script>
-  /* Bildadresser med versionsnummer */
-  (function () {
-    var bilder = document.querySelectorAll("img[data-src]");
-    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
-  })();
-
-  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-      function forladda() {
-        var sw = navigator.serviceWorker.controller;
-        if (!sw) return;
-        var urls = ["webb/background.webp", "webb/imposter2.webp", "webb/pil.webp"].map(v);
-        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
-        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
-      }
-      navigator.serviceWorker.addEventListener("controllerchange", forladda);
-      setTimeout(forladda, 1500);
-    });
-  }
-</script>
 </body>
 </html>

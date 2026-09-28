@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-E6WCG90MQZ');
+</script>
+  <meta charset="UTF-8">
+  <title>Lyric Confessions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Times New Roman', serif;
+      color: #fff;
+      padding: 10px;
+    }
+
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      z-index: -1;
+      background-image: url("stage.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .header-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 40px;
+      margin-bottom: 50px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 10px;
+    }
+
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px #000;
+    }
+
+    .rules-list {
+      background: rgba(0, 0, 0, 0.6);
+      list-style-type: none;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .rules-list li {
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+    .big-text {
+      font-size: 1.2em;     /* Ändra värdet för ännu större text */
+      font-weight: bold;
+      text-align: center;
+      display: block;
+      margin: 20px 0;
+    }
+
+    .playlist-button {
+      display: block;                     /* Gör knappen till block-element */
+      margin: 30px auto 60px auto;        /* Toppmarginal, auto = centrering, mer nederkant */
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<div class="background"></div>
+
+  <img src="lyric2.png" alt="Lyric Confessions" class="header-image">
+
+  <!-- Spellistaknapp -->
+  <div class="playlist-wrapper">
+    <a href="https://open.spotify.com/playlist/5X2A2izY9sjA8PLx9fdj0B?si=5f169a7cb39b4acf" target="_blank" class="playlist-button">
+       Öppna Spellistan🎵
+    </a>
+  </div>
+
+  <ul class="rules-list" id="rules"></ul>
+
+
+  <div class="background"></div>
+  <img src="lyric2.png" alt="Lyric Confessions" class="header-image">
+  <!--<h1>Regler</h1>-->
+
+  <ul class="rules-list" id="rules"></ul>
+<script>
+  fetch('lyrics.txt')
+    .then(response => response.text())
+    .then(data => {
+      const rulesList = document.getElementById('rules');
+      const lines = data.split('\n');
+
+      lines.forEach(line => {
+        if (line.trim() !== "") {
+          // Formatera texten
+          let formatted = line
+            .replace(/^# (.*)/, '<h2>$1</h2>')                 // # = Rubrik (stor)
+            .replace(/^## (.*)/, '<h3>$1</h3>')                // ## = Underrubrik
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // **fet stil**
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *kursiv stil*
+            .replace(/__(.*?)__/g, '<span class="big-text">$1</span>') // __stor text__
+            .replace(/--/g, '<br><br>');                       // -- = radbrytning
+
+          const container = document.createElement('div');
+          container.innerHTML = formatted;
+          rulesList.appendChild(container);
+        }
+      });
+    })
+    .catch(error => {
+      console.error("Kunde inte läsa filen:", error);
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,18 +1,42 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6WCG90MQZ');
-</script>
   <meta charset="UTF-8">
-  <title>Ring of Fire</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ring of Fire</title>
+  <script>
+    /* =====================================================================
+       VERSION – höj denna när du byter ut en BILD i den här leken
+       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
+       i stället för den gamla som ligger sparad i deras webbläsare.
+       Text i den här filen och i .txt-filer syns alltid direkt ändå.
+       ===================================================================== */
+    var VERSION = "1";
+
+    function v(url) { return url + "?v=" + VERSION; }
+    (function () {
+      var bakgrund = "webb/wood.webp";
+      var forst = ["webb/rubrik.webp"];
+      if (bakgrund) {
+        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
+        forst.unshift(bakgrund);
+      }
+      forst.forEach(function (h) {
+        var l = document.createElement("link");
+        l.rel = "preload"; l.as = "image"; l.href = v(h);
+        document.head.appendChild(l);
+      });
+    })();
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6WCG90MQZ');
+  </script>
+  <link rel="icon" type="image/x-icon" href="/bilder/dryckeslekarlogga.ico">
   <style>
     * {
       margin: 0;
@@ -25,6 +49,8 @@
       font-family: 'Times New Roman', serif;
     }
 
+    html { background-color: #1a0d05; }
+
     /* Bakgrundsbild som alltid ligger stilla */
     .background {
       position: fixed;
@@ -33,7 +59,8 @@
       height: 100vh;
       width: 100vw;
       z-index: -1;
-      background-image: url("wood.png");
+      background-color: #1a0d05;
+      background-image: var(--bg);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -72,13 +99,13 @@
       font-size: 1.1em;
       line-height: 1.6;
     }
-        .card-img {
+
+    .card-img {
       width: 30px;
       height: auto;
       vertical-align: middle;
       margin-right: 10px;
     }
-
   </style>
 </head>
 <body>
@@ -87,25 +114,48 @@
   <div class="background"></div>
 
   <!-- Innehåll -->
-  <img src="rubrik.png" alt="Ring of Fire" class="header-image">
+  <img data-src="webb/rubrik.webp" alt="Ring of Fire" class="header-image" width="1024" height="536" fetchpriority="high">
 
   <h1>Regler</h1>
 
   <ul class="rules-list">
-  <li><img src="2.png" alt="2" class="card-img">Is you – välj någon som måste dricka.</li>
-  <li><img src="3.png" alt="3" class="card-img">Is me – du själv dricker.</li>
-  <li><img src="4.png" alt="4" class="card-img">Is whore – alla tjejer dricker.</li>
-  <li><img src="5.png" alt="5" class="card-img">Is thumbmaster – sätt tummen på bordet, sist dricker.</li>
-  <li><img src="6.png" alt="6" class="card-img">Is dicks – alla killar dricker.</li>
-  <li><img src="7.png" alt="7" class="card-img">Is heaven – peka mot himlen, sist dricker.</li>
-  <li><img src="8.png" alt="8" class="card-img">Is mate – välj en kompis som dricker varje gång du dricker.</li>
-  <li><img src="9.png" alt="9" class="card-img">Is rhyme – börja ett rim, förloraren dricker.</li>
-  <li><img src="10.png" alt="10" class="card-img">Is category – välj kategori, förloraren dricker.</li>
-  <li><img src="J.png" alt="Jack" class="card-img">Is rule – hitta på en ny regel som gäller resten av spelet.</li>
-  <li><img src="Q.png" alt="Queen" class="card-img">Is question master – om någon svarar på din fråga måste de dricka.</li>
-  <li><img src="K.png" alt="King" class="card-img">Häll i muggen, den som drar sista kungen eller bryter cirkeln dricker allt.</li>
-  <li><img src="A.png" alt="Ace" class="card-img">"Waterfall" – alla börjar dricka, ingen får sluta förrän personen före dem gör det.</li>
-</ul>
+    <li><img data-src="webb/2.webp" alt="2" class="card-img" width="90" height="99">Is you – välj någon som måste dricka.</li>
+    <li><img data-src="webb/3.webp" alt="3" class="card-img" width="90" height="99">Is me – du själv dricker.</li>
+    <li><img data-src="webb/4.webp" alt="4" class="card-img" width="90" height="98">Is whore – alla tjejer dricker.</li>
+    <li><img data-src="webb/5.webp" alt="5" class="card-img" width="90" height="98">Is thumbmaster – sätt tummen på bordet, sist dricker.</li>
+    <li><img data-src="webb/6.webp" alt="6" class="card-img" width="90" height="99">Is dicks – alla killar dricker.</li>
+    <li><img data-src="webb/7.webp" alt="7" class="card-img" width="90" height="98">Is heaven – peka mot himlen, sist dricker.</li>
+    <li><img data-src="webb/8.webp" alt="8" class="card-img" width="90" height="98">Is mate – välj en kompis som dricker varje gång du dricker.</li>
+    <li><img data-src="webb/9.webp" alt="9" class="card-img" width="90" height="98">Is rhyme – börja ett rim, förloraren dricker.</li>
+    <li><img data-src="webb/10.webp" alt="10" class="card-img" width="90" height="97">Is category – välj kategori, förloraren dricker.</li>
+    <li><img data-src="webb/J.webp" alt="Jack" class="card-img" width="90" height="100">Is rule – hitta på en ny regel som gäller resten av spelet.</li>
+    <li><img data-src="webb/Q.webp" alt="Queen" class="card-img" width="90" height="100">Is question master – om någon svarar på din fråga måste de dricka.</li>
+    <li><img data-src="webb/K.webp" alt="King" class="card-img" width="90" height="100">Häll i muggen, den som drar sista kungen eller bryter cirkeln dricker allt.</li>
+    <li><img data-src="webb/A.webp" alt="Ace" class="card-img" width="90" height="97">"Waterfall" – alla börjar dricka, ingen får sluta förrän personen före dem gör det.</li>
+  </ul>
 
+<script>
+  /* Bildadresser med versionsnummer */
+  (function () {
+    var bilder = document.querySelectorAll("img[data-src]");
+    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
+  })();
+
+  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+      function forladda() {
+        var sw = navigator.serviceWorker.controller;
+        if (!sw) return;
+        var urls = ["webb/wood.webp"].map(v);
+        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
+        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
+      }
+      navigator.serviceWorker.addEventListener("controllerchange", forladda);
+      setTimeout(forladda, 1500);
+    });
+  }
+</script>
 </body>
 </html>

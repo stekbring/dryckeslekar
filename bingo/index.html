@@ -1,18 +1,45 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6WCG90MQZ');
-</script>
   <meta charset="UTF-8">
-  <title>ÖlBingo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÖlBingo</title>
+  <script>
+    /* =====================================================================
+       VERSION – höj denna när du byter ut en BILD i den här leken
+       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
+       i stället för den gamla som ligger sparad i deras webbläsare.
+       Text i den här filen och i .txt-filer syns alltid direkt ändå.
+       ===================================================================== */
+    var VERSION = "1";
+
+    function v(url) { return url + "?v=" + VERSION; }
+    (function () {
+      var bakgrund = "webb/bingobakgrund.webp";
+      var forst = ["webb/rubrik.webp"];
+      if (bakgrund) {
+        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
+        forst.unshift(bakgrund);
+      }
+      forst.forEach(function (h) {
+        var l = document.createElement("link");
+        l.rel = "preload"; l.as = "image"; l.href = v(h);
+        document.head.appendChild(l);
+      });
+    })();
+  </script>
+  <script>
+    document.documentElement.style.setProperty("--markering", 'url("' + v("webb/markering.webp") + '")');
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6WCG90MQZ');
+  </script>
+  <link rel="icon" type="image/x-icon" href="/bilder/dryckeslekarlogga.ico">
   <style>
     .latest-number {
       position: fixed;
@@ -39,10 +66,12 @@
       left: 0;
       height: 100%;
       width: 100%;
-      background: #111 url('bingobakgrund.png') no-repeat center center;
+      background: #111 var(--bg) no-repeat center center;
       background-size: cover;
       z-index: -1;
     }
+
+    html { background: #111; }
 
     body {
       margin: 0;
@@ -76,6 +105,11 @@
       text-align: center;
     }
 
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
     .section {
       display: none;
       flex-direction: column;
@@ -90,6 +124,10 @@
       background: rgba(0, 0, 0, 0.6);
       padding: 10px;
       border-radius: 8px;
+    }
+
+    .drawn-numbers:empty {
+      display: none;
     }
 
     .bingo-board {
@@ -118,7 +156,7 @@
       position: absolute;
       width: 30px;
       height: 30px;
-      background-image: url('markering.png');
+      background-image: var(--markering);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -152,6 +190,8 @@
 
     .logo {
       max-width: 300px;
+      width: 100%;
+      height: auto;
       margin-bottom: 40px;
       display: block;
       margin-left: auto;
@@ -162,7 +202,6 @@
       margin: 10px 0;
     }
 
-    /* === NY FLEX-LAYOUT FÖR HOST-VYN === */
     #host {
       flex-direction: column;
       align-items: center;
@@ -175,20 +214,21 @@
       position: relative;
     }
 
-    /* Justera position längst ner för back-knappen */
     #back-btn {
       margin-top: auto;
       margin-bottom: 50px;
     }
 
-
+    #player {
+      padding-bottom: 40px;
+    }
   </style>
 </head>
 <body>
 
 <!-- START SCREEN -->
 <div id="start-screen">
-  <img src="rubrik.png" alt="ÖlBingo" class="logo">
+  <img data-src="webb/rubrik.webp" alt="ÖlBingo" class="logo" width="717" height="529" fetchpriority="high">
   <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-top: 30px;">
     <button class="btn" onclick="showSection('host')">Speaker</button>
     <button class="btn" onclick="showSection('player')">Player</button>
@@ -197,7 +237,7 @@
 
 <!-- HOST VIEW -->
 <div id="latest-number" class="latest-number"></div>
-<div id="host" class="section" style="position: relative;">
+<div id="host" class="section">
   <button id="draw-btn" class="btn" onclick="drawNumber()">Nytt nummer</button>
   <button id="reset-btn" class="btn" onclick="resetNumbers()">Ny bricka</button>
 
@@ -207,7 +247,7 @@
   </div>
 
   <div id="game-mode-selector">
-    <label>Spelform:</label>
+    <label for="mode">Spelform:</label>
     <select id="mode">
       <option>En rad</option>
       <option>Två rader</option>
@@ -223,179 +263,216 @@
 <div id="player" class="section">
   <div id="bingo-container"></div>
   <button class="btn" onclick="bingoSound()">BINGO!</button>
+  <button class="btn back-btn" onclick="newCards()">Nya brickor</button>
   <button class="btn back-btn" onclick="goBack()">Tillbaka</button>
 </div>
 
 <script>
-  const spokenNumbers = [];
+  /* Dragna nummer och brickor sparas i webbläsaren, så inget försvinner
+     om man råkar ladda om sidan eller trycker Tillbaka. */
+  function lasa(nyckel, standard) {
+    try { var s = localStorage.getItem(nyckel); return s ? JSON.parse(s) : standard; } catch (e) { return standard; }
+  }
+  function spara(nyckel, varde) {
+    try { localStorage.setItem(nyckel, JSON.stringify(varde)); } catch (e) {}
+  }
+
+  var spokenNumbers = lasa("bingo_dragna", []);
+  var cards = lasa("bingo_brickor", null);
+  var marks = lasa("bingo_markeringar", {});
+
+  document.getElementById("autoSpeak").checked = lasa("bingo_uppläsning", false);
+  document.getElementById("autoSpeak").addEventListener("change", function () {
+    spara("bingo_uppläsning", this.checked);
+  });
+  document.getElementById("mode").value = lasa("bingo_spelform", "En rad");
+  document.getElementById("mode").addEventListener("change", function () {
+    spara("bingo_spelform", this.value);
+  });
 
   function showSection(id) {
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("host").style.display = "none";
     document.getElementById("player").style.display = "none";
     document.getElementById(id).style.display = "flex";
-    if (id === 'player') generateBingoCard();
+    if (id === "player") renderCards();
+    if (id === "host") renderHost();
   }
 
   function goBack() {
-    resetNumbers();
     document.getElementById("host").style.display = "none";
     document.getElementById("player").style.display = "none";
+    document.getElementById("latest-number").style.display = "none";
     document.getElementById("start-screen").style.display = "block";
   }
 
-  function drawNumber() {
-    let num;
-    do {
-      num = Math.floor(Math.random() * 89) + 1;
-    } while (spokenNumbers.includes(num));
-    spokenNumbers.push(num);
+  function renderHost() {
     document.getElementById("drawn").innerText = spokenNumbers.join(", ");
-    if (document.getElementById("autoSpeak").checked) speakNumber(num);
+    var latestDiv = document.getElementById("latest-number");
+    if (spokenNumbers.length) {
+      latestDiv.textContent = spokenNumbers[spokenNumbers.length - 1];
+      latestDiv.style.display = "block";
+    } else {
+      latestDiv.style.display = "none";
+    }
+    var drawBtn = document.getElementById("draw-btn");
+    drawBtn.disabled = spokenNumbers.length >= 90;
+    drawBtn.textContent = spokenNumbers.length >= 90 ? "Alla 90 nummer är dragna" : "Nytt nummer";
+  }
 
-    const latestDiv = document.getElementById("latest-number");
-    latestDiv.textContent = num;
-    latestDiv.style.display = "block";
+  function drawNumber() {
+    if (spokenNumbers.length >= 90) return;
+    var kvar = [];
+    for (var n = 1; n <= 90; n++) if (spokenNumbers.indexOf(n) === -1) kvar.push(n);
+    var num = kvar[Math.floor(Math.random() * kvar.length)];
+    spokenNumbers.push(num);
+    spara("bingo_dragna", spokenNumbers);
+    renderHost();
+    if (document.getElementById("autoSpeak").checked) speakNumber(num);
   }
 
   function speakNumber(n) {
-    const utterance = new SpeechSynthesisUtterance(n.toString());
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    var utterance = new SpeechSynthesisUtterance(String(n));
+    utterance.lang = "sv-SE";
     speechSynthesis.speak(utterance);
   }
 
   function resetNumbers() {
-    spokenNumbers.length = 0;
-    document.getElementById("drawn").innerText = "";
-    document.getElementById("latest-number").style.display = "none";
+    spokenNumbers = [];
+    spara("bingo_dragna", spokenNumbers);
+    renderHost();
   }
 
-function generateBingoCard() {
-  const container = document.getElementById("bingo-container");
-  container.innerHTML = "";
-
-  const colRanges = [
-    [1, 9], [10, 19], [20, 29], [30, 39],
-    [40, 49], [50, 59], [60, 69], [70, 79], [80, 90]
-  ];
-  const totalNumbersPerColumn = [9, 10, 10, 10, 10, 10, 10, 10, 11];
-
-  // Skapa unika siffror per kolumn
-  const columnNumbers = colRanges.map(([start, end], idx) => {
-    const nums = [];
-    for (let i = start; i <= end; i++) nums.push(i);
-    shuffleArray(nums);
-    return nums.slice(0, totalNumbersPerColumn[idx]);
-  });
-
-  // Initiera 18 tomma rader (6 brickor * 3 rader = 18 rader)
-  const allRows = Array.from({ length: 18 }, () => Array(9).fill(null));
-  const rowFillCounts = Array(18).fill(0); // hur många siffror per rad (ska bli exakt 5)
-
-  // För varje kolumn, placera dess siffror på rader där det finns plats
-  for (let col = 0; col < 9; col++) {
-    const nums = columnNumbers[col];
-    let attempts = 0;
-
-    while (true) {
-      const rowCandidates = [];
-
-      for (let i = 0; i < 18; i++) {
-        if (allRows[i][col] === null && rowFillCounts[i] < 5) {
-          rowCandidates.push(i);
+  /* Skapar en "remsa" med 6 brickor som tillsammans innehåller alla nummer 1–90 exakt en gång.
+     Varje bricka: 3 rader × 5 nummer, varje kolumn har 1–3 nummer, stigande uppifrån och ner. */
+  function blanda(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function skapaBrickor(){
+    const kolumner=[[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
+    for(let forsok=0;forsok<1000;forsok++){
+      // 1) Hur många nummer varje bricka får i varje kolumn (1–3), 15 per bricka
+      const antal=Array.from({length:6},()=>Array(9).fill(1));
+      const plats=Array(6).fill(6); let ok=true;
+      const ordning=blanda([...Array(9).keys()]).sort((a,b)=>(kolumner[b][1]-kolumner[b][0])-(kolumner[a][1]-kolumner[a][0]));
+      for(const k of ordning){
+        let extra=(kolumner[k][1]-kolumner[k][0]+1)-6;
+        while(extra>0){
+          const kand=[...Array(6).keys()].filter(t=>plats[t]>0&&antal[t][k]<3);
+          if(!kand.length){ok=false;break;}
+          const max=Math.max(...kand.map(t=>plats[t]));
+          const bast=kand.filter(t=>plats[t]===max);
+          const t=bast[Math.floor(Math.random()*bast.length)];
+          antal[t][k]++;plats[t]--;extra--;
         }
+        if(!ok)break;
       }
-
-      if (rowCandidates.length < nums.length) {
-        // Misslyckades, starta om hela processen
-        return generateBingoCard();
-      }
-
-      shuffleArray(rowCandidates);
-      const selectedRows = rowCandidates.slice(0, nums.length);
-      let valid = true;
-
-      // Kolla så vi inte får mer än 5 i nån rad
-      for (let i = 0; i < selectedRows.length; i++) {
-        if (rowFillCounts[selectedRows[i]] >= 5) {
-          valid = false;
-          break;
-        }
-      }
-
-      if (!valid) {
-        if (++attempts > 5) return generateBingoCard(); // säkerhetsåterstart
-        continue;
-      }
-
-      // Tilldela siffror till valda rader i denna kolumn
-      for (let i = 0; i < selectedRows.length; i++) {
-        const rowIndex = selectedRows[i];
-        allRows[rowIndex][col] = nums[i];
-        rowFillCounts[rowIndex]++;
-      }
-
-      break;
-    }
-  }
-
-  // Kontroll: exakt 5 siffror i varje rad
-  if (!rowFillCounts.every(c => c === 5)) {
-    return generateBingoCard();
-  }
-
-  // Dela upp rader till 6 brickor à 3 rader
-  const cards = [];
-  for (let i = 0; i < 6; i++) {
-    const rows = [
-      allRows[i * 3],
-      allRows[i * 3 + 1],
-      allRows[i * 3 + 2]
-    ];
-    cards.push(rows);
-  }
-
-  // Rendera brickorna
-  for (const card of cards) {
-    const board = document.createElement("div");
-    board.className = "bingo-board";
-
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 9; c++) {
-        const cell = document.createElement("div");
-        cell.className = "bingo-cell";
-        if (card[r][c] !== null) {
-          const span = document.createElement("span");
-          span.textContent = card[r][c];
-          cell.appendChild(span);
-        }
-        cell.addEventListener("click", () => {
-          if (cell.textContent) {
-            cell.classList.toggle("marked");
+      if(!ok||plats.some(p=>p!==0))continue;
+      // 2) Placera i rader: varje rad exakt 5
+      const layouter=[];
+      for(let t=0;t<6&&ok;t++){
+        let hittad=null;
+        for(let f2=0;f2<200&&!hittad;f2++){
+          const rader=[[],[],[]];const radAntal=[0,0,0];let bra=true;
+          const kol=blanda([...Array(9).keys()]).sort((a,b)=>antal[t][b]-antal[t][a]);
+          for(const k of kol){
+            const n=antal[t][k];
+            const valbara=[0,1,2].filter(r=>radAntal[r]<5);
+            if(valbara.length<n){bra=false;break;}
+            blanda(valbara).sort((a,b)=>radAntal[a]-radAntal[b]);
+            for(const r of valbara.slice(0,n)){rader[r].push(k);radAntal[r]++;}
           }
-        });
-        board.appendChild(cell);
+          if(bra&&radAntal.every(x=>x===5))hittad=rader;
+        }
+        if(!hittad)ok=false;else layouter.push(hittad);
       }
+      if(!ok)continue;
+      // 3) Fyll i nummer, stigande uppifrån och ner i varje kolumn
+      const pooler=kolumner.map(([a,b])=>blanda(Array.from({length:b-a+1},(_,i)=>a+i)));
+      return layouter.map((rader,t)=>{
+        const grid=[Array(9).fill(null),Array(9).fill(null),Array(9).fill(null)];
+        for(let k=0;k<9;k++){
+          const radIdx=[0,1,2].filter(r=>rader[r].includes(k));
+          const nums=pooler[k].splice(0,radIdx.length).sort((a,b)=>a-b);
+          radIdx.forEach((r,i)=>grid[r][k]=nums[i]);
+        }
+        return grid;
+      });
     }
-
-    container.appendChild(board);
+    throw new Error('kunde inte skapa brickor');
   }
 
-  // Slumpar en array
-  function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
+
+  function newCards() {
+    cards = skapaBrickor();
+    marks = {};
+    spara("bingo_brickor", cards);
+    spara("bingo_markeringar", marks);
+    renderCards();
   }
-}
 
+  function renderCards() {
+    if (!cards) { newCards(); return; }
+    var container = document.getElementById("bingo-container");
+    container.innerHTML = "";
+    cards.forEach(function (card) {
+      var board = document.createElement("div");
+      board.className = "bingo-board";
+      for (var r = 0; r < 3; r++) {
+        for (var c = 0; c < 9; c++) {
+          var cell = document.createElement("div");
+          cell.className = "bingo-cell";
+          var tal = card[r][c];
+          if (tal !== null) {
+            var span = document.createElement("span");
+            span.textContent = tal;
+            cell.appendChild(span);
+            if (marks[tal]) cell.classList.add("marked");
+            cell.addEventListener("click", (function (cell, tal) {
+              return function () {
+                cell.classList.toggle("marked");
+                if (cell.classList.contains("marked")) marks[tal] = 1; else delete marks[tal];
+                spara("bingo_markeringar", marks);
+              };
+            })(cell, tal));
+          }
+          board.appendChild(cell);
+        }
+      }
+      container.appendChild(board);
+    });
+  }
 
-
+  var bingoLjud = null;
   function bingoSound() {
-    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-    audio.play();
+    if (!bingoLjud) bingoLjud = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    bingoLjud.currentTime = 0;
+    bingoLjud.play().catch(function () {});
   }
 </script>
 
+<script>
+  /* Bildadresser med versionsnummer */
+  (function () {
+    var bilder = document.querySelectorAll("img[data-src]");
+    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
+  })();
+
+  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+      function forladda() {
+        var sw = navigator.serviceWorker.controller;
+        if (!sw) return;
+        var urls = ["webb/bingobakgrund.webp", "webb/markering.webp"].map(v);
+        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
+        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
+      }
+      navigator.serviceWorker.addEventListener("controllerchange", forladda);
+      setTimeout(forladda, 1500);
+    });
+  }
+</script>
 </body>
 </html>

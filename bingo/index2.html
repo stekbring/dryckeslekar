@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-E6WCG90MQZ');
+</script>
+  <meta charset="UTF-8">
+  <title>ÖlBingo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .latest-number {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 5em;
+      color: #ffd700;
+      text-shadow: 2px 2px 8px #000, 0 0 20px #ffd700;
+      z-index: 10;
+      font-weight: bold;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: 0.1em;
+      min-width: 1.5em;
+      text-align: center;
+      display: none;
+    }
+
+    html::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: #111 url('bingobakgrund.png') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px 10px 10px 10px;
+      font-family: Arial, sans-serif;
+      background: transparent;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      margin: 15px 0;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      background: #03587a;
+      color: white;
+      cursor: pointer;
+      display: block;
+      width: 250px;
+      max-width: 80%;
+      text-align: center;
+    }
+
+    .section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .drawn-numbers {
+      margin-top: 20px;
+      max-width: 300px;
+      word-wrap: break-word;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .bingo-board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      margin-top: 20px;
+    }
+
+    .bingo-cell {
+      width: 35px;
+      height: 35px;
+      background: #333;
+      border: 1px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      position: relative;
+      font-size: 0.9em;
+      user-select: none;
+    }
+
+    .bingo-cell.marked::after {
+      content: "";
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-image: url('markering.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bingo-cell span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .toggle-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
+      width: 250px;
+      max-width: 80%;
+    }
+
+    .back-btn {
+      font-size: 0.9em;
+      padding: 8px 16px;
+      background: #444;
+      width: 250px;
+      max-width: 80%;
+    }
+
+    .logo {
+      max-width: 300px;
+      margin-bottom: 40px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #start-screen button {
+      margin: 10px 0;
+    }
+
+    /* === NY FLEX-LAYOUT FÖR HOST-VYN === */
+    #host {
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 150px; /* plats för latest-number */
+      gap: 20px;
+      height: 100vh;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* Justera position längst ner för back-knappen */
+    #back-btn {
+      margin-top: auto;
+      margin-bottom: 50px;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <img src="rubrik.png" alt="ÖlBingo" class="logo">
+  <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-top: 30px;">
+    <button class="btn" onclick="showSection('host')">Speaker</button>
+    <button class="btn" onclick="showSection('player')">Player</button>
+  </div>
+</div>
+
+<!-- HOST VIEW -->
+<div id="latest-number" class="latest-number"></div>
+<div id="host" class="section" style="position: relative;">
+  <button id="draw-btn" class="btn" onclick="drawNumber()">Nytt nummer</button>
+  <button id="reset-btn" class="btn" onclick="resetNumbers()">Ny bricka</button>
+
+  <div id="toggle-container" class="toggle-container">
+    <label for="autoSpeak">Automatisk uppläsning</label>
+    <input type="checkbox" id="autoSpeak">
+  </div>
+
+  <div id="game-mode-selector">
+    <label>Spelform:</label>
+    <select id="mode">
+      <option>En rad</option>
+      <option>Två rader</option>
+      <option>Hel bricka</option>
+    </select>
+  </div>
+
+  <div class="drawn-numbers" id="drawn"></div>
+  <button id="back-btn" class="btn back-btn" onclick="goBack()">Tillbaka</button>
+</div>
+
+<!-- PLAYER VIEW -->
+<div id="player" class="section">
+  <div id="bingo-container"></div>
+  <button class="btn" onclick="bingoSound()">BINGO!</button>
+  <button class="btn back-btn" onclick="goBack()">Tillbaka</button>
+</div>
+
+<script>
+  const spokenNumbers = [];
+
+  function showSection(id) {
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("host").style.display = "none";
+    document.getElementById("player").style.display = "none";
+    document.getElementById(id).style.display = "flex";
+    if (id === 'player') generateBingoCard();
+  }
+
+  function goBack() {
+    resetNumbers();
+    document.getElementById("host").style.display = "none";
+    document.getElementById("player").style.display = "none";
+    document.getElementById("start-screen").style.display = "block";
+  }
+
+  function drawNumber() {
+    let num;
+    do {
+      num = Math.floor(Math.random() * 89) + 1;
+    } while (spokenNumbers.includes(num));
+    spokenNumbers.push(num);
+    document.getElementById("drawn").innerText = spokenNumbers.join(", ");
+    if (document.getElementById("autoSpeak").checked) speakNumber(num);
+
+    const latestDiv = document.getElementById("latest-number");
+    latestDiv.textContent = num;
+    latestDiv.style.display = "block";
+  }
+
+  function speakNumber(n) {
+    const utterance = new SpeechSynthesisUtterance(n.toString());
+    speechSynthesis.speak(utterance);
+  }
+
+  function resetNumbers() {
+    spokenNumbers.length = 0;
+    document.getElementById("drawn").innerText = "";
+    document.getElementById("latest-number").style.display = "none";
+  }
+
+function generateBingoCard() {
+  const container = document.getElementById("bingo-container");
+  container.innerHTML = "";
+
+  const colRanges = [
+    [1, 9], [10, 19], [20, 29], [30, 39],
+    [40, 49], [50, 59], [60, 69], [70, 79], [80, 90]
+  ];
+  const totalNumbersPerColumn = [9, 10, 10, 10, 10, 10, 10, 10, 11];
+
+  // Skapa unika siffror per kolumn
+  const columnNumbers = colRanges.map(([start, end], idx) => {
+    const nums = [];
+    for (let i = start; i <= end; i++) nums.push(i);
+    shuffleArray(nums);
+    return nums.slice(0, totalNumbersPerColumn[idx]);
+  });
+
+  // Initiera 18 tomma rader (6 brickor * 3 rader = 18 rader)
+  const allRows = Array.from({ length: 18 }, () => Array(9).fill(null));
+  const rowFillCounts = Array(18).fill(0); // hur många siffror per rad (ska bli exakt 5)
+
+  // För varje kolumn, placera dess siffror på rader där det finns plats
+  for (let col = 0; col < 9; col++) {
+    const nums = columnNumbers[col];
+    let attempts = 0;
+
+    while (true) {
+      const rowCandidates = [];
+
+      for (let i = 0; i < 18; i++) {
+        if (allRows[i][col] === null && rowFillCounts[i] < 5) {
+          rowCandidates.push(i);
+        }
+      }
+
+      if (rowCandidates.length < nums.length) {
+        // Misslyckades, starta om hela processen
+        return generateBingoCard();
+      }
+
+      shuffleArray(rowCandidates);
+      const selectedRows = rowCandidates.slice(0, nums.length);
+      let valid = true;
+
+      // Kolla så vi inte får mer än 5 i nån rad
+      for (let i = 0; i < selectedRows.length; i++) {
+        if (rowFillCounts[selectedRows[i]] >= 5) {
+          valid = false;
+          break;
+        }
+      }
+
+      if (!valid) {
+        if (++attempts > 5) return generateBingoCard(); // säkerhetsåterstart
+        continue;
+      }
+
+      // Tilldela siffror till valda rader i denna kolumn
+      for (let i = 0; i < selectedRows.length; i++) {
+        const rowIndex = selectedRows[i];
+        allRows[rowIndex][col] = nums[i];
+        rowFillCounts[rowIndex]++;
+      }
+
+      break;
+    }
+  }
+
+  // Kontroll: exakt 5 siffror i varje rad
+  if (!rowFillCounts.every(c => c === 5)) {
+    return generateBingoCard();
+  }
+
+  // Dela upp rader till 6 brickor à 3 rader
+  const cards = [];
+  for (let i = 0; i < 6; i++) {
+    const rows = [
+      allRows[i * 3],
+      allRows[i * 3 + 1],
+      allRows[i * 3 + 2]
+    ];
+    cards.push(rows);
+  }
+
+  // Rendera brickorna
+  for (const card of cards) {
+    const board = document.createElement("div");
+    board.className = "bingo-board";
+
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 9; c++) {
+        const cell = document.createElement("div");
+        cell.className = "bingo-cell";
+        if (card[r][c] !== null) {
+          const span = document.createElement("span");
+          span.textContent = card[r][c];
+          cell.appendChild(span);
+        }
+        cell.addEventListener("click", () => {
+          if (cell.textContent) {
+            cell.classList.toggle("marked");
+          }
+        });
+        board.appendChild(cell);
+      }
+    }
+
+    container.appendChild(board);
+  }
+
+  // Slumpar en array
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+}
+
+
+
+  function bingoSound() {
+    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    audio.play();
+  }
+</script>
+
+</body>
+</html>

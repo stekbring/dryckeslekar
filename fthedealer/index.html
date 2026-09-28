@@ -1,19 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6WCG90MQZ');
-</script>
   <meta charset="UTF-8">
-  <title>Fuck the Dealer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuck the Dealer</title>
+  <script>
+    /* =====================================================================
+       VERSION – höj denna när du byter ut en BILD i den här leken
+       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
+       i stället för den gamla som ligger sparad i deras webbläsare.
+       Text i den här filen och i .txt-filer syns alltid direkt ändå.
+       ===================================================================== */
+    var VERSION = "1";
+
+    function v(url) { return url + "?v=" + VERSION; }
+    (function () {
+      var bakgrund = "webb/background.webp";
+      var forst = ["webb/rubrik.webp"];
+      if (bakgrund) {
+        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
+        forst.unshift(bakgrund);
+      }
+      forst.forEach(function (h) {
+        var l = document.createElement("link");
+        l.rel = "preload"; l.as = "image"; l.href = v(h);
+        document.head.appendChild(l);
+      });
+    })();
+    /* Textfilen börjar hämtas direkt (alltid senaste versionen från servern) */
+    var textLaddas = fetch("instruktioner.txt", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6WCG90MQZ');
+  </script>
+  <link rel="icon" type="image/x-icon" href="/bilder/dryckeslekarlogga.ico">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -24,6 +50,8 @@
       padding: 10px;
     }
 
+    html { background-color: #111; }
+
     .background {
       position: fixed;
       top: 0;
@@ -31,7 +59,8 @@
       height: 100vh;
       width: 100vw;
       z-index: -1;
-      background-image: url("background.png");
+      background-color: #111;
+      background-image: var(--bg);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -52,27 +81,13 @@
       padding: 60px 10px 10px 10px;
     }
 
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px 6px #000;
-    }
-
     .rules-list {
       background: rgba(0, 0, 0, 0);
-      list-style-type: none;
       padding: 20px;
       border-radius: 15px;
       max-width: 800px;
       margin: 0 auto;
       text-align: left;
-    }
-
-    .rules-list li {
-      margin-bottom: 15px;
-      font-size: 1.1em;
-      line-height: 1.6;
     }
 
     .big-text {
@@ -87,44 +102,58 @@
       margin-top: 20px;
       margin-bottom: 10px;
     }
-
   </style>
 </head>
 <body>
 
 <div class="background"></div>
 
-<img src="rubrik.png" alt="fuck the dealer" class="header-image">
+<img data-src="webb/rubrik.webp" alt="Fuck the Dealer" class="header-image" width="1337" height="245" fetchpriority="high">
 
-<ul class="rules-list" id="rules"></ul>
+<div class="rules-list" id="rules"></div>
 
 <script>
-  fetch('instruktioner.txt')
-    .then(response => response.text())
-    .then(data => {
-      const rulesList = document.getElementById('rules');
-      const lines = data.split('\n');
+  /* Bildadresser med versionsnummer */
+  (function () {
+    var bilder = document.querySelectorAll("img[data-src]");
+    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
+  })();
 
-      lines.forEach(line => {
-        if (line.trim() !== "") {
-          let formatted = line
-            .replace(/^# (.*)/, '<h2>$1</h2>')
-            .replace(/^## (.*)/, '<h3>$1</h3>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/__(.*?)__/g, '<span class="big-text">$1</span>')
-            .replace(/--/g, '<br><br>');
-
-          const container = document.createElement('div');
-          container.innerHTML = formatted;
-          rulesList.appendChild(container);
-        }
-      });
-    })
-    .catch(error => {
-      console.error("Kunde inte läsa filen:", error);
+  /* Visar regeltexten. Format: # rubrik, ## underrubrik, **fet**, *kursiv*, __stor text__, -- = radbrytning */
+  textLaddas.then(function (data) {
+    var lista = document.getElementById("rules");
+    data.split("\n").forEach(function (line) {
+      if (line.trim() === "") return;
+      var formatted = line
+        .replace(/^# (.*)/, "<h2>$1</h2>")
+        .replace(/^## (.*)/, "<h3>$1</h3>")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        .replace(/__(.*?)__/g, '<span class="big-text">$1</span>')
+        .replace(/--/g, "<br><br>");
+      var rad = document.createElement("div");
+      rad.innerHTML = formatted;
+      lista.appendChild(rad);
     });
-</script>
+  }).catch(function (fel) {
+    console.error("Kunde inte läsa regelfilen:", fel);
+  });
 
+  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+      function forladda() {
+        var sw = navigator.serviceWorker.controller;
+        if (!sw) return;
+        var urls = ["webb/background.webp"].map(v);
+        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
+        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
+      }
+      navigator.serviceWorker.addEventListener("controllerchange", forladda);
+      setTimeout(forladda, 1500);
+    });
+  }
+</script>
 </body>
 </html>

@@ -1,43 +1,18 @@
 <!doctype html>
 <html lang="sv">
 <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-E6WCG90MQZ');
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spiken</title>
-  <script>
-    /* =====================================================================
-       VERSION – höj denna när du byter ut en BILD i den här leken
-       (t.ex. "1" till "2"). Då hämtar alla besökare den nya bilden direkt
-       i stället för den gamla som ligger sparad i deras webbläsare.
-       Text i den här filen och i .txt-filer syns alltid direkt ändå.
-       ===================================================================== */
-    var VERSION = "1";
-
-    function v(url) { return url + "?v=" + VERSION; }
-    (function () {
-      var bakgrund = "webb/spikplatta3.webp";
-      var forst = ["webb/spik.webp"];
-      if (bakgrund) {
-        document.documentElement.style.setProperty("--bg", 'url("' + v(bakgrund) + '")');
-        forst.unshift(bakgrund);
-      }
-      forst.forEach(function (h) {
-        var l = document.createElement("link");
-        l.rel = "preload"; l.as = "image"; l.href = v(h);
-        document.head.appendChild(l);
-      });
-    })();
-  </script>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6WCG90MQZ"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-E6WCG90MQZ');
-  </script>
-  <link rel="icon" type="image/x-icon" href="/bilder/dryckeslekarlogga.ico">
   <style>
     :root{--size: min(86vw,420px);} 
     html,body{height:100%;margin:0;background:#000; color:#fff; font-family:system-ui,Segoe UI,Roboto,Arial}
@@ -47,7 +22,7 @@
 
     .stage{position:relative; width:var(--size); height:var(--size); cursor:pointer;}
 
-    .plate{position:absolute;inset:0;background-image:var(--bg);background-size:contain;background-repeat:no-repeat;background-position:center;}
+    .plate{position:absolute;inset:0;background-image:url('spikplatta3.png');background-size:contain;background-repeat:no-repeat;background-position:center;}
     canvas{position:absolute;inset:0;z-index:1}
 
     /* spik-bild */
@@ -77,7 +52,7 @@
     <div class="stage" id="stage">
       <div class="plate"></div>
       <canvas id="wheel"></canvas>
-      <img data-src="webb/spik.webp" id="needle" class="needle" draggable="false" alt="spik" width="185" height="1278" fetchpriority="high">
+      <img src="spik.png" id="needle" class="needle" draggable="false" alt="spik">
       <div class="highlight-name" id="highlightName"></div>
       <div class="spin-label" id="spinLabel">Spin</div>
     </div>
@@ -121,12 +96,8 @@
     const saveNames = document.getElementById('saveNames');
     const cancelNames = document.getElementById('cancelNames');
 
-    // Antal spelare och namn sparas i webbläsaren till nästa gång
-    function lasa(nyckel, standard){ try{ const s = localStorage.getItem(nyckel); return s ? JSON.parse(s) : standard; }catch(e){ return standard; } }
-    function spara(){ try{ localStorage.setItem('spiken_spelare', JSON.stringify(names.slice(0, playerCount))); }catch(e){} }
-    let names = lasa('spiken_spelare', []);
-    if(!Array.isArray(names) || names.length < 2) names = [];
-    let playerCount = Math.min(names.length, 20);
+    let playerCount = 0;
+    let names = [];
     let selectedIndex = null;
 
     function resize(){
@@ -197,10 +168,8 @@
 
     function updateCountDisplay(){
       playerCountEl.textContent = playerCount;
-      spara();
       resize();
     }
-    playerCountEl.textContent = playerCount;
       minus.addEventListener('click', ()=>{ 
         if (playerCount > 2) {
           playerCount--; 
@@ -234,7 +203,6 @@
       names = [];
       inputs.forEach((inp,i)=> names[i] = inp.value || ('Spelare'+(i+1)) );
       modal.style.display='none';
-      spara();
       drawWheel(selectedIndex);
     });
 
@@ -307,32 +275,8 @@
     stage.addEventListener('touchend', ()=>{ stage.click(); });
 
     drawWheel(null);
-    // Stoppa att sidan scrollar/studsar – men låt namnlistan i rutan gå att scrolla
-    document.addEventListener('touchmove', function(e){ if(!e.target.closest('.names-list')) e.preventDefault(); }, {passive:false});
-    document.addEventListener('keydown', (e)=>{ if(e.key===' ' && modal.style.display!=='flex'){ e.preventDefault(); stage.click(); } });
+    document.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+    document.addEventListener('keydown', (e)=>{ if(e.key===' '){ stage.click(); } });
   </script>
-<script>
-  /* Bildadresser med versionsnummer */
-  (function () {
-    var bilder = document.querySelectorAll("img[data-src]");
-    for (var i = 0; i < bilder.length; i++) bilder[i].src = v(bilder[i].getAttribute("data-src"));
-  })();
-
-  /* Sparar sidans bilder i webbläsaren så nästa besök går snabbare (se /sw.js) */
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-      function forladda() {
-        var sw = navigator.serviceWorker.controller;
-        if (!sw) return;
-        var urls = ["webb/spikplatta3.webp"].map(v);
-        document.querySelectorAll("img[data-src]").forEach(function (b) { urls.push(v(b.getAttribute("data-src"))); });
-        sw.postMessage({ typ: "forladda", urls: urls.map(function (u) { return new URL(u, location.href).href; }) });
-      }
-      navigator.serviceWorker.addEventListener("controllerchange", forladda);
-      setTimeout(forladda, 1500);
-    });
-  }
-</script>
 </body>
 </html>
