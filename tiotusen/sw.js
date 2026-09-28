@@ -1,9 +1,9 @@
-/* 10 000 – service worker: gör att spelet fungerar utan internet.
+/* TioTusen – service worker: gör att spelet fungerar utan internet.
    Själva sidan (index.html) hämtas alltid färsk när det finns internet, så en ny version
    du laddar upp syns direkt. Övriga filer sparas i en cache. Ändra VERSION om du byter
-   ut three.min.js eller ikonerna. */
-const VERSION = 'tiotusen-1';
-const FILES = ['./', './index.html', './three.min.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './favicon-32.png', './apple-touch-icon.png'];
+   ut three.min.js eller ikonerna. Ikonerna i mappen ikoner/ sparas först när de används. */
+const VERSION = 'tiotusen-4';
+const FILES = ['./', './index.html', './three.min.js', './manifest.webmanifest'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

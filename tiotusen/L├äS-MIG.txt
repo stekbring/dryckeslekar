@@ -1,5 +1,5 @@
-10 000 – TÄRNINGSSPEL
-=====================
+TIOTUSEN – TÄRNINGSSPEL
+=======================
 
 Den här mappen är hela spelet, färdigt att lägga på din hemsida.
 Det fungerar på dator och mobil, går att spela i helskärm och kan
@@ -12,9 +12,13 @@ index.html              Själva spelet
 three.min.js            3D-tärningarna (behövs för att de ska se solida ut)
 manifest.webmanifest    Gör att sidan kan installeras som app (namn, ikon, helskärm)
 sw.js                   Gör att spelet fungerar utan internet
-icon-*.png, favicon-32.png, apple-touch-icon.png   Appikoner
+ikoner/                 Alla appikoner: tre motiv (röd etta, femma, fisken) i tio
+                        bakgrundsfärger, med en liten manifest-fil per kombination
 
-Ladda alltid upp alla filer tillsammans i samma mapp.
+Ladda alltid upp allt tillsammans, med mappen ikoner/ bredvid index.html.
+Filer från förra versionen som heter icon-*.png, favicon-*.png,
+apple-touch-icon*.png och manifest-five/-fish.webmanifest direkt i
+spelmappen behövs inte längre och kan tas bort.
 
 
 1. LÄGG UPP PÅ HEMSIDAN
@@ -35,7 +39,9 @@ Länka sedan till adressen från din vanliga hemsida.
 1. Öppna https://dindomän.se/tiotusen/ i Chrome på telefonen.
 2. Tryck på "Installera app" (pil-ikonen uppe till höger).
    I helskärm finns den under menyknappen ( ··· ).
-3. Tryck "Installera".
+3. Första gången får du välja appikon: motiv (röd etta, femma eller
+   fisken) och bakgrundsfärg. Tryck "Fortsätt".
+4. Tryck "Installera appen" och sedan "Installera".
 
 Chrome bygger då en riktig app åt dig. Den hamnar bland dina appar och
 på hemskärmen, startar i helskärm och fungerar utan internet.
@@ -76,9 +82,16 @@ Både Chrome-appen och APK-appen hämtar spelet från din hemsida.
   och ingen uppdateringsruta visas, det bara är den nya versionen.
 - Utan internet används den senaste versionen som telefonen har sparat.
 - Byter du three.min.js eller ikonerna: ändra raden
-      const VERSION = 'tiotusen-1';
-  i sw.js till 'tiotusen-2' och så vidare, så att telefonen hämtar de
+      const VERSION = 'tiotusen-4';
+  i sw.js till 'tiotusen-5' och så vidare, så att telefonen hämtar de
   nya filerna.
+- Appikonen bestäms när appen installeras. För att byta ikon på en
+  installerad app: öppna sidan i Chrome, välj ny ikon och färg under
+  Meny -> Inställningar -> Appikon, ta bort appen och installera den igen.
+- APK-filen får standardikonen (röd etta på marinblått), eftersom
+  PWABuilder läser manifest.webmanifest. Vill du ha en annan: i PWABuilder,
+  öppna manifest-redigeringen (Edit manifest -> Icons) och ladda upp
+  motsvarande 512-bild från mappen ikoner, t.ex. icon-fish-pink-512.png.
 - En ny APK behövs bara om du ändrar appens namn, ikon eller adress.
   Gör den då i PWABuilder med SAMMA nyckel (signing.keystore). Med en ny
   nyckel vägrar telefonen att uppdatera och du måste avinstallera först.
@@ -92,6 +105,7 @@ Både Chrome-appen och APK-appen hämtar spelet från din hemsida.
 
 BRA ATT VETA
 ------------
-- Statistik och pågående parti sparas på varje enhet för sig.
+- Statistik, inställningar och historiken (alla partier, även
+  oavslutade) sparas på varje enhet för sig.
 - Helskärm: tryck på "Helskärm" uppe till höger (eller F på tangentbordet).
   I den installerade appen startar spelet i helskärm av sig självt.

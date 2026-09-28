@@ -4,8 +4,8 @@
   "short_name": "TioTusen",
   "description": "Tärningsspelet TioTusen med fem tärningar.",
   "lang": "sv",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "../",
+  "scope": "../",
   "display": "fullscreen",
   "display_override": [
     "fullscreen",
@@ -19,19 +19,19 @@
   ],
   "icons": [
     {
-      "src": "ikoner/icon-one-navy-192.png",
+      "src": "icon-five-ivory-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "ikoner/icon-one-navy-512.png",
+      "src": "icon-five-ivory-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "ikoner/icon-one-navy-maskable-512.png",
+      "src": "icon-five-ivory-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
