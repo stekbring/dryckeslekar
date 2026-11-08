@@ -9,7 +9,7 @@
       Settings → Overview → Project ID, t.ex. "abc123xyz"). <<<
 */
 var GA_ID = "G-E6WCG90MQZ";
-var CLARITY_ID = "KLISTRA_IN_CLARITY_ID";
+var CLARITY_ID = "zahci44m9b";
 
 (function () {
   var NYCKEL = "cookieval";
